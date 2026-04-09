@@ -87,14 +87,38 @@ export function useLeadDetail(leadId: string) {
 
   const firmId = user?.firmId
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!firmId || !leadId) return
     setLoading(true)
-    getLead(firmId, leadId)
-      .then(setLead)
-      .catch(() => setError('Error al cargar la solicitud.'))
-      .finally(() => setLoading(false))
+    setError(null)
+    try {
+      const data = await getLead(firmId, leadId)
+      setLead(data)
+    } catch (err) {
+      console.error(err)
+      setError('Error al cargar la solicitud.')
+    } finally {
+      setLoading(false)
+    }
   }, [firmId, leadId])
 
-  return { lead, loading, error }
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const changeStatus = async (
+    status: LeadStatus,
+    extra?: { rejectionReason?: string; notes?: string }
+  ) => {
+    if (!firmId || !leadId) return
+    try {
+      await updateLeadStatus(firmId, leadId, status, extra)
+      await load()
+    } catch (err) {
+      console.error(err)
+      setError('Error al actualizar el estado.')
+    }
+  }
+
+  return { lead, loading, error, changeStatus, reload: load }
 }

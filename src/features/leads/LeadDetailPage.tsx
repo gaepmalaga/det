@@ -10,7 +10,7 @@ import {
   XCircle,
   FolderPlus,
 } from 'lucide-react'
-import { useLeadDetail, useLeads } from '@/hooks/useLeads'
+import { useLeadDetail } from '@/hooks/useLeads'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { LeadStatusBadge } from '@/components/shared/StatusBadge'
 import { ConvertToCaseDialog } from './ConvertToCaseDialog'
@@ -21,11 +21,11 @@ import { es } from 'date-fns/locale'
 export function LeadDetailPage() {
   const { leadId } = useParams<{ leadId: string }>()
   const navigate = useNavigate()
-  const { lead, loading, error } = useLeadDetail(leadId ?? '')
-  const { changeStatus } = useLeads()
+  const { lead, loading, error, changeStatus } = useLeadDetail(leadId ?? '')
   const [showConvert, setShowConvert] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectForm, setShowRejectForm] = useState(false)
+  const [updating, setUpdating] = useState(false)
 
   if (loading) return <LoadingSpinner />
   if (error || !lead) {
@@ -42,16 +42,22 @@ export function LeadDetailPage() {
   const canConvert = isAccepted
 
   const handleAccept = async () => {
-    await changeStatus(lead.id, 'aceptado')
+    setUpdating(true)
+    await changeStatus('aceptado')
+    setUpdating(false)
   }
 
   const handleReject = async () => {
-    await changeStatus(lead.id, 'rechazado', { rejectionReason })
+    setUpdating(true)
+    await changeStatus('rechazado', { rejectionReason })
     setShowRejectForm(false)
+    setUpdating(false)
   }
 
   const handleSetInReview = async () => {
-    await changeStatus(lead.id, 'en_revision')
+    setUpdating(true)
+    await changeStatus('en_revision')
+    setUpdating(false)
   }
 
   return (
@@ -84,7 +90,8 @@ export function LeadDetailPage() {
           {isNew && (
             <button
               onClick={handleSetInReview}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              disabled={updating}
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
             >
               Iniciar revisión
             </button>
@@ -92,10 +99,11 @@ export function LeadDetailPage() {
           {canAccept && (
             <button
               onClick={handleAccept}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+              disabled={updating}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4" />
-              Aceptar
+              {updating ? 'Actualizando...' : 'Aceptar'}
             </button>
           )}
           {canConvert && (
@@ -110,7 +118,8 @@ export function LeadDetailPage() {
           {canReject && (
             <button
               onClick={() => setShowRejectForm(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              disabled={updating}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
               Rechazar
@@ -185,15 +194,17 @@ export function LeadDetailPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowRejectForm(false)}
-                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  disabled={updating}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleReject}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={updating}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  Confirmar rechazo
+                  {updating ? 'Procesando...' : 'Confirmar rechazo'}
                 </button>
               </div>
             </div>
@@ -207,23 +218,13 @@ export function LeadDetailPage() {
               Contacto
             </h2>
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
+<div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <a
-                  href={'mailto:' + lead.contactEmail}
-                  className="text-sm text-primary hover:underline truncate"
-                >
-                  {lead.contactEmail}
-                </a>
+                <a href={'mailto:' + lead.contactEmail} className="text-sm text-primary hover:underline truncate">{lead.contactEmail}</a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <a
-                  href={'tel:' + lead.contactPhone}
-                  className="text-sm text-slate-700"
-                >
-                  {lead.contactPhone}
-                </a>
+                <a href={'tel:' + lead.contactPhone} className="text-sm text-slate-700">{lead.contactPhone}</a>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Tipo</p>

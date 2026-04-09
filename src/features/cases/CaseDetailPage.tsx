@@ -1,22 +1,23 @@
+import { useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import { ArrowLeft, ShieldCheck, Clock, FileText, Eye } from 'lucide-react'
-import { useCaseDetail } from '@/hooks/useCases'
-import { useCases } from '@/hooks/useCases'
+import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { useCaseDetail, useCases } from '@/hooks/useCases'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
+import { CaseContractTab } from './tabs/CaseContractTab'
+import { CaseActionsTab } from './tabs/CaseActionsTab'
+import { CaseEvidenceTab } from './tabs/CaseEvidenceTab'
+import { CaseReportTab } from './tabs/CaseReportTab'
+import { CaseAuditTab } from './tabs/CaseAuditTab'
 import { ROUTES } from '@/constants/routes'
-import {
-  CASE_STATUS_LABELS,
-  CASE_STATUS_FLOW,
-  COMPLIANCE_LABELS,
-} from '@/constants/cases'
+import { CASE_STATUS_LABELS, CASE_STATUS_FLOW, COMPLIANCE_LABELS } from '@/constants/cases'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { CaseStatus } from '@/types'
 
 const TABS = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'contrato', label: 'Contrato' },
   { id: 'actuaciones', label: 'Actuaciones' },
   { id: 'evidencias', label: 'Evidencias' },
   { id: 'informe', label: 'Informe' },
@@ -27,13 +28,18 @@ export function CaseDetailPage() {
   const { caseId } = useParams<{ caseId: string }>()
   const navigate = useNavigate()
   const { caseData, loading, error } = useCaseDetail(caseId ?? '')
-  const { changeStatus } = useCases()
+  const { changeStatus, reload } = useCases()
   const [activeTab, setActiveTab] = useState('resumen')
   const [changingStatus, setChangingStatus] = useState(false)
 
+  const handleCaseUpdated = useCallback(() => {
+    reload()
+  }, [reload])
+
   if (loading) return <LoadingSpinner />
-  if (error || !caseData)
+  if (error || !caseData) {
     return <p className="text-sm text-red-600">{error ?? 'No encontrado.'}</p>
+  }
 
   const nextStatuses = CASE_STATUS_FLOW[caseData.status] ?? []
 
@@ -45,7 +51,6 @@ export function CaseDetailPage() {
 
   return (
     <div>
-      {/* Back */}
       <button
         onClick={() => navigate(ROUTES.CASES)}
         className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors"
@@ -54,7 +59,6 @@ export function CaseDetailPage() {
         Volver a expedientes
       </button>
 
-      {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -62,15 +66,13 @@ export function CaseDetailPage() {
               {caseData.caseNumber}
             </span>
             <CaseStatusBadge status={caseData.status} />
-            <span
-              className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${
-                caseData.complianceStatus === 'green'
-                  ? 'bg-green-50 text-green-700 border-green-200'
-                  : caseData.complianceStatus === 'amber'
-                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : 'bg-red-50 text-red-700 border-red-200'
-              }`}
-            >
+            <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${
+              caseData.complianceStatus === 'green'
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : caseData.complianceStatus === 'amber'
+                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                : 'bg-red-50 text-red-700 border-red-200'
+            }`}>
               <ShieldCheck className="w-3 h-3" />
               {COMPLIANCE_LABELS[caseData.complianceStatus]}
             </span>
@@ -85,7 +87,6 @@ export function CaseDetailPage() {
           )}
         </div>
 
-        {/* Cambios de estado */}
         {nextStatuses.length > 0 && (
           <div className="flex gap-2">
             {nextStatuses.map((s) => (
@@ -108,13 +109,12 @@ export function CaseDetailPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-200 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'border-slate-900 text-slate-900'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -125,12 +125,10 @@ export function CaseDetailPage() {
         ))}
       </div>
 
-      {/* Contenido del tab */}
       {activeTab === 'resumen' && (
         <div className="grid grid-cols-3 gap-6">
-          {/* Columna principal */}
           <div className="col-span-2 space-y-6">
-            {/* Alertas de cumplimiento */}
+
             {caseData.complianceIssues.length > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
@@ -148,49 +146,37 @@ export function CaseDetailPage() {
               </div>
             )}
 
-            {/* Encargo */}
             <div className="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-slate-400" />
-                Encargo
-              </h3>
-              <dl className="space-y-4">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">Encargo</h3>
+              <div className="space-y-4">
                 <div>
-                  <dt className="text-xs text-slate-500 mb-1">
-                    Objeto y alcance
-                  </dt>
-                  <dd className="text-sm text-slate-900 whitespace-pre-wrap">
-                    {caseData.objectScope || (
-                      <span className="text-slate-400 italic">Sin definir</span>
-                    )}
-                  </dd>
+                  <p className="text-xs text-slate-500 mb-1">Objeto y alcance</p>
+                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                    {caseData.objectScope || <span className="text-slate-400 italic">Sin definir</span>}
+                  </p>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-500 mb-1 flex items-center gap-1">
+                  <p className="text-xs text-slate-500 mb-1">
                     Interés legítimo
                     {caseData.legitimateInterestValidated && (
-                      <span className="text-green-600 text-xs">✓ Validado</span>
+                      <span className="text-green-600 text-xs ml-2">✓ Validado</span>
                     )}
-                  </dt>
-                  <dd className="text-sm text-slate-900 whitespace-pre-wrap">
-                    {caseData.legitimateInterest || (
-                      <span className="text-slate-400 italic">Sin documentar</span>
-                    )}
-                  </dd>
+                  </p>
+                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                    {caseData.legitimateInterest || <span className="text-slate-400 italic">Sin documentar</span>}
+                  </p>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-500 mb-1">Descripción</dt>
-                  <dd className="text-sm text-slate-900 whitespace-pre-wrap">
+                  <p className="text-xs text-slate-500 mb-1">Descripción</p>
+                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
                     {caseData.description}
-                  </dd>
+                  </p>
                 </div>
-              </dl>
+              </div>
             </div>
 
-            {/* Historial de estados */}
             <div className="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">
                 Historial de estados
               </h3>
               <div className="space-y-3">
@@ -205,9 +191,7 @@ export function CaseDetailPage() {
                         <p className="text-xs text-slate-500">{entry.reason}</p>
                       )}
                       <p className="text-xs text-slate-400">
-                        {format(entry.changedAt, "dd MMM yyyy 'a las' HH:mm", {
-                          locale: es,
-                        })}
+                        {format(entry.changedAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}
                       </p>
                     </div>
                   </div>
@@ -216,81 +200,56 @@ export function CaseDetailPage() {
             </div>
           </div>
 
-          {/* Lateral */}
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
-                Información
-              </h3>
-              <dl className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">Información</h3>
+              <div className="space-y-3">
                 <div>
-                  <dt className="text-xs text-slate-500">Fecha de apertura</dt>
-                  <dd className="text-sm text-slate-700">
-                    {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", {
-                      locale: es,
-                    })}
-                  </dd>
+                  <p className="text-xs text-slate-500">Apertura</p>
+                  <p className="text-sm text-slate-700">
+                    {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                  </p>
                 </div>
                 {caseData.conservationDeadline && (
                   <div>
-                    <dt className="text-xs text-slate-500">
-                      Conservación hasta
-                    </dt>
-                    <dd className="text-sm text-slate-700">
-                      {format(
-                        caseData.conservationDeadline,
-                        "dd 'de' MMMM 'de' yyyy",
-                        { locale: es }
-                      )}
-                    </dd>
+                    <p className="text-xs text-slate-500">Conservación hasta</p>
+                    <p className="text-sm text-slate-700">
+                      {format(caseData.conservationDeadline, "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                    </p>
                   </div>
                 )}
                 {caseData.registryEntryNumber && (
                   <div>
-                    <dt className="text-xs text-slate-500">
-                      Nº libro-registro
-                    </dt>
-                    <dd className="text-sm font-mono text-slate-700">
+                    <p className="text-xs text-slate-500">Nº libro-registro</p>
+                    <p className="text-sm font-mono text-slate-700">
                       {caseData.registryEntryNumber}
-                    </dd>
+                    </p>
                   </div>
                 )}
-              </dl>
+              </div>
             </div>
           </div>
         </div>
       )}
 
+      {activeTab === 'contrato' && (
+        <CaseContractTab caseData={caseData} onCaseUpdated={handleCaseUpdated} />
+      )}
+
       {activeTab === 'actuaciones' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6">
-          <p className="text-sm text-slate-500">
-            Módulo de actuaciones — próxima entrega.
-          </p>
-        </div>
+        <CaseActionsTab caseData={caseData} />
       )}
 
       {activeTab === 'evidencias' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6">
-          <p className="text-sm text-slate-500">
-            Módulo de evidencias — próxima entrega.
-          </p>
-        </div>
+        <CaseEvidenceTab caseData={caseData} />
       )}
 
       {activeTab === 'informe' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6">
-          <p className="text-sm text-slate-500">
-            Módulo de informe — próxima entrega.
-          </p>
-        </div>
+        <CaseReportTab caseData={caseData} onCaseUpdated={handleCaseUpdated} />
       )}
 
       {activeTab === 'auditoria' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6">
-          <p className="text-sm text-slate-500">
-            Log de auditoría — próxima entrega.
-          </p>
-        </div>
+        <CaseAuditTab caseData={caseData} />
       )}
     </div>
   )

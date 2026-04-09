@@ -1,35 +1,253 @@
+import { useNavigate } from 'react-router-dom'
+import {
+  FolderOpen,
+  Inbox,
+  ShieldAlert,
+  FileText,
+  ArrowRight,
+  TrendingUp,
+} from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCases } from '@/hooks/useCases'
+import { useLeads } from '@/hooks/useLeads'
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { CaseStatusBadge } from '@/components/shared/StatusBadge'
+import { ROUTES } from '@/constants/routes'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const { cases, loading: casesLoading } = useCases()
+  const { leads, loading: leadsLoading } = useLeads()
+
+  const loading = casesLoading || leadsLoading
+
+  if (loading) return <LoadingSpinner />
+
+  const activeCases = cases.filter((c) =>
+    ['revision', 'presupuesto', 'contrato_pendiente', 'activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
+  )
+  const newLeads = leads.filter((l) => l.status === 'nuevo')
+  const pendingLeads = leads.filter((l) => l.status === 'en_revision')
+  const redCases = cases.filter((c) => c.complianceStatus === 'red')
+  const amberCases = cases.filter((c) => c.complianceStatus === 'amber')
+  const recentCases = [...activeCases].slice(0, 5)
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+        <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Bienvenido, {user?.displayName ?? 'detective'}
+          {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'Expedientes activos', value: '—' },
-          { label: 'Pre-expedientes pendientes', value: '—' },
-          { label: 'Alertas de cumplimiento', value: '—' },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white border border-slate-200 rounded-xl p-6"
-          >
+      {/* Métricas principales */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div
+          onClick={() => navigate(ROUTES.CASES)}
+          className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition-colors"
+        >
+          <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              {stat.label}
+              Expedientes activos
             </p>
-            <p className="text-3xl font-semibold text-slate-900 mt-2">
-              {stat.value}
-            </p>
+            <FolderOpen className="w-4 h-4 text-slate-400" />
           </div>
-        ))}
+          <p className="text-3xl font-semibold text-slate-900">{activeCases.length}</p>
+        </div>
+
+        <div
+          onClick={() => navigate(ROUTES.LEADS)}
+          className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition-colors"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Solicitudes nuevas
+            </p>
+            <Inbox className="w-4 h-4 text-slate-400" />
+          </div>
+          <p className="text-3xl font-semibold text-slate-900">{newLeads.length}</p>
+          {pendingLeads.length > 0 && (
+            <p className="text-xs text-slate-500 mt-1">
+              {pendingLeads.length} en revisión
+            </p>
+          )}
+        </div>
+
+        <div
+          onClick={() => navigate(ROUTES.COMPLIANCE)}
+          className={`border rounded-xl p-5 cursor-pointer transition-colors ${
+            redCases.length > 0
+              ? 'bg-red-50 border-red-200 hover:border-red-300'
+              : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <p className={`text-xs font-medium uppercase tracking-wide ${
+              redCases.length > 0 ? 'text-red-600' : 'text-slate-500'
+            }`}>
+              Alertas críticas
+            </p>
+            <ShieldAlert className={`w-4 h-4 ${redCases.length > 0 ? 'text-red-500' : 'text-slate-400'}`} />
+          </div>
+          <p className={`text-3xl font-semibold ${redCases.length > 0 ? 'text-red-700' : 'text-slate-900'}`}>
+            {redCases.length}
+          </p>
+          {amberCases.length > 0 && (
+            <p className="text-xs text-amber-600 mt-1">
+              {amberCases.length} en revisión
+            </p>
+          )}
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Total expedientes
+            </p>
+            <TrendingUp className="w-4 h-4 text-slate-400" />
+          </div>
+          <p className="text-3xl font-semibold text-slate-900">{cases.length}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {cases.filter((c) => c.status === 'cerrado').length} cerrados
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        {/* Expedientes activos recientes */}
+        <div className="col-span-2">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <FolderOpen className="w-4 h-4 text-slate-400" />
+                Expedientes activos
+              </h2>
+              <button
+                onClick={() => navigate(ROUTES.CASES)}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Ver todos
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            {recentCases.length === 0 ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-sm text-slate-400">No hay expedientes activos.</p>
+                <button
+                  onClick={() => navigate(ROUTES.LEADS)}
+                  className="mt-3 text-xs text-primary hover:underline"
+                >
+                  Ir a solicitudes
+                </button>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-slate-100">
+                  {recentCases.map((c) => (
+                    <tr
+                      key={c.id}
+                      onClick={() => navigate('/app/cases/' + c.id)}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              c.complianceStatus === 'green'
+                                ? 'bg-green-500'
+                                : c.complianceStatus === 'amber'
+                                ? 'bg-amber-400'
+                                : 'bg-red-500'
+                            }`}
+                          />
+                          <div>
+                            <p className="font-medium text-slate-900">{c.investigationType}</p>
+                            <p className="text-xs text-slate-500 font-mono">{c.caseNumber}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <CaseStatusBadge status={c.status} />
+                      </td>
+                      <td className="px-5 py-3 text-xs text-slate-500">
+                        {format(c.createdAt, 'dd MMM yyyy', { locale: es })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Panel lateral */}
+        <div className="space-y-4">
+          {/* Solicitudes pendientes */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <Inbox className="w-4 h-4 text-slate-400" />
+                Solicitudes
+              </h2>
+              <button
+                onClick={() => navigate(ROUTES.LEADS)}
+                className="text-xs text-slate-500 hover:text-slate-700"
+              >
+                Ver todas
+              </button>
+            </div>
+            {newLeads.length === 0 && pendingLeads.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-slate-400">Sin solicitudes pendientes.</p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {[...newLeads, ...pendingLeads].slice(0, 4).map((lead) => (
+                  <div
+                    key={lead.id}
+                    onClick={() => navigate(ROUTES.LEADS + '/' + lead.id)}
+                    className="px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
+                  >
+                    <p className="text-sm font-medium text-slate-900 truncate">
+                      {lead.contactName}
+                    </p>
+                    <p className="text-xs text-slate-500">{lead.investigationType}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Acceso rápido */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-slate-900 mb-3">Acceso rápido</h2>
+            <div className="space-y-2">
+              <button
+                onClick={() => navigate(ROUTES.LEADS)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <Inbox className="w-4 h-4 text-slate-400" />
+                Nueva solicitud
+              </button>
+              <button
+                onClick={() => navigate(ROUTES.CASES)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <FolderOpen className="w-4 h-4 text-slate-400" />
+                Ver expedientes
+              </button>
+              <button
+                onClick={() => navigate(ROUTES.REGISTRY_BOOK)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <FileText className="w-4 h-4 text-slate-400" />
+                Libro-registro
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

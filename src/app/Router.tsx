@@ -9,6 +9,15 @@ import { LeadsPage } from '@/features/leads/LeadsPage'
 import { LeadDetailPage } from '@/features/leads/LeadDetailPage'
 import { CasesPage } from '@/features/cases/CasesPage'
 import { CaseDetailPage } from '@/features/cases/CaseDetailPage'
+import { ClientsPage } from '@/features/clients/ClientsPage'
+import { ClientDetailPage } from '@/features/clients/ClientDetailPage'
+import { ContractsPage } from '@/features/contracts/ContractsPage'
+import { RegistryBookPage } from '@/features/registry/RegistryBookPage'
+import { CompliancePage } from '@/features/compliance/CompliancePage'
+import { SettingsPage } from '@/features/settings/SettingsPage'
+
+
+
 
 const Placeholder = ({ name }: { name: string }) => (
   <div className="text-slate-500 text-sm">{name} — en construcción</div>
@@ -33,12 +42,15 @@ export function AppRouter() {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="leads" element={<LeadsPage />} />
           <Route path="leads/:leadId" element={<LeadDetailPage />} />
-          <Route path="clients" element={<Placeholder name="Clientes" />} />
+          <Route path="clients" element={<ClientsPage />} />
+          <Route path="clients/:clientId" element={<ClientDetailPage />} />
           <Route path="pre-cases" element={<Placeholder name="Pre-expedientes" />} />
           <Route path="cases" element={<CasesPage />} />
+<Route path="compliance" element={<CompliancePage />} />
+<Route path="settings" element={<SettingsPage />} />
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
-          <Route path="registry-book" element={<Placeholder name="Libro-registro" />} />
-          <Route path="contracts" element={<Placeholder name="Contratos" />} />
+          <Route path="registry-book" element={<RegistryBookPage />} />
+          <Route path="contracts" element={<ContractsPage />} />
           <Route path="reports" element={<Placeholder name="Informes" />} />
           <Route path="compliance" element={<Placeholder name="Cumplimiento" />} />
           <Route path="collaborators" element={<Placeholder name="Colaboradores" />} />
