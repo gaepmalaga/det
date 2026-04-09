@@ -15,9 +15,10 @@ import { ContractsPage } from '@/features/contracts/ContractsPage'
 import { RegistryBookPage } from '@/features/registry/RegistryBookPage'
 import { CompliancePage } from '@/features/compliance/CompliancePage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
-
-
-
+import { PortalLoginPage } from '@/features/portal/PortalLoginPage'
+import { PortalLayout } from '@/features/portal/PortalLayout'
+import { PortalDashboard } from '@/features/portal/PortalDashboard'
+import { PortalCaseDetail } from '@/features/portal/PortalCaseDetail'
 
 const Placeholder = ({ name }: { name: string }) => (
   <div className="text-slate-500 text-sm">{name} — en construcción</div>
@@ -46,26 +47,28 @@ export function AppRouter() {
           <Route path="clients/:clientId" element={<ClientDetailPage />} />
           <Route path="pre-cases" element={<Placeholder name="Pre-expedientes" />} />
           <Route path="cases" element={<CasesPage />} />
-<Route path="compliance" element={<CompliancePage />} />
-<Route path="settings" element={<SettingsPage />} />
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
           <Route path="registry-book" element={<RegistryBookPage />} />
           <Route path="contracts" element={<ContractsPage />} />
           <Route path="reports" element={<Placeholder name="Informes" />} />
-          <Route path="compliance" element={<Placeholder name="Cumplimiento" />} />
+          <Route path="compliance" element={<CompliancePage />} />
           <Route path="collaborators" element={<Placeholder name="Colaboradores" />} />
           <Route path="team" element={<Placeholder name="Equipo" />} />
-          <Route path="settings" element={<Placeholder name="Configuración" />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
+        <Route path="/portal" element={<PortalLoginPage />} />
         <Route
           path="/portal"
           element={
-            <RouteGuard allowedTypes={['portal_client']}>
-              <Placeholder name="Portal cliente" />
+            <RouteGuard allowedTypes={['portal_client', 'firm_member', 'superadmin']}>
+              <PortalLayout />
             </RouteGuard>
           }
-        />
+        >
+          <Route path="cases" element={<PortalDashboard />} />
+          <Route path="cases/:caseId" element={<PortalCaseDetail />} />
+        </Route>
 
         <Route
           path="/superadmin"

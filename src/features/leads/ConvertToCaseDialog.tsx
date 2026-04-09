@@ -42,10 +42,11 @@ export function ConvertToCaseDialog({
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user || !user.firmId) return
-    setLoading(true)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  if (loading) return  // ← añade esta línea
+  if (!user || !user.firmId) return
+  setLoading(true)
     try {
       // 1. Crear cliente automáticamente desde los datos del lead
       const clientId = await createClient(user.firmId, user.uid, {

@@ -9,6 +9,7 @@ import { CaseActionsTab } from './tabs/CaseActionsTab'
 import { CaseEvidenceTab } from './tabs/CaseEvidenceTab'
 import { CaseReportTab } from './tabs/CaseReportTab'
 import { CaseAuditTab } from './tabs/CaseAuditTab'
+import { CasePortalTab } from './tabs/CasePortalTab'
 import { ROUTES } from '@/constants/routes'
 import { CASE_STATUS_LABELS, CASE_STATUS_FLOW, COMPLIANCE_LABELS } from '@/constants/cases'
 import { format } from 'date-fns'
@@ -21,20 +22,22 @@ const TABS = [
   { id: 'actuaciones', label: 'Actuaciones' },
   { id: 'evidencias', label: 'Evidencias' },
   { id: 'informe', label: 'Informe' },
+  { id: 'portal', label: 'Portal cliente' },
   { id: 'auditoria', label: 'Auditoría' },
 ]
 
 export function CaseDetailPage() {
   const { caseId } = useParams<{ caseId: string }>()
   const navigate = useNavigate()
-  const { caseData, loading, error } = useCaseDetail(caseId ?? '')
+  const { caseData, loading, error, reload: reloadDetail } = useCaseDetail(caseId ?? '')
   const { changeStatus, reload } = useCases()
   const [activeTab, setActiveTab] = useState('resumen')
   const [changingStatus, setChangingStatus] = useState(false)
 
-  const handleCaseUpdated = useCallback(() => {
-    reload()
-  }, [reload])
+const handleCaseUpdated = useCallback(() => {
+  reload()
+  reloadDetail()
+}, [reload, reloadDetail])
 
   if (loading) return <LoadingSpinner />
   if (error || !caseData) {
@@ -246,6 +249,10 @@ export function CaseDetailPage() {
 
       {activeTab === 'informe' && (
         <CaseReportTab caseData={caseData} onCaseUpdated={handleCaseUpdated} />
+      )}
+
+      {activeTab === 'portal' && (
+        <CasePortalTab caseData={caseData} />
       )}
 
       {activeTab === 'auditoria' && (

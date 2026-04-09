@@ -29,7 +29,9 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 async function resolveUserType(firebaseUser: User): Promise<AppUser> {
   const uid = firebaseUser.uid
+  const email = firebaseUser.email ?? ''
 
+  // 1. ¿Es superadmin?
   try {
     const adminDoc = await getDoc(doc(db, 'platformAdmins', uid))
     if (adminDoc.exists()) {
@@ -42,9 +44,10 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
       }
     }
   } catch {
-    // Sin permisos de superadmin, continuar
+    // Sin permisos, continuar
   }
 
+  // 2. ¿Es miembro de un despacho?
   try {
     const indexDoc = await getDoc(doc(db, 'userFirmIndex', uid))
     if (indexDoc.exists()) {
@@ -64,9 +67,13 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
     // Sin índice, continuar
   }
 
+  // 3. ¿Es cliente de portal? — buscar por email
   try {
-    const clientDoc = await getDoc(doc(db, 'portalClients', uid))
-    if (clientDoc.exists()) {
+    const { collection, query, where, getDocs } = await import('firebase/firestore')
+    const portalRef = collection(db, 'portalClients')
+    const q = query(portalRef, where('email', '==', email.toLowerCase().trim()))
+    const snap = await getDocs(q)
+    if (!snap.empty) {
       return {
         uid,
         email: firebaseUser.email,
@@ -79,6 +86,7 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
     // Sin acceso portal, continuar
   }
 
+  // 4. Usuario nuevo sin contexto → onboarding
   return {
     uid,
     email: firebaseUser.email,

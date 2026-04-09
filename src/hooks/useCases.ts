@@ -87,14 +87,24 @@ export function useCaseDetail(caseId: string) {
 
   const firmId = user?.firmId
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!firmId || !caseId) return
     setLoading(true)
-    getCase(firmId, caseId)
-      .then(setCaseData)
-      .catch(() => setError('Error al cargar el expediente.'))
-      .finally(() => setLoading(false))
+    setError(null)
+    try {
+      const data = await getCase(firmId, caseId)
+      setCaseData(data)
+    } catch (err) {
+      console.error(err)
+      setError('Error al cargar el expediente.')
+    } finally {
+      setLoading(false)
+    }
   }, [firmId, caseId])
 
-  return { caseData, loading, error }
+  useEffect(() => {
+    load()
+  }, [load])
+
+  return { caseData, loading, error, reload: load }
 }

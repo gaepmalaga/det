@@ -132,11 +132,11 @@ export async function createCase(
   const conservationDeadline = new Date(now)
   conservationDeadline.setFullYear(conservationDeadline.getFullYear() + 3)
 
-  const initialStatusEntry = {
-    status: 'revision' as CaseStatus,
-    changedAt: serverTimestamp(),
-    changedBy: userId,
-  }
+const initialStatusEntry = {
+  status: 'revision' as CaseStatus,
+  changedAt: Timestamp.now(),
+  changedBy: userId,
+}
 
   const docRef = await addDoc(ref, {
     firmId,
