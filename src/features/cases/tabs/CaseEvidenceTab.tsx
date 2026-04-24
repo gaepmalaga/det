@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Plus, Paperclip, Image, FileText, Mic, MapPin, Trash2, Eye } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { createAuditLog } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -19,7 +20,6 @@ import {
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject,
 } from 'firebase/storage'
 import { db, storage } from '@/lib/firebase'
 import type { Case, EvidenceType, EvidenceVisibility } from '@/types'
@@ -81,8 +81,8 @@ export function CaseEvidenceTab({ caseData }: CaseEvidenceTabProps) {
     if (!firmId) return
     setLoading(true)
     try {
-      const ref = collection(db, 'firms', firmId, 'cases', caseData.id, 'evidence')
-      const q = query(ref, orderBy('createdAt', 'desc'))
+      const colRef = collection(db, 'firms', firmId, 'cases', caseData.id, 'evidence')
+      const q = query(colRef, orderBy('createdAt', 'desc'))
       const snap = await getDocs(q)
       const data = snap.docs.map((d) => {
         const ev = d.data()
@@ -162,6 +162,16 @@ export function CaseEvidenceTab({ caseData }: CaseEvidenceTabProps) {
         cleanData
       )
 
+      await createAuditLog(
+        firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'evidence_added',
+        'Evidencia añadida: ' + form.description,
+        { type: form.type, visibility: form.visibility }
+      )
+
       setForm({
         type: 'photo',
         description: '',
@@ -177,10 +187,20 @@ export function CaseEvidenceTab({ caseData }: CaseEvidenceTabProps) {
   }
 
   const handleDelete = async (evidenceId: string) => {
-    if (!firmId) return
+    if (!firmId || !user) return
     if (!confirm('¿Eliminar esta evidencia?')) return
     try {
       await deleteDoc(doc(db, 'firms', firmId, 'cases', caseData.id, 'evidence', evidenceId))
+
+      await createAuditLog(
+        firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'evidence_deleted',
+        'Evidencia eliminada'
+      )
+
       await load()
     } catch (err) {
       console.error(err)
@@ -222,7 +242,7 @@ export function CaseEvidenceTab({ caseData }: CaseEvidenceTabProps) {
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
           <h4 className="text-sm font-semibold text-slate-900 mb-4">Nueva evidencia</h4>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">Tipo</label>
                 <select
@@ -354,7 +374,7 @@ export function CaseEvidenceTab({ caseData }: CaseEvidenceTabProps) {
                     {TYPE_ICONS[ev.type]}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="text-sm font-medium text-slate-900">{TYPE_LABELS[ev.type]}</p>
                       <span className={`text-xs px-1.5 py-0.5 rounded border ${
                         ev.visibility === 'client'

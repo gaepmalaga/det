@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, FileText, CheckCircle, ExternalLink } from 'lucide-react'
 import { useCaseContracts } from '@/hooks/useContracts'
 import { createRegistryEntry } from '@/services/registry'
+import { createAuditLog } from '@/services/auditLog'
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -90,6 +91,17 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
         complianceIssues: [],
         updatedAt: serverTimestamp(),
       })
+
+      // Audit log al final, cuando todo ha ido bien
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'contract_signed',
+        'Contrato firmado por ' + signedByName,
+        { contractId, signedBy: signedByName }
+      )
 
       onCaseUpdated()
     } catch (err) {

@@ -13,70 +13,32 @@ import {
   LogOut,
   ChevronRight,
   Inbox,
+  X,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  {
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    to: ROUTES.DASHBOARD,
-  },
-  {
-    label: 'Solicitudes',
-    icon: Inbox,
-    to: ROUTES.LEADS,
-  },
-  {
-    label: 'Clientes',
-    icon: Users,
-    to: ROUTES.CLIENTS,
-  },
-  {
-    label: 'Pre-expedientes',
-    icon: FileSearch,
-    to: ROUTES.PRE_CASES,
-  },
-  {
-    label: 'Expedientes',
-    icon: FolderOpen,
-    to: ROUTES.CASES,
-  },
-  {
-    label: 'Libro-registro',
-    icon: BookOpen,
-    to: ROUTES.REGISTRY_BOOK,
-  },
-  {
-    label: 'Contratos',
-    icon: FileText,
-    to: ROUTES.CONTRACTS,
-  },
-  {
-    label: 'Informes',
-    icon: FileText,
-    to: ROUTES.REPORTS,
-  },
-  {
-    label: 'Cumplimiento',
-    icon: ShieldCheck,
-    to: ROUTES.COMPLIANCE,
-  },
-  {
-    label: 'Colaboradores',
-    icon: Handshake,
-    to: ROUTES.COLLABORATORS,
-  },
-  {
-    label: 'Equipo',
-    icon: Building2,
-    to: ROUTES.TEAM,
-  },
+  { label: 'Dashboard', icon: LayoutDashboard, to: ROUTES.DASHBOARD },
+  { label: 'Solicitudes', icon: Inbox, to: ROUTES.LEADS },
+  { label: 'Clientes', icon: Users, to: ROUTES.CLIENTS },
+  { label: 'Pre-expedientes', icon: FileSearch, to: ROUTES.PRE_CASES },
+  { label: 'Expedientes', icon: FolderOpen, to: ROUTES.CASES },
+  { label: 'Libro-registro', icon: BookOpen, to: ROUTES.REGISTRY_BOOK },
+  { label: 'Contratos', icon: FileText, to: ROUTES.CONTRACTS },
+  { label: 'Informes', icon: FileText, to: ROUTES.REPORTS },
+  { label: 'Cumplimiento', icon: ShieldCheck, to: ROUTES.COMPLIANCE },
+  { label: 'Colaboradores', icon: Handshake, to: ROUTES.COLLABORATORS },
+  { label: 'Equipo', icon: Building2, to: ROUTES.TEAM },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export function AppSidebar({ open, onClose }: AppSidebarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -85,13 +47,32 @@ export function AppSidebar() {
     navigate(ROUTES.LOGIN)
   }
 
+  const handleNavClick = () => {
+    // Cerrar sidebar en móvil al navegar
+    onClose()
+  }
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col">
-      {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
+    <aside
+      className={cn(
+        'fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col',
+        'transition-transform duration-200 ease-in-out',
+        'lg:translate-x-0',
+        open ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      {/* Logo + botón cerrar en móvil */}
+      <div className="h-14 lg:h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
         <span className="text-white font-semibold text-sm tracking-wide">
           DetectiveOS
         </span>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 text-slate-400 hover:text-white transition-colors"
+          aria-label="Cerrar menú"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -101,9 +82,10 @@ export function AppSidebar() {
             <li key={item.to}>
               <NavLink
                 to={item.to}
+                onClick={handleNavClick}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+                    'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
                     isActive
                       ? 'bg-slate-800 text-white'
                       : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -120,12 +102,13 @@ export function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-slate-800 p-3 space-y-0.5">
+      <div className="border-t border-slate-800 p-3 space-y-0.5 shrink-0">
         <NavLink
           to={ROUTES.SETTINGS}
+          onClick={handleNavClick}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+              'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
               isActive
                 ? 'bg-slate-800 text-white'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -141,10 +124,10 @@ export function AppSidebar() {
             <img
               src={user.photoURL}
               alt={user.displayName ?? ''}
-              className="w-6 h-6 rounded-full"
+              className="w-6 h-6 rounded-full shrink-0"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white">
+            <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white shrink-0">
               {user?.displayName?.[0] ?? '?'}
             </div>
           )}
@@ -155,7 +138,7 @@ export function AppSidebar() {
           </div>
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-slate-500 hover:text-slate-300 transition-colors shrink-0"
             title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />

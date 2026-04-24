@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FileText, Plus, CheckCircle, Send, AlertTriangle } from 'lucide-react'
 import { useCaseReport } from '@/hooks/useReports'
 import { useAuth } from '@/contexts/AuthContext'
+import { createAuditLog } from '@/services/auditLog'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { closeRegistryEntry } from '@/services/registry'
@@ -57,7 +58,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || !user.firmId) return
     setSubmitting(true)
     try {
       await create({
@@ -76,6 +77,16 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         conclusions: form.conclusions || undefined,
         observations: form.observations || undefined,
       })
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'report_created',
+        'Informe de investigación creado'
+      )
+
       setShowForm(false)
     } finally {
       setSubmitting(false)
@@ -104,10 +115,19 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   }
 
   const handleApprove = async () => {
-    if (!report) return
+    if (!report || !user || !user.firmId) return
     setSubmitting(true)
     try {
       await approve(report.id)
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'report_approved',
+        'Informe aprobado'
+      )
     } finally {
       setSubmitting(false)
     }
@@ -133,6 +153,16 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
       if (caseData.registryEntryId) {
         await closeRegistryEntry(user.firmId, caseData.registryEntryId)
       }
+
+      // Audit log de entrega
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'report_delivered',
+        'Informe entregado a ' + deliveredTo.trim()
+      )
 
       setShowDeliverForm(false)
       onCaseUpdated()
@@ -229,7 +259,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         </div>
 
         <form onSubmit={editing ? handleUpdate : handleCreate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1.5">
                 Nombre del contratante <span className="text-red-500">*</span>
@@ -372,9 +402,9 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
     return (
       <div className="space-y-6">
         {/* Header del informe */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="font-mono text-xs text-slate-400">{report.registryNumber}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${REPORT_STATUS_COLORS[report.status]}`}>
                 {REPORT_STATUS_LABELS[report.status]}
@@ -386,7 +416,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {report.status === 'borrador' && !isClosed && (
               <>
                 <button
@@ -462,7 +492,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
               Datos del contratante
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-500">Nombre</p>
                 <p className="text-sm text-slate-900 font-medium">{report.clientName}</p>

@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ─── ARCHIVOS DE DESPACHOS ────────────────────────────────────────────────
+    // Contratos, evidencias, documentos de expedientes
+    match /firms/{firmId}/{allPaths=**} {
+      // Leer: autenticado (miembros del despacho y clientes con acceso)
+      allow read: if request.auth != null;
+
+      // Escribir: solo autenticado
+      // La validación de permisos finos la hace Firestore, no Storage
+      allow write: if request.auth != null
+        && request.resource.size < 50 * 1024 * 1024; // máximo 50MB
+    }
+
+    // ─── ARCHIVOS PÚBLICOS ────────────────────────────────────────────────────
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

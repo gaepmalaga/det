@@ -37,7 +37,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
         <p className="text-sm text-slate-500 mt-1">
           {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
@@ -45,29 +45,29 @@ export function DashboardPage() {
       </div>
 
       {/* Métricas principales */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div
           onClick={() => navigate(ROUTES.CASES)}
-          className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition-colors"
+          className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors"
         >
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide leading-tight">
               Expedientes activos
             </p>
-            <FolderOpen className="w-4 h-4 text-slate-400" />
+            <FolderOpen className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
           <p className="text-3xl font-semibold text-slate-900">{activeCases.length}</p>
         </div>
 
         <div
           onClick={() => navigate(ROUTES.LEADS)}
-          className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition-colors"
+          className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors"
         >
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide leading-tight">
               Solicitudes nuevas
             </p>
-            <Inbox className="w-4 h-4 text-slate-400" />
+            <Inbox className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
           <p className="text-3xl font-semibold text-slate-900">{newLeads.length}</p>
           {pendingLeads.length > 0 && (
@@ -79,21 +79,25 @@ export function DashboardPage() {
 
         <div
           onClick={() => navigate(ROUTES.COMPLIANCE)}
-          className={`border rounded-xl p-5 cursor-pointer transition-colors ${
+          className={`border rounded-xl p-4 cursor-pointer transition-colors ${
             redCases.length > 0
               ? 'bg-red-50 border-red-200 hover:border-red-300'
               : 'bg-white border-slate-200 hover:border-slate-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
-            <p className={`text-xs font-medium uppercase tracking-wide ${
+          <div className="flex items-center justify-between mb-2">
+            <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${
               redCases.length > 0 ? 'text-red-600' : 'text-slate-500'
             }`}>
               Alertas críticas
             </p>
-            <ShieldAlert className={`w-4 h-4 ${redCases.length > 0 ? 'text-red-500' : 'text-slate-400'}`} />
+            <ShieldAlert className={`w-4 h-4 shrink-0 ${
+              redCases.length > 0 ? 'text-red-500' : 'text-slate-400'
+            }`} />
           </div>
-          <p className={`text-3xl font-semibold ${redCases.length > 0 ? 'text-red-700' : 'text-slate-900'}`}>
+          <p className={`text-3xl font-semibold ${
+            redCases.length > 0 ? 'text-red-700' : 'text-slate-900'
+          }`}>
             {redCases.length}
           </p>
           {amberCases.length > 0 && (
@@ -103,12 +107,12 @@ export function DashboardPage() {
           )}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide leading-tight">
               Total expedientes
             </p>
-            <TrendingUp className="w-4 h-4 text-slate-400" />
+            <TrendingUp className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
           <p className="text-3xl font-semibold text-slate-900">{cases.length}</p>
           <p className="text-xs text-slate-500 mt-1">
@@ -117,11 +121,13 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Expedientes activos recientes */}
-        <div className="col-span-2">
+      {/* Grid principal: 1 col móvil, 3 col desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Expedientes activos recientes — ocupa 2 cols en desktop */}
+        <div className="lg:col-span-2">
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
               <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <FolderOpen className="w-4 h-4 text-slate-400" />
                 Expedientes activos
@@ -135,7 +141,7 @@ export function DashboardPage() {
               </button>
             </div>
             {recentCases.length === 0 ? (
-              <div className="px-5 py-8 text-center">
+              <div className="px-4 py-8 text-center">
                 <p className="text-sm text-slate-400">No hay expedientes activos.</p>
                 <button
                   onClick={() => navigate(ROUTES.LEADS)}
@@ -145,50 +151,49 @@ export function DashboardPage() {
                 </button>
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-100">
-                  {recentCases.map((c) => (
-                    <tr
-                      key={c.id}
-                      onClick={() => navigate('/app/cases/' + c.id)}
-                      className="hover:bg-slate-50 cursor-pointer transition-colors"
-                    >
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`w-2 h-2 rounded-full shrink-0 ${
-                              c.complianceStatus === 'green'
-                                ? 'bg-green-500'
-                                : c.complianceStatus === 'amber'
-                                ? 'bg-amber-400'
-                                : 'bg-red-500'
-                            }`}
-                          />
-                          <div>
-                            <p className="font-medium text-slate-900">{c.investigationType}</p>
-                            <p className="text-xs text-slate-500 font-mono">{c.caseNumber}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <CaseStatusBadge status={c.status} />
-                      </td>
-                      <td className="px-5 py-3 text-xs text-slate-500">
+              <div className="divide-y divide-slate-100">
+                {recentCases.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => navigate('/app/cases/' + c.id)}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          c.complianceStatus === 'green'
+                            ? 'bg-green-500'
+                            : c.complianceStatus === 'amber'
+                            ? 'bg-amber-400'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-900 text-sm truncate">
+                          {c.investigationType}
+                        </p>
+                        <p className="text-xs text-slate-500 font-mono">{c.caseNumber}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <CaseStatusBadge status={c.status} />
+                      <span className="text-xs text-slate-400 hidden sm:block">
                         {format(c.createdAt, 'dd MMM yyyy', { locale: es })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
         {/* Panel lateral */}
         <div className="space-y-4">
+
           {/* Solicitudes pendientes */}
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
               <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <Inbox className="w-4 h-4 text-slate-400" />
                 Solicitudes
@@ -201,14 +206,14 @@ export function DashboardPage() {
               </button>
             </div>
             {newLeads.length === 0 && pendingLeads.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-slate-400">Sin solicitudes pendientes.</p>
+              <p className="px-4 py-4 text-sm text-slate-400">Sin solicitudes pendientes.</p>
             ) : (
               <div className="divide-y divide-slate-100">
                 {[...newLeads, ...pendingLeads].slice(0, 4).map((lead) => (
                   <div
                     key={lead.id}
                     onClick={() => navigate(ROUTES.LEADS + '/' + lead.id)}
-                    className="px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
                   >
                     <p className="text-sm font-medium text-slate-900 truncate">
                       {lead.contactName}
@@ -221,26 +226,26 @@ export function DashboardPage() {
           </div>
 
           {/* Acceso rápido */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-4">
             <h2 className="text-sm font-semibold text-slate-900 mb-3">Acceso rápido</h2>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <button
                 onClick={() => navigate(ROUTES.LEADS)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
               >
                 <Inbox className="w-4 h-4 text-slate-400" />
                 Nueva solicitud
               </button>
               <button
                 onClick={() => navigate(ROUTES.CASES)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
               >
                 <FolderOpen className="w-4 h-4 text-slate-400" />
                 Ver expedientes
               </button>
               <button
                 onClick={() => navigate(ROUTES.REGISTRY_BOOK)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
               >
                 <FileText className="w-4 h-4 text-slate-400" />
                 Libro-registro

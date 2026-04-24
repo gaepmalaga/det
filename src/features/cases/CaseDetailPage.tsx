@@ -36,7 +36,9 @@ export function CaseDetailPage() {
 
 const handleCaseUpdated = useCallback(() => {
   reload()
-  reloadDetail()
+  setTimeout(() => {
+    reloadDetail()
+  }, 500)
 }, [reload, reloadDetail])
 
   if (loading) return <LoadingSpinner />
@@ -56,48 +58,54 @@ const handleCaseUpdated = useCallback(() => {
     <div>
       <button
         onClick={() => navigate(ROUTES.CASES)}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a expedientes
       </button>
 
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <span className="font-mono text-xs text-slate-400">
-              {caseData.caseNumber}
-            </span>
-            <CaseStatusBadge status={caseData.status} />
-            <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${
-              caseData.complianceStatus === 'green'
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : caseData.complianceStatus === 'amber'
-                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                : 'bg-red-50 text-red-700 border-red-200'
-            }`}>
-              <ShieldCheck className="w-3 h-3" />
-              {COMPLIANCE_LABELS[caseData.complianceStatus]}
-            </span>
+      {/* Header */}
+      <div className="mb-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="font-mono text-xs text-slate-400">
+                {caseData.caseNumber}
+              </span>
+              <CaseStatusBadge status={caseData.status} />
+              <span
+                className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border ${
+                  caseData.complianceStatus === 'green'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : caseData.complianceStatus === 'amber'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
+                }`}
+              >
+                <ShieldCheck className="w-3 h-3" />
+                {COMPLIANCE_LABELS[caseData.complianceStatus]}
+              </span>
+            </div>
+            <h1 className="text-xl font-semibold text-slate-900">
+              {caseData.investigationType}
+            </h1>
+            {caseData.investigationTypeCustom && (
+              <p className="text-sm text-slate-500 mt-0.5">
+                {caseData.investigationTypeCustom}
+              </p>
+            )}
           </div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            {caseData.investigationType}
-          </h1>
-          {caseData.investigationTypeCustom && (
-            <p className="text-sm text-slate-500 mt-0.5">
-              {caseData.investigationTypeCustom}
-            </p>
-          )}
         </div>
 
+        {/* Botones de cambio de estado — flex wrap en móvil */}
         {nextStatuses.length > 0 && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {nextStatuses.map((s) => (
               <button
                 key={s}
                 onClick={() => handleStatusChange(s)}
                 disabled={changingStatus}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50 ${
+                className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50 ${
                   s === 'rechazado'
                     ? 'text-red-600 border-red-200 hover:bg-red-50'
                     : s === 'cerrado'
@@ -112,12 +120,13 @@ const handleCaseUpdated = useCallback(() => {
         )}
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
+      {/* Tabs — scroll horizontal en móvil */}
+      <div className="flex gap-1 border-b border-slate-200 mb-5 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'border-slate-900 text-slate-900'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -128,9 +137,12 @@ const handleCaseUpdated = useCallback(() => {
         ))}
       </div>
 
+      {/* Tab: Resumen */}
       {activeTab === 'resumen' && (
-        <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          {/* Columna principal — 2 cols en desktop */}
+          <div className="lg:col-span-2 space-y-4">
 
             {caseData.complianceIssues.length > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
@@ -149,13 +161,15 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             )}
 
-            <div className="bg-white border border-slate-200 rounded-xl p-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-slate-900 mb-4">Encargo</h3>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-slate-500 mb-1">Objeto y alcance</p>
                   <p className="text-sm text-slate-900 whitespace-pre-wrap">
-                    {caseData.objectScope || <span className="text-slate-400 italic">Sin definir</span>}
+                    {caseData.objectScope || (
+                      <span className="text-slate-400 italic">Sin definir</span>
+                    )}
                   </p>
                 </div>
                 <div>
@@ -166,7 +180,9 @@ const handleCaseUpdated = useCallback(() => {
                     )}
                   </p>
                   <p className="text-sm text-slate-900 whitespace-pre-wrap">
-                    {caseData.legitimateInterest || <span className="text-slate-400 italic">Sin documentar</span>}
+                    {caseData.legitimateInterest || (
+                      <span className="text-slate-400 italic">Sin documentar</span>
+                    )}
                   </p>
                 </div>
                 <div>
@@ -178,7 +194,7 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl p-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-slate-900 mb-4">
                 Historial de estados
               </h3>
@@ -194,7 +210,9 @@ const handleCaseUpdated = useCallback(() => {
                         <p className="text-xs text-slate-500">{entry.reason}</p>
                       )}
                       <p className="text-xs text-slate-400">
-                        {format(entry.changedAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}
+                        {format(entry.changedAt, "dd MMM yyyy 'a las' HH:mm", {
+                          locale: es,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -203,21 +221,30 @@ const handleCaseUpdated = useCallback(() => {
             </div>
           </div>
 
+          {/* Columna lateral */}
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Información</h3>
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+                Información
+              </h3>
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-slate-500">Apertura</p>
                   <p className="text-sm text-slate-700">
-                    {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                    {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", {
+                      locale: es,
+                    })}
                   </p>
                 </div>
                 {caseData.conservationDeadline && (
                   <div>
                     <p className="text-xs text-slate-500">Conservación hasta</p>
                     <p className="text-sm text-slate-700">
-                      {format(caseData.conservationDeadline, "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                      {format(
+                        caseData.conservationDeadline,
+                        "dd 'de' MMMM 'de' yyyy",
+                        { locale: es }
+                      )}
                     </p>
                   </div>
                 )}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Clock, MapPin, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { useCaseActions } from '@/hooks/useActions'
 import { useAuth } from '@/contexts/AuthContext'
+import { createAuditLog } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { RATE_TYPE_LABELS } from '@/constants/cases'
 import { format } from 'date-fns'
@@ -42,7 +43,6 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  // Calcular horas en tiempo real para mostrar en el formulario
   const previewHours = (() => {
     const [sh, sm] = form.startTime.split(':').map(Number)
     const [eh, em] = form.endTime.split(':').map(Number)
@@ -53,7 +53,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || !user.firmId) return
     setSubmitting(true)
     try {
       await create({
@@ -66,6 +66,22 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
         detectiveId: user.uid,
         detectiveTip: '',
       })
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'action_added',
+        `Actuación registrada el ${form.date}: ${previewHours}h en ${form.location}`,
+        {
+          date: form.date,
+          hours: String(previewHours),
+          rateType: form.rateType,
+          location: form.location,
+        }
+      )
+
       setShowForm(false)
       setForm({
         date: new Date().toISOString().split('T')[0],
@@ -81,8 +97,23 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
   }
 
   const handleRemove = async (actionId: string) => {
+    if (!user || !user.firmId) return
     if (!confirm('¿Eliminar esta actuación?')) return
-    await remove(actionId)
+    try {
+      await remove(actionId)
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'action_deleted',
+        'Actuación eliminada',
+        { actionId }
+      )
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   if (loading) return <LoadingSpinner />
@@ -123,7 +154,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
           <h4 className="text-sm font-semibold text-slate-900 mb-4">Nueva actuación</h4>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Fecha <span className="text-red-500">*</span>
@@ -258,11 +289,11 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
               className="bg-white border border-slate-200 rounded-xl overflow-hidden"
             >
               <div
-                className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
+                className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
                 onClick={() => setExpandedId(expandedId === action.id ? null : action.id)}
               >
-                <div className="flex items-center gap-4">
-                  <div className="text-center min-w-[48px]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="text-center shrink-0 min-w-[40px]">
                     <p className="text-xs font-semibold text-slate-900">
                       {format(action.date, 'dd', { locale: es })}
                     </p>
@@ -270,8 +301,8 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                       {format(action.date, 'MMM', { locale: es })}
                     </p>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-slate-500">
                         {action.startTime} — {action.endTime}
                       </span>
@@ -283,13 +314,13 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                       </span>
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-400" />
-                      <span className="text-xs text-slate-500">{action.location}</span>
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="text-xs text-slate-500 truncate">{action.location}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0 ml-2">
                   {!isClosed && (
                     <button
                       onClick={(e) => {
@@ -309,7 +340,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
               </div>
 
               {expandedId === action.id && (
-                <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
+                <div className="px-4 py-3 border-t border-slate-100 bg-slate-50">
                   <p className="text-xs text-slate-500 mb-1">Descripción</p>
                   <p className="text-sm text-slate-900 whitespace-pre-wrap">
                     {action.description}

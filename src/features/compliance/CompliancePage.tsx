@@ -58,32 +58,69 @@ export function CompliancePage() {
         description="Estado de cumplimiento normativo de los expedientes activos."
       />
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className={`rounded-xl p-5 border ${red.length > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
+      {/* Métricas — 1 col móvil, 3 col desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div
+          className={`rounded-xl p-4 border ${
+            red.length > 0
+              ? 'bg-red-50 border-red-200'
+              : 'bg-white border-slate-200'
+          }`}
+        >
           <div className="flex items-center gap-2 mb-2">
-            <ShieldAlert className={`w-4 h-4 ${red.length > 0 ? 'text-red-500' : 'text-slate-400'}`} />
-            <p className={`text-xs font-medium uppercase tracking-wide ${red.length > 0 ? 'text-red-600' : 'text-slate-500'}`}>
+            <ShieldAlert
+              className={`w-4 h-4 ${
+                red.length > 0 ? 'text-red-500' : 'text-slate-400'
+              }`}
+            />
+            <p
+              className={`text-xs font-medium uppercase tracking-wide ${
+                red.length > 0 ? 'text-red-600' : 'text-slate-500'
+              }`}
+            >
               Acción requerida
             </p>
           </div>
-          <p className={`text-3xl font-semibold ${red.length > 0 ? 'text-red-700' : 'text-slate-900'}`}>
+          <p
+            className={`text-3xl font-semibold ${
+              red.length > 0 ? 'text-red-700' : 'text-slate-900'
+            }`}
+          >
             {red.length}
           </p>
         </div>
 
-        <div className={`rounded-xl p-5 border ${amber.length > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-200'}`}>
+        <div
+          className={`rounded-xl p-4 border ${
+            amber.length > 0
+              ? 'bg-amber-50 border-amber-200'
+              : 'bg-white border-slate-200'
+          }`}
+        >
           <div className="flex items-center gap-2 mb-2">
-            <ShieldCheck className={`w-4 h-4 ${amber.length > 0 ? 'text-amber-500' : 'text-slate-400'}`} />
-            <p className={`text-xs font-medium uppercase tracking-wide ${amber.length > 0 ? 'text-amber-600' : 'text-slate-500'}`}>
+            <ShieldCheck
+              className={`w-4 h-4 ${
+                amber.length > 0 ? 'text-amber-500' : 'text-slate-400'
+              }`}
+            />
+            <p
+              className={`text-xs font-medium uppercase tracking-wide ${
+                amber.length > 0 ? 'text-amber-600' : 'text-slate-500'
+              }`}
+            >
               En revisión
             </p>
           </div>
-          <p className={`text-3xl font-semibold ${amber.length > 0 ? 'text-amber-700' : 'text-slate-900'}`}>
+          <p
+            className={`text-3xl font-semibold ${
+              amber.length > 0 ? 'text-amber-700' : 'text-slate-900'
+            }`}
+          >
             {amber.length}
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="w-4 h-4 text-slate-400" />
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
@@ -114,21 +151,32 @@ export function CompliancePage() {
               <div
                 key={alert.caseId}
                 onClick={() => navigate('/app/cases/' + alert.caseId)}
-                className={`rounded-xl border p-5 cursor-pointer transition-colors hover:opacity-90 ${config.bg} ${config.border}`}
+                className={`rounded-xl border p-4 cursor-pointer transition-colors hover:opacity-90 active:opacity-80 ${config.bg} ${config.border}`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${config.dot}`} />
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs text-slate-500">{alert.caseNumber}</span>
-                        <span className={`text-xs font-medium ${config.text}`}>{config.label}</span>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <span
+                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${config.dot}`}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-mono text-xs text-slate-500">
+                          {alert.caseNumber}
+                        </span>
+                        <span className={`text-xs font-medium ${config.text}`}>
+                          {config.label}
+                        </span>
                       </div>
-                      <p className="text-sm font-medium text-slate-900">{alert.investigationType}</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {alert.investigationType}
+                      </p>
                       {alert.issues.length > 0 && (
                         <ul className="mt-2 space-y-1">
                           {alert.issues.map((issue, i) => (
-                            <li key={i} className={`text-xs ${config.text}`}>
+                            <li
+                              key={i}
+                              className={`text-xs ${config.text}`}
+                            >
                               · {issue}
                             </li>
                           ))}

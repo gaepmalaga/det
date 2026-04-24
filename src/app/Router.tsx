@@ -20,6 +20,16 @@ import { PortalLayout } from '@/features/portal/PortalLayout'
 import { PortalDashboard } from '@/features/portal/PortalDashboard'
 import { PortalCaseDetail } from '@/features/portal/PortalCaseDetail'
 
+import { SuperadminLayout } from '@/features/superadmin/SuperadminLayout'
+import { SuperadminDashboard } from '@/features/superadmin/SuperadminDashboard'
+import { FirmsPage } from '@/features/superadmin/FirmsPage'
+import { FirmDetailPage } from '@/features/superadmin/FirmDetailPage'
+
+import { ReportsPage } from '@/features/reports/ReportsPage'
+
+import { CollaboratorsPage } from '@/features/collaborators/CollaboratorsPage'
+import { CollaboratorDetailPage } from '@/features/collaborators/CollaboratorDetailPage'
+
 const Placeholder = ({ name }: { name: string }) => (
   <div className="text-slate-500 text-sm">{name} — en construcción</div>
 )
@@ -50,9 +60,10 @@ export function AppRouter() {
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
           <Route path="registry-book" element={<RegistryBookPage />} />
           <Route path="contracts" element={<ContractsPage />} />
-          <Route path="reports" element={<Placeholder name="Informes" />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="compliance" element={<CompliancePage />} />
-          <Route path="collaborators" element={<Placeholder name="Colaboradores" />} />
+          <Route path="collaborators" element={<CollaboratorsPage />} />
+<Route path="collaborators/:collaboratorId" element={<CollaboratorDetailPage />} />
           <Route path="team" element={<Placeholder name="Equipo" />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
@@ -70,14 +81,20 @@ export function AppRouter() {
           <Route path="cases/:caseId" element={<PortalCaseDetail />} />
         </Route>
 
-        <Route
-          path="/superadmin"
-          element={
-            <RouteGuard allowedTypes={['superadmin']}>
-              <Placeholder name="Superadmin" />
-            </RouteGuard>
-          }
-        />
+<Route
+  path="/superadmin"
+  element={
+    <RouteGuard allowedTypes={['superadmin']}>
+      <SuperadminLayout />
+    </RouteGuard>
+  }
+>
+  <Route index element={<SuperadminDashboard />} />
+  <Route path="firms" element={<FirmsPage />} />
+  <Route path="firms/:firmId" element={<FirmDetailPage />} />
+  <Route path="plans" element={<Placeholder name="Planes y billing" />} />
+  <Route path="audit" element={<Placeholder name="Auditoría global" />} />
+</Route>
 
         <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
       </Routes>

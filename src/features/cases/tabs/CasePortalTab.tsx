@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useCasePortal } from '@/hooks/usePortal'
+import { useAuth } from '@/contexts/AuthContext'
+import { createAuditLog } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { Plus, X, FileText, MessageSquare, ExternalLink, UserCheck, UserX } from 'lucide-react'
+import { Plus, FileText, MessageSquare, ExternalLink, UserX } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Case } from '@/types'
@@ -12,6 +14,7 @@ interface CasePortalTabProps {
 }
 
 export function CasePortalTab({ caseData }: CasePortalTabProps) {
+  const { user } = useAuth()
   const { accesses, documents, messages, loading, error, grantAccess, revokeAccess, release, send } =
     useCasePortal(caseData.id)
   const [showAccessForm, setShowAccessForm] = useState(false)
@@ -24,9 +27,21 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
 
   const handleGrantAccess = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user?.firmId) return
     setSubmitting(true)
     try {
       await grantAccess(caseData.caseNumber, accessForm.email, accessForm.name)
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'portal_access_granted',
+        'Acceso al portal concedido a ' + accessForm.name,
+        { email: accessForm.email }
+      )
+
       setAccessForm({ email: '', name: '' })
       setShowAccessForm(false)
     } finally {
@@ -36,9 +51,21 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
 
   const handleReleaseDoc = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user?.firmId) return
     setSubmitting(true)
     try {
       await release(docForm)
+
+      await createAuditLog(
+        user.firmId,
+        caseData.id,
+        user.uid,
+        user.displayName || '',
+        'portal_document_released',
+        'Documento liberado al cliente: ' + docForm.name,
+        { type: docForm.type }
+      )
+
       setDocForm({ name: '', url: '', type: 'contract' })
       setShowDocForm(false)
     } finally {
@@ -86,7 +113,7 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
 
         {showAccessForm && (
           <form onSubmit={handleGrantAccess} className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Nombre del cliente <span className="text-red-500">*</span>
@@ -129,23 +156,17 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
             <p className="text-sm text-slate-400">Sin accesos configurados.</p>
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Cliente</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Email</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Estado</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Concedido</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {accesses.map((access) => (
-                  <tr key={access.id}>
-                    <td className="px-4 py-3 font-medium text-slate-900">{access.clientName}</td>
-                    <td className="px-4 py-3 text-slate-600">{access.clientEmail}</td>
-                    <td className="px-4 py-3">
+          <>
+            {/* Cards en móvil */}
+            <div className="space-y-2 md:hidden">
+              {accesses.map((access) => (
+                <div key={access.id} className="bg-white border border-slate-200 rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{access.clientName}</p>
+                      <p className="text-xs text-slate-500">{access.clientEmail}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
                         access.isActive
                           ? 'bg-green-50 text-green-700 border-green-200'
@@ -153,26 +174,66 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
                       }`}>
                         {access.isActive ? 'Activo' : 'Revocado'}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
-                      {format(access.createdAt, 'dd MMM yyyy', { locale: es })}
-                    </td>
-                    <td className="px-4 py-3">
                       {access.isActive && (
-                        <button
-                          onClick={() => revokeAccess(access.id)}
-                          className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-                          title="Revocar acceso"
-                        >
+                        <button onClick={() => revokeAccess(access.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
                           <UserX className="w-4 h-4" />
                         </button>
                       )}
-                    </td>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Concedido el {format(access.createdAt, 'dd MMM yyyy', { locale: es })}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabla en desktop */}
+            <div className="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Cliente</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Email</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Estado</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Concedido</th>
+                    <th className="px-4 py-3" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {accesses.map((access) => (
+                    <tr key={access.id}>
+                      <td className="px-4 py-3 font-medium text-slate-900">{access.clientName}</td>
+                      <td className="px-4 py-3 text-slate-600">{access.clientEmail}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                          access.isActive
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-slate-50 text-slate-500 border-slate-200'
+                        }`}>
+                          {access.isActive ? 'Activo' : 'Revocado'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500">
+                        {format(access.createdAt, 'dd MMM yyyy', { locale: es })}
+                      </td>
+                      <td className="px-4 py-3">
+                        {access.isActive && (
+                          <button
+                            onClick={() => revokeAccess(access.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Revocar acceso"
+                          >
+                            <UserX className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -198,7 +259,7 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
 
         {showDocForm && (
           <form onSubmit={handleReleaseDoc} className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Nombre del documento <span className="text-red-500">*</span>
@@ -212,9 +273,7 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Tipo
-                </label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Tipo</label>
                 <select
                   value={docForm.type}
                   onChange={(e) => setDocForm((p) => ({ ...p, type: e.target.value as PortalDocument['type'] }))}
@@ -259,18 +318,18 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            {documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{doc.name}</p>
+            {documents.map((document) => (
+              <div key={document.id} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-900 truncate">{document.name}</p>
                     <p className="text-xs text-slate-500">
-                      Liberado el {format(doc.releasedAt, 'dd MMM yyyy', { locale: es })}
+                      Liberado el {format(document.releasedAt, 'dd MMM yyyy', { locale: es })}
                     </p>
                   </div>
                 </div>
-                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                <a href={document.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline shrink-0 ml-3">
                   <ExternalLink className="w-3 h-3" />
                   Ver
                 </a>
@@ -306,18 +365,13 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
             ) : (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 max-h-64 overflow-y-auto">
                 {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.fromClient ? 'justify-start' : 'justify-end'}`}
-                  >
+                  <div key={msg.id} className={`flex ${msg.fromClient ? 'justify-start' : 'justify-end'}`}>
                     <div className={`max-w-xs px-4 py-2 rounded-xl text-sm ${
-                      msg.fromClient
-                        ? 'bg-slate-100 text-slate-900'
-                        : 'bg-slate-900 text-white'
+                      msg.fromClient ? 'bg-slate-100 text-slate-900' : 'bg-slate-900 text-white'
                     }`}>
                       <p className="text-xs font-medium mb-1 opacity-70">{msg.senderName}</p>
                       <p>{msg.content}</p>
-                      <p className={`text-xs mt-1 opacity-60`}>
+                      <p className="text-xs mt-1 opacity-60">
                         {format(msg.createdAt, 'dd MMM HH:mm', { locale: es })}
                       </p>
                     </div>

@@ -1,0 +1,298 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid));
+    }
+
+    function isMemberOf(firmId) {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/firms/$(firmId)/members/$(request.auth.uid));
+    }
+
+    function getMember(firmId) {
+      return get(/databases/$(database)/documents/firms/$(firmId)/members/$(request.auth.uid)).data;
+    }
+
+    function hasRole(firmId, roles) {
+      return isMemberOf(firmId) && getMember(firmId).role in roles;
+    }
+
+    function isOwner(firmId) {
+      return hasRole(firmId, ['firm_owner']);
+    }
+
+    function isOwnerOrDirector(firmId) {
+      return hasRole(firmId, ['firm_owner', 'firm_director']);
+    }
+
+    function isActiveMember(firmId) {
+      return isMemberOf(firmId) && getMember(firmId).isActive == true;
+    }
+
+    // ─── PLATFORM ADMINS ─────────────────────────────────────────────────────
+
+    match /platformAdmins/{userId} {
+      allow read: if isSuperAdmin() || request.auth.uid == userId;
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── USER FIRM INDEX ─────────────────────────────────────────────────────
+
+    match /userFirmIndex/{userId} {
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow create: if isAuth() && request.auth.uid == userId;
+      allow update: if isAuth() && request.auth.uid == userId;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── PORTAL CLIENTS ──────────────────────────────────────────────────────
+
+    match /portalClients/{docId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── PLANS ───────────────────────────────────────────────────────────────
+
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── PLATFORM SETTINGS ───────────────────────────────────────────────────
+
+    match /platformSettings/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── SUPPORT TICKETS ─────────────────────────────────────────────────────
+
+    match /supportTickets/{ticketId} {
+      allow read: if isSuperAdmin() ||
+        (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── AUDIT PLATFORM ──────────────────────────────────────────────────────
+
+    match /auditPlatform/{logId} {
+      allow read: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── FIRMS ───────────────────────────────────────────────────────────────
+
+    match /firms/{firmId} {
+      allow read: if isSuperAdmin() || isActiveMember(firmId);
+      allow create: if isAuth();
+      allow update: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      allow delete: if isSuperAdmin();
+
+      // ── MEMBERS ──────────────────────────────────────────────────────────
+
+      match /members/{memberId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isSuperAdmin() ||
+          isOwnerOrDirector(firmId) ||
+          (isAuth() && request.auth.uid == request.resource.data.userId);
+        allow update: if isSuperAdmin() ||
+          isOwnerOrDirector(firmId) ||
+          (isAuth() && resource.data.userId == request.auth.uid);
+        allow delete: if isSuperAdmin() || isOwner(firmId);
+      }
+
+      // ── BRANCHES ─────────────────────────────────────────────────────────
+
+      match /branches/{branchId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        allow update: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        allow delete: if isSuperAdmin() || isOwner(firmId);
+      }
+
+      // ── CLIENTS ──────────────────────────────────────────────────────────
+
+      match /clients/{clientId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      }
+
+      // ── LEADS ────────────────────────────────────────────────────────────
+
+      match /leads/{leadId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      }
+
+      // ── PRE-CASES ────────────────────────────────────────────────────────
+
+      match /preCases/{preCaseId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      }
+
+      // ── CASES ────────────────────────────────────────────────────────────
+
+      match /cases/{caseId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwner(firmId);
+
+        // Actuaciones
+        match /actions/{actionId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        }
+
+        // Evidencias
+        match /evidence/{evidenceId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        }
+
+        // Informes
+        match /reports/{reportId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isSuperAdmin() || isOwner(firmId);
+        }
+
+        // Sujetos investigados
+        match /subjects/{subjectId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        }
+
+        // Hojas de encargo
+        match /assignmentOrders/{orderId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+        }
+
+        // Portal — accesos
+        match /portalAccess/{accessId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        }
+
+        // Portal — documentos liberados
+        match /portalDocuments/{docId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+          allow create: if isActiveMember(firmId);
+          allow update: if isActiveMember(firmId);
+          allow delete: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        }
+
+        // Portal — mensajes
+        match /portalMessages/{messageId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+          allow create: if isAuth();
+          allow update: if isActiveMember(firmId);
+          allow delete: if false;
+        }
+
+        // Audit logs por expediente — inmutables
+        match /auditLogs/{logId} {
+          allow read: if isSuperAdmin() || isActiveMember(firmId);
+          allow create: if isActiveMember(firmId);
+          allow update: if false;
+          allow delete: if false;
+        }
+      }
+
+      // ── CONTRACTS ────────────────────────────────────────────────────────
+
+      match /contracts/{contractId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      }
+
+      // ── FRAMEWORK CONTRACTS ──────────────────────────────────────────────
+
+      match /frameworkContracts/{contractId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow update: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow delete: if isSuperAdmin() || isOwner(firmId);
+      }
+
+      // ── COLLABORATING FIRMS ──────────────────────────────────────────────
+
+      match /collaboratingFirms/{collabId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow update: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow delete: if isSuperAdmin() || isOwner(firmId);
+      }
+
+      // ── REGISTRY BOOKS ───────────────────────────────────────────────────
+
+      match /registryBooks/{bookId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin();
+      }
+
+      // ── ANNUAL MEMORIES ──────────────────────────────────────────────────
+
+      match /annualMemories/{memoryId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow update: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow delete: if isSuperAdmin();
+      }
+
+      // ── AUDIT LOGS DEL DESPACHO ───────────────────────────────────────────
+
+      match /auditLogs/{logId} {
+        allow read: if isSuperAdmin() ||
+          hasRole(firmId, ['firm_owner', 'firm_director', 'compliance_officer']);
+        allow create: if isActiveMember(firmId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      // ── CLIENT PORTAL MESSAGES (legacy) ──────────────────────────────────
+
+      match /clientPortalMessages/{messageId} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create: if isActiveMember(firmId);
+        allow update: if isActiveMember(firmId);
+        allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
+      }
+    }
+  }
+}
