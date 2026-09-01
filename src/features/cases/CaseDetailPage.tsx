@@ -159,7 +159,7 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             )}
 
-            <div className="bg-card border border-border rounded-xl p-5">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-4">Encargo</h3>
               <div className="space-y-4">
                 <div>
@@ -192,7 +192,7 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-5">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Historial de estados
               </h3>
@@ -221,7 +221,7 @@ const handleCaseUpdated = useCallback(() => {
 
           {/* Columna lateral */}
           <div className="space-y-4">
-            <div className="bg-card border border-border rounded-xl p-5">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Información
               </h3>

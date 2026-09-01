@@ -114,7 +114,7 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
           {/* Cards en móvil */}
           <div className="space-y-2 md:hidden">
             {accesses.map((access) => (
-              <div key={access.id} className="bg-card border border-border rounded-xl p-4">
+              <div key={access.id} className="bg-card border border-border rounded-xl p-4 shadow-sm">
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <p className="text-sm font-medium text-foreground">{access.clientName}</p>
@@ -143,10 +143,10 @@ export function CasePortalTab({ caseData }: CasePortalTabProps) {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-muted/60">
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Cliente</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Estado</th>

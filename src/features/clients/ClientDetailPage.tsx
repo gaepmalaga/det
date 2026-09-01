@@ -71,15 +71,15 @@ export function ClientDetailPage() {
 
       {/* Métricas rápidas */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-card border border-border rounded-xl p-4 text-center">
+        <div className="bg-card border border-border rounded-xl p-4 text-center shadow-sm">
           <p className="text-2xl font-semibold text-foreground">{clientCases.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Total expedientes</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4 text-center">
+        <div className="bg-card border border-border rounded-xl p-4 text-center shadow-sm">
           <p className="text-2xl font-semibold text-foreground">{activeCases.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Activos</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4 text-center">
+        <div className="bg-card border border-border rounded-xl p-4 text-center shadow-sm">
           <p className="text-2xl font-semibold text-foreground">{closedCases.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Cerrados</p>
         </div>
@@ -92,7 +92,7 @@ export function ClientDetailPage() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Expedientes */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <FolderOpen className="w-4 h-4 text-muted-foreground" />
               Expedientes
@@ -146,7 +146,7 @@ export function ClientDetailPage() {
         <div className="space-y-4">
 
           {/* Datos de contacto */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <User className="w-4 h-4 text-muted-foreground" />
               Contacto
@@ -183,7 +183,7 @@ export function ClientDetailPage() {
 
           {/* Dirección si existe */}
 {(client as unknown as { address?: string }).address && (
-  <div className="bg-card border border-border rounded-xl p-5">
+  <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
     <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
       <MapPin className="w-4 h-4 text-muted-foreground" />
       Dirección
@@ -195,7 +195,7 @@ export function ClientDetailPage() {
 )}
 
           {/* Portal cliente */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-muted-foreground" />
               Portal cliente
@@ -224,7 +224,7 @@ export function ClientDetailPage() {
           </div>
 
           {/* Información general */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-muted-foreground" />
               Información

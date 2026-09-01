@@ -176,7 +176,7 @@ export function CollaboratorDetailPage() {
         {/* Columna principal */}
         <div className="lg:col-span-2">
           {editing ? (
-            <form onSubmit={handleSave} className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <form onSubmit={handleSave} className="bg-card border border-border rounded-xl p-6 space-y-4 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-2">
                 Editar colaborador
               </h3>
@@ -328,7 +328,7 @@ export function CollaboratorDetailPage() {
               </div>
             </form>
           ) : (
-            <div className="bg-card border border-border rounded-xl divide-y divide-border">
+            <div className="bg-card border border-border rounded-xl divide-y divide-border shadow-sm">
               <div className="p-5">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Identificación
@@ -408,7 +408,7 @@ export function CollaboratorDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-muted-foreground" />
               Información

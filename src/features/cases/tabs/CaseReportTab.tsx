@@ -528,7 +528,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         )}
 
         {/* Contenido del informe */}
-        <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        <div className="bg-card border border-border rounded-xl divide-y divide-border shadow-sm">
           <div className="p-5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Datos del contratante

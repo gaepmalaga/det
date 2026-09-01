@@ -110,7 +110,7 @@ export function CollaboratorsPage() {
 
       {/* Formulario de creación */}
       {showForm && (
-        <div className="bg-card border border-border rounded-xl p-6 mb-6">
+        <div className="bg-card border border-border rounded-xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-sm font-semibold text-foreground">
               Nuevo despacho colaborador
@@ -353,7 +353,7 @@ export function CollaboratorsPage() {
               <div
                 key={c.id}
                 onClick={() => navigate('/app/collaborators/' + c.id)}
-                className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors active:bg-muted"
+                className="bg-card border border-border rounded-xl p-4 shadow-sm cursor-pointer hover:border-primary/20 hover:shadow-md transition-all active:bg-muted"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
@@ -388,10 +388,10 @@ export function CollaboratorsPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-muted/60">
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Despacho
                   </th>

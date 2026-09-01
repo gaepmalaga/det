@@ -103,7 +103,7 @@ export function RegistryBookPage() {
             {filtered.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-card border border-border rounded-xl p-4"
+                className="bg-card border border-border rounded-xl p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
@@ -189,10 +189,10 @@ export function RegistryBookPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-muted/60">
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide w-16">
                     Nº
                   </th>

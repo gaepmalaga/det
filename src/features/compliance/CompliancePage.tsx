@@ -120,7 +120,7 @@ export function CompliancePage() {
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

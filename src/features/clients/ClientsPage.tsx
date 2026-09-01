@@ -97,7 +97,7 @@ export function ClientsPage() {
               <div
                 key={client.id}
                 onClick={() => navigate('/app/clients/' + client.id)}
-                className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors active:bg-muted"
+                className="bg-card border border-border rounded-xl p-4 shadow-sm cursor-pointer hover:border-primary/20 hover:shadow-md transition-all active:bg-muted"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -131,10 +131,10 @@ export function ClientsPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-muted/60">
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Cliente
                   </th>

@@ -92,7 +92,7 @@ export function ContactDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <User className="w-4 h-4 text-muted-foreground" />
               Contacto
@@ -120,7 +120,7 @@ export function ContactDetailPage() {
             </div>
           )}
 
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4">Información</h2>
             <div className="space-y-3">
               <div>

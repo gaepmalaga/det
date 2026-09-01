@@ -45,7 +45,7 @@ export function ContractsPage() {
             {contracts.map((c) => (
               <div
                 key={c.id}
-                className="bg-card border border-border rounded-xl p-4"
+                className="bg-card border border-border rounded-xl p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
@@ -76,10 +76,10 @@ export function ContractsPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted">
+                <tr className="border-b border-border bg-muted/60">
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Referencia
                   </th>

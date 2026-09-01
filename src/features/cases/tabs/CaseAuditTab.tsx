@@ -155,7 +155,7 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
       )}
 
       {/* Historial de estados del expediente */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-3 border-b border-border bg-muted">
           <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Historial de estados
@@ -215,7 +215,7 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
       </div>
 
       {/* Logs de Firestore */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
           <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-2">
             <ScrollText className="w-3.5 h-3.5" />

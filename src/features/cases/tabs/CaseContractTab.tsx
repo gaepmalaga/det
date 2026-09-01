@@ -175,7 +175,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
       ) : (
         <div className="space-y-3">
           {contracts.map((contract) => (
-            <div key={contract.id} className="bg-card border border-border rounded-xl p-5">
+            <div key={contract.id} className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">

@@ -25,7 +25,7 @@ export function QuoteCard({ quote, contactName, onContactClick, onAccept, onReje
   const isPending = quote.status === 'enviado'
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">

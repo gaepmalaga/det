@@ -737,3 +737,27 @@ usuario amplíe el rol del service account en la consola de Google
 Cloud (IAM) si quiere que ese target también se automatice; mientras
 tanto habría que desplegarlas a mano una vez desde una máquina con
 `firebase login`.
+
+**Cuarta pasada — resto de pantallas de layout (2026-09-01)**: mientras
+se verificaba el deploy del fix de reglas, se continuó con el mismo
+tratamiento de elevación (`shadow-sm`, `hover:shadow-md` en filas/
+tarjetas interactivas, cabeceras de tabla `bg-muted/60`, buscadores con
+`shadow-sm`) en el resto de pantallas que solo tenían el color de la
+pasada mecánica: Contactos, Presupuestos (`QuotesPage`, `QuoteCard`),
+Clientes, Colaboradores, Cumplimiento, Contratos, Informes,
+Libro-registro, y `CaseDetailPage` con sus 5 pestañas (Actuaciones,
+Auditoría, Contrato, Portal, Informe). Aplicado con un script de
+sustitución por patrones exactos de clase (igual que la pasada de
+color), más algunos ajustes a mano donde el patrón no coincidía
+exactamente (indentación distinta o clases adicionales en la misma
+tarjeta). Sin cambios de datos ni comportamiento.
+
+Con esto, **todas las pantallas de la app comparten ya el mismo
+lenguaje visual** (color + elevación) — la única pantalla con un nivel
+de layout claramente superior sigue siendo login (degradado, marca de
+agua, tipografía a medida), que se dejó así deliberadamente como pieza
+de bienvenida más elaborada, no como inconsistencia.
+
+Verificado build/lint limpios (16 problemas preexistentes, cero
+nuevos). Sin verificación visual posible por la misma limitación de
+red de siempre.
