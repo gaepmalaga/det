@@ -396,3 +396,38 @@ seguimiento de implementación (§8).
 - El siguiente paso natural: cerrar la firma-por-link pendiente de esta
   fase, o seguir con la Fase 5 (colaboradores híbridos, contrato marco
   del cliente habitual, estadísticas).
+
+## Incidente — producción caída (2026-09-01)
+
+Entre el commit `c116c7a` (fix del `.env`, ~08:29 UTC) y `b5a1a9f`
+(~10:37 UTC), **todos los despliegues a producción sirvieron una
+pantalla en blanco**. Causa: al dejar de trackear `.env` (correcto —
+tenía credenciales expuestas) no se dejó ninguna fuente alternativa
+para `VITE_FIREBASE_*` en el build de CI. `src/lib/firebase.ts` llama
+a `initializeApp()`/`getAuth()` en el nivel superior del módulo con un
+`firebaseConfig` completamente `undefined`; eso lanza en cuanto se
+carga el bundle, antes de que React monte nada — de ahí el blanco sin
+ningún error visible en pantalla (sí había error en la consola del
+navegador, pero nadie lo estaba mirando en un móvil).
+
+No se detectó porque `npm run build`/`npm run lint` no ejecutan la
+app — verifican tipos y estilo, no que Firebase se inicialice
+correctamente — y porque todas mis pruebas en navegador headless
+usaban el `.env` local de este entorno (con credenciales reales), que
+nunca refleja lo que ve el build de CI. Tampoco pude verlo yo mismo en
+`detectivesprivadosesp.web.app` porque el proxy de red de este entorno
+bloquea ese dominio por política.
+
+**Arreglado en `b5a1a9f`**: el paso "Build" de ambos workflows
+(`firebase-hosting-merge.yml`, `firebase-hosting-pull-request.yml`)
+ahora inyecta `VITE_FIREBASE_*` desde GitHub Actions Secrets
+(`Settings → Secrets and variables → Actions`, 6 secretos con el mismo
+nombre que las variables). El usuario los añadió a mano — no hay
+herramienta disponible para crearlos por API — y se disparó un nuevo
+despliegue para recogerlos.
+
+**Lección para el futuro**: cualquier cambio a la configuración de
+build/despliegue (variables de entorno, secretos, workflows) necesita
+una verificación explícita de que el sitio carga de verdad después del
+deploy — build/lint limpios no son suficiente señal cuando lo que
+cambia es precisamente la infraestructura que build/lint no ejercitan.
