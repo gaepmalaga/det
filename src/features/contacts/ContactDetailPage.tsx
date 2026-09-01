@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { CreateQuoteDialog } from '@/features/quotes/CreateQuoteDialog'
 import { QuoteCard } from '@/features/quotes/QuoteCard'
-import { ConvertQuoteToCaseDialog } from '@/features/quotes/ConvertQuoteToCaseDialog'
+import { AcceptQuoteDialog } from '@/features/quotes/AcceptQuoteDialog'
 import { ROUTES } from '@/constants/routes'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -17,7 +17,7 @@ export function ContactDetailPage() {
   const { contactId } = useParams<{ contactId: string }>()
   const navigate = useNavigate()
   const { contact, loading, error } = useContactDetail(contactId ?? '')
-  const { quotes, loading: quotesLoading, create, reject, accept } = useContactQuotes(contactId ?? '')
+  const { quotes, loading: quotesLoading, create, reject } = useContactQuotes(contactId ?? '')
   const [showCreateQuote, setShowCreateQuote] = useState(false)
   const [acceptingQuote, setAcceptingQuote] = useState<Quote | null>(null)
 
@@ -146,15 +146,14 @@ export function ContactDetailPage() {
       />
 
       {acceptingQuote && (
-        <ConvertQuoteToCaseDialog
+        <AcceptQuoteDialog
           open={true}
           quote={acceptingQuote}
           contact={contact}
           onClose={() => setAcceptingQuote(null)}
-          onConverted={async (caseId) => {
-            await accept(acceptingQuote.id, caseId)
+          onDone={() => {
             setAcceptingQuote(null)
-            navigate('/app/cases/' + caseId)
+            navigate(ROUTES.CONTRACTS)
           }}
         />
       )}

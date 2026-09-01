@@ -7,6 +7,7 @@ import {
   rejectQuote,
   acceptQuote,
   type CreateQuoteData,
+  type AcceptQuoteData,
 } from '@/services/quotes'
 import type { Quote } from '@/types'
 
@@ -61,10 +62,10 @@ export function useQuotes() {
     }
   }
 
-  const accept = async (quoteId: string, caseId: string) => {
+  const accept = async (quoteId: string, data: AcceptQuoteData) => {
     if (!firmId) return
     try {
-      await acceptQuote(firmId, quoteId, caseId)
+      await acceptQuote(firmId, quoteId, data)
       await load()
     } catch (err) {
       console.error(err)
@@ -126,10 +127,10 @@ export function useContactQuotes(contactId: string) {
     }
   }
 
-  const accept = async (quoteId: string, caseId: string) => {
+  const accept = async (quoteId: string, data: AcceptQuoteData) => {
     if (!firmId) return
     try {
-      await acceptQuote(firmId, quoteId, caseId)
+      await acceptQuote(firmId, quoteId, data)
       await load()
     } catch (err) {
       console.error(err)

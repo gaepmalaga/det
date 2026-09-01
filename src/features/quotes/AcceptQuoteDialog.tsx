@@ -1,59 +1,58 @@
 import { useState } from 'react'
 import { X, AlertTriangle } from 'lucide-react'
-import { useCases } from '@/hooks/useCases'
+import { useQuotes } from '@/hooks/useQuotes'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/services/clients'
+import { setQuoteContract } from '@/services/quotes'
+import { createContract } from '@/services/contracts'
+import { ContractForm } from '@/features/contracts/ContractForm'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
+import type { CreateContractData } from '@/services/contracts'
 import type { Contact, Quote } from '@/types'
 
-interface ConvertQuoteToCaseDialogProps {
+interface AcceptQuoteDialogProps {
   open: boolean
   quote: Quote
   contact: Contact
   onClose: () => void
-  onConverted: (caseId: string) => void
+  onDone: (contractId: string) => void
 }
 
-export function ConvertQuoteToCaseDialog({
+// Paso 1: datos legales del futuro expediente (no se crea todavía — el
+// expediente se abre solo cuando el contrato quede firmado, ver
+// services/caseOpening.ts). Paso 2: el contrato en sí, reutilizando el
+// mismo formulario que se usa desde Contratos.
+export function AcceptQuoteDialog({
   open,
   quote,
   contact,
   onClose,
-  onConverted,
-}: ConvertQuoteToCaseDialogProps) {
-  const { create } = useCases()
+  onDone,
+}: AcceptQuoteDialogProps) {
+  const { accept } = useQuotes()
   const { user } = useAuth()
+  const [step, setStep] = useState<'legal' | 'contract'>('legal')
   const [loading, setLoading] = useState(false)
+  const [clientId, setClientId] = useState<string | null>(null)
   const [form, setForm] = useState({
-    investigationType: quote.investigationType,
-    investigationTypeCustom: quote.investigationTypeCustom ?? '',
-    description: quote.description,
     objectScope: '',
     legitimateInterest: '',
     investigatedName: '',
     investigatedAddress: '',
   })
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitLegal = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (loading) return
-    if (!user || !user.firmId) return
+    if (loading || !user?.firmId) return
     setLoading(true)
     try {
-      // 1. Crear cliente automáticamente desde los datos del contacto
-      const clientId = await createClient(user.firmId, user.uid, {
+      const newClientId = await createClient(user.firmId, user.uid, {
         clientType: contact.contactType,
         legalName: contact.contactType === 'corporate' && contact.companyName
           ? contact.companyName
@@ -66,28 +65,45 @@ export function ConvertQuoteToCaseDialog({
         convertedFromContactId: contact.id,
       })
 
-      // 2. Crear el expediente vinculado al cliente y al presupuesto aceptado
-      const caseId = await create({
-        investigationType: form.investigationType,
-        investigationTypeCustom: form.investigationTypeCustom || undefined,
-        description: form.description,
+      await accept(quote.id, {
+        clientId: newClientId,
         objectScope: form.objectScope,
         legitimateInterest: form.legitimateInterest,
         investigatedName: form.investigatedName,
         investigatedAddress: form.investigatedAddress,
         assignedDetectiveId: user.uid,
         assignedDetectiveTip: '',
-        quoteId: quote.id,
-        clientId,
       })
 
-      if (caseId) onConverted(caseId)
+      setClientId(newClientId)
+      setStep('contract')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleCreateContract = async (data: CreateContractData) => {
+    if (!user?.firmId) return
+    const contractId = await createContract(user.firmId, user.uid, data)
+    await setQuoteContract(user.firmId, quote.id, contractId)
+    onDone(contractId)
+  }
+
   if (!open) return null
+
+  if (step === 'contract' && clientId) {
+    return (
+      <ContractForm
+        open
+        onClose={onClose}
+        onCreate={handleCreateContract}
+        defaultServiceDescription={quote.description}
+        defaultAgreedPrice={quote.amount ? String(quote.amount) : ''}
+        clientId={clientId}
+        quoteId={quote.id}
+      />
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -95,38 +111,39 @@ export function ConvertQuoteToCaseDialog({
       <div className="relative bg-card rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-base font-semibold text-foreground">
-            Aceptar presupuesto y crear expediente
+            Aceptar presupuesto
           </h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmitLegal} className="p-6 space-y-4">
           <div className="flex gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-xs text-amber-800">
-              Se creará automáticamente una ficha de cliente con los datos del contacto.
-              Podrás completarla después desde el módulo de Clientes.
+              Se creará una ficha de cliente y, en el siguiente paso, el
+              contrato para firmar. El expediente se abrirá solo cuando el
+              contrato quede firmado.
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5">
-              Tipo de investigación <span className="text-red-500">*</span>
+              Tipo de investigación
             </label>
             <select
-              name="investigationType"
-              value={form.investigationType}
-              onChange={handleSelectChange}
-              required
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              disabled
+              value={quote.investigationType}
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-muted text-muted-foreground"
             >
-              <option value="">Seleccionar...</option>
               {SYSTEM_INVESTIGATION_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Del presupuesto — no se puede cambiar aquí.
+            </p>
           </div>
 
           <div>
@@ -136,7 +153,7 @@ export function ConvertQuoteToCaseDialog({
             <textarea
               name="objectScope"
               value={form.objectScope}
-              onChange={handleTextareaChange}
+              onChange={handleChange}
               required
               rows={3}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
@@ -151,7 +168,7 @@ export function ConvertQuoteToCaseDialog({
             <textarea
               name="legitimateInterest"
               value={form.legitimateInterest}
-              onChange={handleTextareaChange}
+              onChange={handleChange}
               required
               rows={3}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
@@ -170,7 +187,7 @@ export function ConvertQuoteToCaseDialog({
               <input
                 name="investigatedName"
                 value={form.investigatedName}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre y apellidos o razón social"
@@ -183,7 +200,7 @@ export function ConvertQuoteToCaseDialog({
               <input
                 name="investigatedAddress"
                 value={form.investigatedAddress}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Del investigado"
@@ -192,19 +209,6 @@ export function ConvertQuoteToCaseDialog({
             <p className="sm:col-span-2 text-xs text-muted-foreground -mt-1">
               Requisito legal para el libro-registro (Anexo VII).
             </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Descripción
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleTextareaChange}
-              rows={2}
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
-            />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -220,7 +224,7 @@ export function ConvertQuoteToCaseDialog({
               disabled={loading}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {loading ? 'Creando...' : 'Crear expediente'}
+              {loading ? 'Guardando...' : 'Continuar al contrato'}
             </button>
           </div>
         </form>

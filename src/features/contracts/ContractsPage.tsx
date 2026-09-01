@@ -1,10 +1,17 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useContracts } from '@/hooks/useContracts'
+import { useAuth } from '@/contexts/AuthContext'
+import { openCaseFromContract } from '@/services/caseOpening'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { FileText } from 'lucide-react'
+import { SignContractDialog } from './SignContractDialog'
+import { FileText, CheckCircle, Link as LinkIcon, FolderOpen, ArrowRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { ROUTES } from '@/constants/routes'
+import type { Contract } from '@/services/contracts'
 
 const STATUS_LABELS = {
   borrador: 'Borrador',
@@ -21,7 +28,58 @@ const STATUS_COLORS = {
 }
 
 export function ContractsPage() {
-  const { contracts, loading } = useContracts()
+  const { contracts, loading, sign, uploadDocument, reload } = useContracts()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [openingId, setOpeningId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const copySignLink = async (contractId: string) => {
+    if (!user?.firmId) return
+    const url = `${window.location.origin}/sign/${user.firmId}/${contractId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedId(contractId)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleSign = async (contractId: string, signedByName: string) => {
+    if (!user?.firmId) return
+    setError(null)
+    try {
+      await sign(contractId, signedByName)
+      const caseId = await openCaseFromContract(user.firmId, user.uid, contractId)
+      setSelectedContract(null)
+      navigate(ROUTES.CASE_DETAIL.replace(':caseId', caseId))
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Error al abrir el expediente.')
+    }
+  }
+
+  const handleOpenCase = async (contractId: string) => {
+    if (!user?.firmId) return
+    setError(null)
+    setOpeningId(contractId)
+    try {
+      const caseId = await openCaseFromContract(user.firmId, user.uid, contractId)
+      navigate(ROUTES.CASE_DETAIL.replace(':caseId', caseId))
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Error al abrir el expediente.')
+      setOpeningId(null)
+    }
+  }
+
+  const handleUpload = async (contractId: string, file: File) => {
+    await uploadDocument(contractId, file)
+    await reload()
+  }
 
   if (loading) return <LoadingSpinner />
 
@@ -29,110 +87,105 @@ export function ContractsPage() {
     <div>
       <PageHeader
         title="Contratos"
-        description="Todos los contratos del despacho."
+        description="Todos los contratos del despacho. Al firmarse, se abre automáticamente el expediente."
       />
+
+      {error && (
+        <p className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
 
       {contracts.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="Sin contratos"
-          description="Los contratos se crean desde el detalle de cada expediente."
+          description="Los contratos se crean al aceptar un presupuesto o desde el detalle de un expediente."
         />
       ) : (
-        <>
-          {/* Cards en móvil */}
-          <div className="space-y-2 md:hidden">
-            {contracts.map((c) => (
-              <div
-                key={c.id}
-                className="bg-card border border-border rounded-xl p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-foreground truncate">
-                      {c.clientName}
-                    </p>
+        <div className="space-y-3">
+          {contracts.map((c) => (
+            <div
+              key={c.id}
+              className="bg-card border border-border rounded-xl p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-mono text-xs text-muted-foreground">
                       {c.contractNumber}
                     </span>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${STATUS_COLORS[c.status]}`}
+                    >
+                      {STATUS_LABELS[c.status]}
+                    </span>
                   </div>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${STATUS_COLORS[c.status]}`}
-                  >
-                    {STATUS_LABELS[c.status]}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground truncate mb-1">
-                  {c.serviceDescription}
-                </p>
-                {c.agreedPrice && (
-                  <p className="text-xs text-muted-foreground mb-1">{c.agreedPrice}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {format(c.issuedAt, 'dd MMM yyyy', { locale: es })}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Tabla en desktop */}
-          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/60">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Referencia
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Cliente
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Servicio
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Estado
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
-                    Fecha
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {contracts.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="hover:bg-muted transition-colors"
-                  >
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                      {c.contractNumber}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {c.clientName}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground max-w-xs">
-                      <p className="truncate text-xs">{c.serviceDescription}</p>
-                      {c.agreedPrice && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {c.agreedPrice}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${STATUS_COLORS[c.status]}`}
-                      >
-                        {STATUS_LABELS[c.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
+                  <p className="font-medium text-foreground truncate">{c.clientName}</p>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {c.serviceDescription}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    {c.agreedPrice && (
+                      <span className="text-xs text-muted-foreground">{c.agreedPrice}</span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
                       {format(c.issuedAt, 'dd MMM yyyy', { locale: es })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 shrink-0 flex-wrap">
+                  {c.caseId ? (
+                    <button
+                      onClick={() => navigate(ROUTES.CASE_DETAIL.replace(':caseId', c.caseId as string))}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                    >
+                      <FolderOpen className="w-3 h-3" />
+                      Ver expediente
+                    </button>
+                  ) : c.status === 'firmado' ? (
+                    <button
+                      onClick={() => handleOpenCase(c.id)}
+                      disabled={openingId === c.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      <ArrowRight className="w-3 h-3" />
+                      {openingId === c.id ? 'Abriendo...' : 'Abrir expediente'}
+                    </button>
+                  ) : c.status !== 'rescindido' ? (
+                    <>
+                      <button
+                        onClick={() => copySignLink(c.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                        {copiedId === c.id ? 'Copiado' : 'Copiar enlace de firma'}
+                      </button>
+                      <button
+                        onClick={() => setSelectedContract(c)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        Registrar firma manual
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedContract && (
+        <SignContractDialog
+          open={true}
+          contract={selectedContract}
+          onClose={() => setSelectedContract(null)}
+          onSign={(name) => handleSign(selectedContract.id, name)}
+          onUploadDocument={(file) => handleUpload(selectedContract.id, file)}
+        />
       )}
     </div>
   )

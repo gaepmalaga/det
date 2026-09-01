@@ -35,27 +35,38 @@ despachos de detectives independientes.
 
 ## 3. Flujo de negocio (acordado)
 
+> **Actualizado 2026-09-01** — ver "Cambio de flujo: Contrato antes que
+> Expediente" más abajo. La versión vigente es esta; el diagrama original
+> (expediente al aceptar presupuesto) queda documentado ahí solo como
+> histórico.
+
 ```
 Contacto → Presupuesto (por despacho) → [Aceptado | Rechazado]
                                               ↓ aceptado
-                                    Expediente "abierto"
+                          Se crea ficha de Cliente + Contrato (pendiente de firma)
+                                              ↓
+                    Firma del contrato:
+                      · Cliente particular → link de firma (individual, puntual)
+                      · Staff → "Registrar firma manual" desde Contratos/Expediente
+                                              ↓ firmado
+                          Expediente "abierto" + asiento en Libro-registro
                                               ↓
                           Actuaciones (texto: qué, cuándo, dónde, quién)
                                               ↓
                               [IA] compila actuaciones → borrador de informe
                                               ↓
-                    Contrato:
-                      · Cliente particular → link de firma (individual, puntual)
-                      · Cliente recurrente → portal propio (histórico contratos)
-                                              ↓
-                                  Cierre → Libro-registro (fiel a ley)
+                                  Cierre del expediente
 ```
 
 Reglas de negocio confirmadas:
 
 - Un contacto puede tener **varios presupuestos**, y de **varios despachos
   distintos** (no es "1 contacto = 1 oportunidad").
-- El expediente ("case") se crea **solo al aceptar un presupuesto** — no antes.
+- Un mismo cliente puede tener **varios presupuestos a lo largo del tiempo**,
+  cada uno con su propio contrato y, si se firma, su propio expediente y
+  asiento de libro-registro independientes.
+- El expediente ("case") se crea **solo cuando el contrato queda firmado**
+  — no al aceptar el presupuesto, y no antes de la firma.
 - Multi-despacho confirmado: la intención es venderlo a varios despachos, así
   que se mantiene `firms` + roles + superadmin para gestionarlos.
 
@@ -1088,3 +1099,91 @@ Verificado build/lint limpios. Revisado el resto de servicios
 único caso, no hay más instancias conocidas de este patrón.
 
 **Sin verificar en producción** — misma limitación de siempre.
+
+## Cambio de flujo: Contrato antes que Expediente (2026-09-01)
+
+Tras el incidente anterior, el usuario probó el flujo real y señaló que
+"está todo muy desperdigado", describiendo el modelo mental correcto:
+todo contacto es un prospecto que puede tener varios presupuestos; cada
+presupuesto aceptado da lugar a un contrato; **solo si ese contrato se
+firma** se abre su expediente y su asiento de libro-registro
+correspondiente; un mismo cliente puede repetir el ciclo con nuevos
+presupuestos → nuevos contratos → nuevos expedientes independientes.
+
+Esto no coincidía con el flujo documentado en el §3 original (el
+expediente se abría al aceptar el presupuesto, antes de que existiera
+ningún contrato firmado). Se le presentó la discrepancia explícitamente
+y el usuario decidió: **"Contrato primero, expediente solo si se
+firma"** — cambiar el sistema para que el expediente nunca exista antes
+de que haya un contrato firmado.
+
+**Por qué importa legalmente**: el libro-registro (Anexo VII, Art. 108
+Reglamento) debe reflejar investigaciones realmente encargadas y
+formalizadas — abrir un asiento sobre un presupuesto todavía sin
+contrato firmado era, estrictamente, prematuro.
+
+### Flujo nuevo
+
+```
+Presupuesto aceptado
+  → se crea la ficha de Cliente (a partir del contacto)
+  → se crea un Contrato en estado "borrador", con los datos legales
+    del futuro expediente ya guardados en el propio presupuesto
+    (objeto, interés legítimo, investigado, domicilio)
+        ↓ firma (link público o "Registrar firma manual")
+  → SOLO ENTONCES: se crea el Expediente + su asiento de Libro-registro
+```
+
+### Cambios técnicos
+
+- `Quote` (`services/quotes.ts`) gana `clientId`, `contractId`, `caseId`
+  y los campos legales (`objectScope`, `legitimateInterest`,
+  `investigatedName`, `investigatedAddress`,
+  `assignedDetectiveId/Tip`) — se rellenan al aceptar, no se pierden.
+  `acceptQuote()` ya no crea nada, solo guarda estos datos y pasa el
+  presupuesto a `aceptado`.
+- `Contract` (`services/contracts.ts`) gana `quoteId`, para poder volver
+  al presupuesto de origen desde el contrato.
+- **`services/caseOpening.ts` (nuevo)** — punto único donde se abre un
+  expediente: `openCaseFromContract(firmId, userId, contractId)`. Lee
+  el contrato, comprueba que está `firmado`, recupera el presupuesto de
+  origen, crea el `case`, enlaza `quote.caseId`/`contract.caseId`, crea
+  el asiento de libro-registro y activa el expediente
+  (`status: 'activo'`) — es idempotente (si el contrato ya tiene
+  `caseId`, devuelve el existente en vez de duplicar).
+- **`features/quotes/AcceptQuoteDialog.tsx` (nuevo, sustituye a
+  `ConvertQuoteToCaseDialog.tsx`, que se ha borrado)** — diálogo de dos
+  pasos: 1) datos legales del futuro expediente + creación del cliente,
+  2) formulario de contrato (reutiliza `ContractForm`, ya preparado
+  para esto con `defaultAgreedPrice`/`quoteId`). Al terminar, el
+  usuario aterriza en Contratos, no en un expediente (todavía no
+  existe).
+- **`features/contracts/ContractsPage.tsx` (reescrita)** — antes era una
+  lista de solo lectura; ahora cada contrato pendiente de firma tiene
+  "Copiar enlace de firma" y "Registrar firma manual"
+  (`SignContractDialog`, reutilizado tal cual desde el expediente). Al
+  firmar manualmente se llama a `openCaseFromContract` y se navega
+  directo al expediente recién abierto. Un contrato firmado por enlace
+  público que aún no tiene expediente muestra un botón "Abrir
+  expediente" (ver por qué no es automático, debajo).
+- **Por qué la firma pública no abre el expediente sola**: no hay Cloud
+  Functions en este entorno, y el firmante del enlace público no está
+  autenticado como miembro del despacho — las reglas de Firestore no le
+  pueden permitir crear un `case` (colección sensible con datos de
+  investigación). Por eso `signContractPublicly` solo cambia
+  `status/signedAt/signedByName/signedIp`, y abrir el expediente queda
+  como acción manual del despacho vía el botón "Abrir expediente".
+- **`features/cases/tabs/CaseContractTab.tsx` — sin tocar,
+  deliberadamente**: sigue usándose para contratos adicionales sobre un
+  expediente que **ya existe** (el caso de los expedientes de marco de
+  colaboración/corporativo, creados directamente desde
+  `CreateFrameworkCaseDialog` sin pasar por presupuesto — ahí el
+  expediente nace en `revision` y el contrato lo activa). Es un flujo
+  distinto y legítimo, no el mismo código duplicado.
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos).
+
+**Sin verificar en producción** — misma limitación de siempre; el
+usuario deberá probar el ciclo completo (presupuesto → contrato → firma
+→ expediente → libro-registro) en real.

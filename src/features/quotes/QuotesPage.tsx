@@ -8,7 +8,8 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CreateQuoteDialog } from './CreateQuoteDialog'
 import { QuoteCard } from './QuoteCard'
-import { ConvertQuoteToCaseDialog } from './ConvertQuoteToCaseDialog'
+import { AcceptQuoteDialog } from './AcceptQuoteDialog'
+import { ROUTES } from '@/constants/routes'
 import type { Quote, QuoteStatus } from '@/types'
 
 const STATUS_TABS: { label: string; value: QuoteStatus | 'todos' }[] = [
@@ -19,7 +20,7 @@ const STATUS_TABS: { label: string; value: QuoteStatus | 'todos' }[] = [
 ]
 
 export function QuotesPage() {
-  const { quotes, loading, error, create, reject, accept } = useQuotes()
+  const { quotes, loading, error, create, reject } = useQuotes()
   const { contacts, loading: contactsLoading } = useContacts()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<QuoteStatus | 'todos'>('todos')
@@ -156,15 +157,14 @@ export function QuotesPage() {
       />
 
       {acceptingQuote && acceptingContact && (
-        <ConvertQuoteToCaseDialog
+        <AcceptQuoteDialog
           open={true}
           quote={acceptingQuote}
           contact={acceptingContact}
           onClose={() => setAcceptingQuote(null)}
-          onConverted={async (caseId) => {
-            await accept(acceptingQuote.id, caseId)
+          onDone={() => {
             setAcceptingQuote(null)
-            navigate('/app/cases/' + caseId)
+            navigate(ROUTES.CONTRACTS)
           }}
         />
       )}

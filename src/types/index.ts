@@ -168,7 +168,20 @@ export interface Quote {
   // Gestión
   status: QuoteStatus
   rejectionReason?: string
+  clientId?: string
+  contractId?: string
   caseId?: string
+
+  // Datos legales del expediente, capturados al aceptar el presupuesto
+  // (antes de que exista el expediente — ver §3 del documento de
+  // producto: el orden real es presupuesto → contrato → expediente).
+  // Se usan para abrir el expediente en cuanto el contrato queda firmado.
+  objectScope?: string
+  legitimateInterest?: string
+  investigatedName?: string
+  investigatedAddress?: string
+  assignedDetectiveId?: string
+  assignedDetectiveTip?: string
 
   // Trazabilidad
   createdBy: string

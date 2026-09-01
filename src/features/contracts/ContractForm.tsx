@@ -15,8 +15,10 @@ interface ContractFormProps {
   onCreate: (data: CreateContractData) => Promise<void>
   defaultClientName?: string
   defaultServiceDescription?: string
+  defaultAgreedPrice?: string
   caseId?: string
   clientId?: string
+  quoteId?: string
 }
 
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
@@ -31,8 +33,10 @@ export function ContractForm({
   onCreate,
   defaultClientName = '',
   defaultServiceDescription = '',
+  defaultAgreedPrice = '',
   caseId,
   clientId,
+  quoteId,
 }: ContractFormProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -43,7 +47,7 @@ export function ContractForm({
     type: 'servicio_cliente' as ContractType,
     clientName: defaultClientName,
     serviceDescription: defaultServiceDescription,
-    agreedPrice: '',
+    agreedPrice: defaultAgreedPrice,
     specificConditions: '',
     bodyText: '',
   })
@@ -117,6 +121,7 @@ export function ContractForm({
         bodyText: hasTemplate ? form.bodyText : undefined,
         caseId,
         clientId,
+        quoteId,
       })
     } finally {
       setSubmitting(false)

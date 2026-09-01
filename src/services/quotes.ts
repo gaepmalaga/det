@@ -35,7 +35,15 @@ function mapQuote(id: string, data: Record<string, unknown>): Quote {
     amount: (data.amount as number) ?? 0,
     status: data.status as QuoteStatus,
     rejectionReason: data.rejectionReason as string | undefined,
+    clientId: data.clientId as string | undefined,
+    contractId: data.contractId as string | undefined,
     caseId: data.caseId as string | undefined,
+    objectScope: data.objectScope as string | undefined,
+    legitimateInterest: data.legitimateInterest as string | undefined,
+    investigatedName: data.investigatedName as string | undefined,
+    investigatedAddress: data.investigatedAddress as string | undefined,
+    assignedDetectiveId: data.assignedDetectiveId as string | undefined,
+    assignedDetectiveTip: data.assignedDetectiveTip as string | undefined,
     createdBy: data.createdBy as string,
   }
 }
@@ -113,15 +121,52 @@ export async function rejectQuote(
   await updateDoc(ref, updateData)
 }
 
+export interface AcceptQuoteData {
+  clientId: string
+  objectScope: string
+  legitimateInterest: string
+  investigatedName: string
+  investigatedAddress: string
+  assignedDetectiveId: string
+  assignedDetectiveTip: string
+}
+
+// Acepta el presupuesto y guarda ya los datos legales del futuro
+// expediente — el expediente en sí no se crea hasta que el contrato
+// quede firmado (ver services/caseOpening.ts).
 export async function acceptQuote(
+  firmId: string,
+  quoteId: string,
+  data: AcceptQuoteData
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'quotes', quoteId)
+  await updateDoc(ref, {
+    status: 'aceptado' as QuoteStatus,
+    clientId: data.clientId,
+    objectScope: data.objectScope,
+    legitimateInterest: data.legitimateInterest,
+    investigatedName: data.investigatedName,
+    investigatedAddress: data.investigatedAddress,
+    assignedDetectiveId: data.assignedDetectiveId,
+    assignedDetectiveTip: data.assignedDetectiveTip,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function setQuoteContract(
+  firmId: string,
+  quoteId: string,
+  contractId: string
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'quotes', quoteId)
+  await updateDoc(ref, { contractId, updatedAt: serverTimestamp() })
+}
+
+export async function setQuoteCase(
   firmId: string,
   quoteId: string,
   caseId: string
 ): Promise<void> {
   const ref = doc(db, 'firms', firmId, 'quotes', quoteId)
-  await updateDoc(ref, {
-    status: 'aceptado' as QuoteStatus,
-    caseId,
-    updatedAt: serverTimestamp(),
-  })
+  await updateDoc(ref, { caseId, updatedAt: serverTimestamp() })
 }

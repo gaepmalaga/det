@@ -37,6 +37,7 @@ export interface Contract {
   type: ContractType
   status: ContractStatus
   caseId?: string
+  quoteId?: string
   clientId?: string
   clientName: string
   issuedAt: Date
@@ -77,6 +78,7 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     type: data.type as ContractType,
     status: data.status as ContractStatus,
     caseId: data.caseId as string | undefined,
+    quoteId: data.quoteId as string | undefined,
     clientId: data.clientId as string | undefined,
     clientName: data.clientName as string,
     issuedAt: toDate(data.issuedAt),
@@ -119,6 +121,7 @@ export async function getContract(firmId: string, contractId: string): Promise<C
 export interface CreateContractData {
   type: ContractType
   caseId?: string
+  quoteId?: string
   clientId?: string
   clientName: string
   serviceDescription: string
@@ -152,6 +155,7 @@ export async function createContract(
   }
 
   if (data.caseId) cleanData.caseId = data.caseId
+  if (data.quoteId) cleanData.quoteId = data.quoteId
   if (data.clientId) cleanData.clientId = data.clientId
   if (data.agreedPrice) cleanData.agreedPrice = data.agreedPrice
   if (data.specificConditions) cleanData.specificConditions = data.specificConditions
@@ -201,6 +205,15 @@ export async function markContractAsSigned(
     signedByName,
     updatedAt: serverTimestamp(),
   })
+}
+
+export async function setContractCase(
+  firmId: string,
+  contractId: string,
+  caseId: string
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'contracts', contractId)
+  await updateDoc(ref, { caseId, updatedAt: serverTimestamp() })
 }
 
 export async function updateContractStatus(
