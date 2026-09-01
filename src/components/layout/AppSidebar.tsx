@@ -6,7 +6,7 @@ import {
   FileText,
   BookOpen,
   ShieldCheck,
-  FileSearch,
+  Receipt,
   Handshake,
   Building2,
   Settings,
@@ -21,9 +21,9 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, to: ROUTES.DASHBOARD },
-  { label: 'Solicitudes', icon: Inbox, to: ROUTES.LEADS },
+  { label: 'Contactos', icon: Inbox, to: ROUTES.CONTACTS },
+  { label: 'Presupuestos', icon: Receipt, to: ROUTES.QUOTES },
   { label: 'Clientes', icon: Users, to: ROUTES.CLIENTS },
-  { label: 'Pre-expedientes', icon: FileSearch, to: ROUTES.PRE_CASES },
   { label: 'Expedientes', icon: FolderOpen, to: ROUTES.CASES },
   { label: 'Libro-registro', icon: BookOpen, to: ROUTES.REGISTRY_BOOK },
   { label: 'Contratos', icon: FileText, to: ROUTES.CONTRACTS },

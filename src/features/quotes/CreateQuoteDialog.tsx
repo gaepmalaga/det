@@ -1,53 +1,54 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
-import type { CreateLeadData } from '@/services/leads'
+import type { Contact } from '@/types'
+import type { CreateQuoteData } from '@/services/quotes'
 
-interface CreateLeadDialogProps {
+interface CreateQuoteDialogProps {
   open: boolean
+  contacts: Contact[]
+  lockedContactId?: string
   onClose: () => void
-  onCreate: (data: CreateLeadData) => Promise<void>
+  onCreate: (data: CreateQuoteData) => Promise<void>
 }
 
-export function CreateLeadDialog({
+export function CreateQuoteDialog({
   open,
+  contacts,
+  lockedContactId,
   onClose,
   onCreate,
-}: CreateLeadDialogProps) {
+}: CreateQuoteDialogProps) {
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState<CreateLeadData>({
-    contactName: '',
-    contactEmail: '',
-    contactPhone: '',
-    contactType: 'individual',
-    companyName: '',
+  const [form, setForm] = useState({
+    contactId: lockedContactId ?? '',
     investigationType: '',
     investigationTypeCustom: '',
     description: '',
-    notes: '',
+    amount: '',
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+  const lockedContact = lockedContactId
+    ? contacts.find((c) => c.id === lockedContactId)
+    : undefined
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.contactId) return
     setLoading(true)
     try {
       await onCreate({
-        ...form,
-        companyName: form.companyName || undefined,
+        contactId: form.contactId,
+        investigationType: form.investigationType,
         investigationTypeCustom: form.investigationTypeCustom || undefined,
-        notes: form.notes || undefined,
+        description: form.description,
+        amount: Number(form.amount),
       })
     } finally {
       setLoading(false)
@@ -63,10 +64,9 @@ export function CreateLeadDialog({
         onClick={onClose}
       />
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-900">
-            Nueva solicitud
+            Nuevo presupuesto
           </h2>
           <button
             onClick={onClose}
@@ -76,89 +76,37 @@ export function CreateLeadDialog({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-
-          {/* Tipo de contacto */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Tipo de contacto
+              Contacto <span className="text-red-500">*</span>
             </label>
-            <select
-              name="contactType"
-              value={form.contactType}
-              onChange={handleSelectChange}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            >
-              <option value="individual">Particular</option>
-              <option value="corporate">Empresa / Corporativo</option>
-            </select>
-          </div>
-
-          {/* Nombre */}
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Nombre del contacto <span className="text-red-500">*</span>
-            </label>
-            <input
-              name="contactName"
-              value={form.contactName}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              placeholder="Nombre y apellidos"
-            />
-          </div>
-
-          {/* Empresa */}
-          {form.contactType === 'corporate' && (
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                Empresa
-              </label>
-              <input
-                name="companyName"
-                value={form.companyName}
-                onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Nombre de la empresa"
-              />
-            </div>
-          )}
-
-          {/* Email y teléfono */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="contactEmail"
-                type="email"
-                value={form.contactEmail}
+            {lockedContact ? (
+              <div className="px-3 py-2 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg">
+                {lockedContact.contactName}
+                {lockedContact.companyName && (
+                  <span className="text-slate-400"> — {lockedContact.companyName}</span>
+                )}
+              </div>
+            ) : (
+              <select
+                name="contactId"
+                value={form.contactId}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="email@ejemplo.com"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                Teléfono <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="contactPhone"
-                type="tel"
-                value={form.contactPhone}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="600 000 000"
-              />
-            </div>
+              >
+                <option value="">Seleccionar contacto...</option>
+                {contacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.contactName}
+                    {c.companyName ? ` — ${c.companyName}` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
-          {/* Tipo de investigación */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
               Tipo de investigación <span className="text-red-500">*</span>
@@ -166,7 +114,7 @@ export function CreateLeadDialog({
             <select
               name="investigationType"
               value={form.investigationType}
-              onChange={handleSelectChange}
+              onChange={handleChange}
               required
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
@@ -179,7 +127,6 @@ export function CreateLeadDialog({
             </select>
           </div>
 
-          {/* Detalle libre */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
               Detalle adicional{' '}
@@ -194,7 +141,6 @@ export function CreateLeadDialog({
             />
           </div>
 
-          {/* Descripción */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
               Descripción del encargo <span className="text-red-500">*</span>
@@ -202,7 +148,7 @@ export function CreateLeadDialog({
             <textarea
               name="description"
               value={form.description}
-              onChange={handleTextareaChange}
+              onChange={handleChange}
               required
               rows={3}
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
@@ -210,25 +156,23 @@ export function CreateLeadDialog({
             />
           </div>
 
-          {/* Notas internas */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Notas internas{' '}
-              <span className="text-slate-400 font-normal">
-                (no visibles al cliente)
-              </span>
+              Importe (€) <span className="text-red-500">*</span>
             </label>
-            <textarea
-              name="notes"
-              value={form.notes}
-              onChange={handleTextareaChange}
-              rows={2}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-              placeholder="Notas para el equipo..."
+            <input
+              name="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.amount}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              placeholder="0,00"
             />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -242,7 +186,7 @@ export function CreateLeadDialog({
               disabled={loading}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
             >
-              {loading ? 'Creando...' : 'Crear solicitud'}
+              {loading ? 'Enviando...' : 'Enviar presupuesto'}
             </button>
           </div>
         </form>

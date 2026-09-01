@@ -299,11 +299,33 @@ seguimiento de implementación (§8).
   evidencias/compliance/portal-mensajería, informe con IA, plantillas de
   contrato, colaboradores híbridos, marco/estadísticas) no ha empezado, salvo
   la corrección del libro-registro de abajo.
-- **Ya implementado y en `main`**: el gap del libro-registro de §6 (Anexo
-  VII) — `investigatedName`/`investigatedAddress` obligatorios en la
-  creación de expediente, `knownOffenses`/`offensesReportedTo` editables
-  por asiento desde el Libro-registro. `npm run build` y `npm run lint`
-  verificados sin errores nuevos antes de subir.
+- **Ya implementado y en `main`**:
+  - El gap del libro-registro de §6 (Anexo VII) —
+    `investigatedName`/`investigatedAddress` obligatorios en la creación de
+    expediente, `knownOffenses`/`offensesReportedTo` editables por asiento
+    desde el Libro-registro.
+  - **Fase 2 — `contacts` + `quotes`**: el módulo `leads` (con su estado
+    único nuevo/en_revision/aceptado/rechazado) se sustituyó por dos
+    entidades separadas, como define §5. `Contact` es ahora solo identidad
+    (nombre, email, teléfono, notas) sin estado propio; `Quote` es la
+    oportunidad (tipo de investigación, descripción, importe,
+    `enviado`/`aceptado`/`rechazado`) vinculada a un `contactId`, y un mismo
+    contacto puede tener varios presupuestos en el tiempo. Al aceptar un
+    presupuesto se abre un diálogo (`ConvertQuoteToCaseDialog`, heredero del
+    antiguo `ConvertToCaseDialog`) que crea el cliente + expediente
+    (con los campos legales de §6 ya incluidos) y marca el presupuesto como
+    aceptado con el `caseId` resultante; al rechazar, queda el motivo
+    registrado. Nuevas pantallas: `Contactos` (lista + detalle con sus
+    presupuestos) y `Presupuestos` (pipeline global con pestañas de estado),
+    sustituyendo a "Solicitudes" y al placeholder "Pre-expedientes" en el
+    menú lateral. Dashboard, reglas de Firestore (`contacts`/`quotes`) e
+    índices compuestos actualizados en consecuencia.
+  - `npm run build` y `npm run lint` verificados sin errores nuevos antes de
+    cada subida. Las páginas autenticadas nuevas (Contactos, Presupuestos)
+    no se han podido verificar visualmente en navegador porque el login
+    requiere credenciales reales de Google/Firebase no disponibles en este
+    entorno — solo se verificó que la página de login (no autenticada) carga
+    sin errores de consola y se ve bien en móvil/escritorio.
 - Nota operativa: `firebase-hosting-merge.yml` despliega a producción en
   cada push a `main` — al trabajar sin PRs, cada commit a `main` se
   despliega directo. Se verifica build/lint localmente antes de cada push

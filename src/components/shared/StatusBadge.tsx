@@ -1,27 +1,27 @@
 import { cn } from '@/lib/utils'
-import type { CaseStatus, LeadStatus } from '@/types'
+import type { CaseStatus, QuoteStatus } from '@/types'
 import {
   CASE_STATUS_COLORS,
   CASE_STATUS_LABELS,
-  LEAD_STATUS_COLORS,
-  LEAD_STATUS_LABELS,
+  QUOTE_STATUS_COLORS,
+  QUOTE_STATUS_LABELS,
 } from '@/constants/cases'
 
-interface LeadStatusBadgeProps {
-  status: LeadStatus
+interface QuoteStatusBadgeProps {
+  status: QuoteStatus
   className?: string
 }
 
-export function LeadStatusBadge({ status, className }: LeadStatusBadgeProps) {
+export function QuoteStatusBadge({ status, className }: QuoteStatusBadgeProps) {
   return (
     <span
       className={cn(
         'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border',
-        LEAD_STATUS_COLORS[status],
+        QUOTE_STATUS_COLORS[status],
         className
       )}
     >
-      {LEAD_STATUS_LABELS[status]}
+      {QUOTE_STATUS_LABELS[status]}
     </span>
   )
 }

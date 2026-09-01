@@ -117,35 +117,52 @@ export const SYSTEM_INVESTIGATION_TYPES = [
 
 export type SystemInvestigationType = typeof SYSTEM_INVESTIGATION_TYPES[number]
 
-// ─── LEAD ────────────────────────────────────────────────────────────────────
+// ─── CONTACT ─────────────────────────────────────────────────────────────────
 
-export type LeadStatus = 'nuevo' | 'en_revision' | 'aceptado' | 'rechazado'
 export type ContactType = 'individual' | 'corporate'
 
-export interface Lead {
+export interface Contact {
   id: string
   firmId: string
   referenceNumber: string
   createdAt: Date
   updatedAt: Date
 
-  // Contacto
   contactName: string
   contactEmail: string
   contactPhone: string
   contactType: ContactType
   companyName?: string
 
+  assignedTo?: string
+  notes?: string
+
+  // Trazabilidad
+  createdBy: string
+}
+
+// ─── QUOTE (presupuesto) ───────────────────────────────────────────────────────
+
+export type QuoteStatus = 'enviado' | 'aceptado' | 'rechazado'
+
+export interface Quote {
+  id: string
+  firmId: string
+  contactId: string
+  quoteNumber: string
+  createdAt: Date
+  updatedAt: Date
+
   // Encargo
   investigationType: string
   investigationTypeCustom?: string
   description: string
+  amount: number
 
   // Gestión
-  status: LeadStatus
-  assignedTo?: string
+  status: QuoteStatus
   rejectionReason?: string
-  notes?: string
+  caseId?: string
 
   // Trazabilidad
   createdBy: string
@@ -182,7 +199,7 @@ export interface Case {
   updatedAt: Date
 
   // Origen
-  leadId?: string
+  quoteId?: string
   clientId?: string
   branchId?: string
 
@@ -331,7 +348,7 @@ export interface Client {
   frameworkContractId?: string
   portalAccessEnabled: boolean
   portalUserId?: string
-  convertedFromLeadId?: string
+  convertedFromContactId?: string
   isActive: boolean
   createdAt: Date
   createdBy: string

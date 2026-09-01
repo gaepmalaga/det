@@ -9,11 +9,11 @@ export const ROUTES = {
 
   // App — Despacho
   DASHBOARD: '/app/dashboard',
-  LEADS: '/app/leads',
+  CONTACTS: '/app/contacts',
+  CONTACT_DETAIL: '/app/contacts/:contactId',
+  QUOTES: '/app/quotes',
   CLIENTS: '/app/clients',
   CLIENT_DETAIL: '/app/clients/:clientId',
-  PRE_CASES: '/app/pre-cases',
-  PRE_CASE_DETAIL: '/app/pre-cases/:preCaseId',
   CASES: '/app/cases',
   CASE_DETAIL: '/app/cases/:caseId',
   CASE_ACTIONS: '/app/cases/:caseId/actions',

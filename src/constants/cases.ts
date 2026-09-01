@@ -1,15 +1,13 @@
-import type { CaseStatus, LeadStatus } from '@/types'
+import type { CaseStatus, QuoteStatus } from '@/types'
 
-export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
-  nuevo: 'Nuevo',
-  en_revision: 'En revisión',
+export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
+  enviado: 'Enviado',
   aceptado: 'Aceptado',
   rechazado: 'Rechazado',
 }
 
-export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
-  nuevo: 'bg-blue-50 text-blue-700 border-blue-200',
-  en_revision: 'bg-amber-50 text-amber-700 border-amber-200',
+export const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = {
+  enviado: 'bg-blue-50 text-blue-700 border-blue-200',
   aceptado: 'bg-green-50 text-green-700 border-green-200',
   rechazado: 'bg-red-50 text-red-700 border-red-200',
 }

@@ -246,11 +246,11 @@ export function ClientDetailPage() {
                     : 'Corporativo'}
                 </p>
               </div>
-              {client.convertedFromLeadId && (
+              {client.convertedFromContactId && (
                 <div>
                   <p className="text-xs text-slate-500">Origen</p>
                   <p className="text-sm text-slate-700">
-                    Convertido desde solicitud
+                    Convertido desde contacto
                   </p>
                 </div>
               )}

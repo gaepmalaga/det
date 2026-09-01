@@ -4,28 +4,30 @@ import { useCases } from '@/hooks/useCases'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/services/clients'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
-import type { Lead } from '@/types'
+import type { Contact, Quote } from '@/types'
 
-interface ConvertToCaseDialogProps {
+interface ConvertQuoteToCaseDialogProps {
   open: boolean
-  lead: Lead
+  quote: Quote
+  contact: Contact
   onClose: () => void
   onConverted: (caseId: string) => void
 }
 
-export function ConvertToCaseDialog({
+export function ConvertQuoteToCaseDialog({
   open,
-  lead,
+  quote,
+  contact,
   onClose,
   onConverted,
-}: ConvertToCaseDialogProps) {
+}: ConvertQuoteToCaseDialogProps) {
   const { create } = useCases()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    investigationType: lead.investigationType,
-    investigationTypeCustom: lead.investigationTypeCustom ?? '',
-    description: lead.description,
+    investigationType: quote.investigationType,
+    investigationTypeCustom: quote.investigationTypeCustom ?? '',
+    description: quote.description,
     objectScope: '',
     legitimateInterest: '',
     investigatedName: '',
@@ -44,27 +46,27 @@ export function ConvertToCaseDialog({
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  if (loading) return  // ← añade esta línea
-  if (!user || !user.firmId) return
-  setLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (loading) return
+    if (!user || !user.firmId) return
+    setLoading(true)
     try {
-      // 1. Crear cliente automáticamente desde los datos del lead
+      // 1. Crear cliente automáticamente desde los datos del contacto
       const clientId = await createClient(user.firmId, user.uid, {
-        clientType: lead.contactType,
-        legalName: lead.contactType === 'corporate' && lead.companyName
-          ? lead.companyName
-          : lead.contactName,
-        tradeName: lead.contactType === 'corporate' && lead.companyName
-          ? lead.contactName
+        clientType: contact.contactType,
+        legalName: contact.contactType === 'corporate' && contact.companyName
+          ? contact.companyName
+          : contact.contactName,
+        tradeName: contact.contactType === 'corporate' && contact.companyName
+          ? contact.contactName
           : undefined,
-        email: lead.contactEmail,
-        phone: lead.contactPhone,
-        convertedFromLeadId: lead.id,
+        email: contact.contactEmail,
+        phone: contact.contactPhone,
+        convertedFromContactId: contact.id,
       })
 
-      // 2. Crear el expediente vinculado al cliente
+      // 2. Crear el expediente vinculado al cliente y al presupuesto aceptado
       const caseId = await create({
         investigationType: form.investigationType,
         investigationTypeCustom: form.investigationTypeCustom || undefined,
@@ -75,7 +77,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         investigatedAddress: form.investigatedAddress,
         assignedDetectiveId: user.uid,
         assignedDetectiveTip: '',
-        leadId: lead.id,
+        quoteId: quote.id,
         clientId,
       })
 
@@ -93,7 +95,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-900">
-            Crear expediente desde solicitud
+            Aceptar presupuesto y crear expediente
           </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
@@ -104,7 +106,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="flex gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <p className="text-xs text-amber-800">
-              Se creará automáticamente una ficha de cliente con los datos de la solicitud.
+              Se creará automáticamente una ficha de cliente con los datos del contacto.
               Podrás completarla después desde el módulo de Clientes.
             </p>
           </div>
@@ -125,18 +127,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Detalle adicional
-            </label>
-            <input
-              name="investigationTypeCustom"
-              value={form.investigationTypeCustom}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
           </div>
 
           <div>

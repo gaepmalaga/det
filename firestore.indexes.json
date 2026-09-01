@@ -28,7 +28,15 @@
       ]
     },
     {
-      "collectionGroup": "leads",
+      "collectionGroup": "contacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "firmId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "quotes",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "firmId", "order": "ASCENDING" },
@@ -37,10 +45,18 @@
       ]
     },
     {
-      "collectionGroup": "leads",
+      "collectionGroup": "quotes",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "firmId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "quotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contactId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },

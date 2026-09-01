@@ -131,18 +131,18 @@ service cloud.firestore {
         allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
       }
 
-      // ── LEADS ────────────────────────────────────────────────────────────
+      // ── CONTACTS ─────────────────────────────────────────────────────────
 
-      match /leads/{leadId} {
+      match /contacts/{contactId} {
         allow read: if isSuperAdmin() || isActiveMember(firmId);
         allow create: if isActiveMember(firmId);
         allow update: if isActiveMember(firmId);
         allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
       }
 
-      // ── PRE-CASES ────────────────────────────────────────────────────────
+      // ── QUOTES (presupuestos) ────────────────────────────────────────────
 
-      match /preCases/{preCaseId} {
+      match /quotes/{quoteId} {
         allow read: if isSuperAdmin() || isActiveMember(firmId);
         allow create: if isActiveMember(firmId);
         allow update: if isActiveMember(firmId);

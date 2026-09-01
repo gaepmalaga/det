@@ -5,8 +5,9 @@ import { AppShell } from '@/components/layout/AppShell'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { LeadsPage } from '@/features/leads/LeadsPage'
-import { LeadDetailPage } from '@/features/leads/LeadDetailPage'
+import { ContactsPage } from '@/features/contacts/ContactsPage'
+import { ContactDetailPage } from '@/features/contacts/ContactDetailPage'
+import { QuotesPage } from '@/features/quotes/QuotesPage'
 import { CasesPage } from '@/features/cases/CasesPage'
 import { CaseDetailPage } from '@/features/cases/CaseDetailPage'
 import { ClientsPage } from '@/features/clients/ClientsPage'
@@ -51,11 +52,11 @@ export function AppRouter() {
           }
         >
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="leads" element={<LeadsPage />} />
-          <Route path="leads/:leadId" element={<LeadDetailPage />} />
+          <Route path="contacts" element={<ContactsPage />} />
+          <Route path="contacts/:contactId" element={<ContactDetailPage />} />
+          <Route path="quotes" element={<QuotesPage />} />
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/:clientId" element={<ClientDetailPage />} />
-          <Route path="pre-cases" element={<Placeholder name="Pre-expedientes" />} />
           <Route path="cases" element={<CasesPage />} />
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
           <Route path="registry-book" element={<RegistryBookPage />} />

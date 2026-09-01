@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import {
   FolderOpen,
-  Inbox,
+  Receipt,
+  Users,
   ShieldAlert,
   FileText,
   ArrowRight,
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCases } from '@/hooks/useCases'
-import { useLeads } from '@/hooks/useLeads'
+import { useQuotes } from '@/hooks/useQuotes'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
 import { ROUTES } from '@/constants/routes'
@@ -20,17 +21,16 @@ export function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { cases, loading: casesLoading } = useCases()
-  const { leads, loading: leadsLoading } = useLeads()
+  const { quotes, loading: quotesLoading } = useQuotes()
 
-  const loading = casesLoading || leadsLoading
+  const loading = casesLoading || quotesLoading
 
   if (loading) return <LoadingSpinner />
 
   const activeCases = cases.filter((c) =>
     ['revision', 'presupuesto', 'contrato_pendiente', 'activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
   )
-  const newLeads = leads.filter((l) => l.status === 'nuevo')
-  const pendingLeads = leads.filter((l) => l.status === 'en_revision')
+  const pendingQuotes = quotes.filter((q) => q.status === 'enviado')
   const redCases = cases.filter((c) => c.complianceStatus === 'red')
   const amberCases = cases.filter((c) => c.complianceStatus === 'amber')
   const recentCases = [...activeCases].slice(0, 5)
@@ -60,21 +60,16 @@ export function DashboardPage() {
         </div>
 
         <div
-          onClick={() => navigate(ROUTES.LEADS)}
+          onClick={() => navigate(ROUTES.QUOTES)}
           className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors"
         >
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide leading-tight">
-              Solicitudes nuevas
+              Presupuestos pendientes
             </p>
-            <Inbox className="w-4 h-4 text-slate-400 shrink-0" />
+            <Receipt className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
-          <p className="text-3xl font-semibold text-slate-900">{newLeads.length}</p>
-          {pendingLeads.length > 0 && (
-            <p className="text-xs text-slate-500 mt-1">
-              {pendingLeads.length} en revisión
-            </p>
-          )}
+          <p className="text-3xl font-semibold text-slate-900">{pendingQuotes.length}</p>
         </div>
 
         <div
@@ -144,10 +139,10 @@ export function DashboardPage() {
               <div className="px-4 py-8 text-center">
                 <p className="text-sm text-slate-400">No hay expedientes activos.</p>
                 <button
-                  onClick={() => navigate(ROUTES.LEADS)}
+                  onClick={() => navigate(ROUTES.CONTACTS)}
                   className="mt-3 text-xs text-primary hover:underline"
                 >
-                  Ir a solicitudes
+                  Ir a contactos
                 </button>
               </div>
             ) : (
@@ -191,34 +186,34 @@ export function DashboardPage() {
         {/* Panel lateral */}
         <div className="space-y-4">
 
-          {/* Solicitudes pendientes */}
+          {/* Presupuestos pendientes */}
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
               <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                <Inbox className="w-4 h-4 text-slate-400" />
-                Solicitudes
+                <Receipt className="w-4 h-4 text-slate-400" />
+                Presupuestos
               </h2>
               <button
-                onClick={() => navigate(ROUTES.LEADS)}
+                onClick={() => navigate(ROUTES.QUOTES)}
                 className="text-xs text-slate-500 hover:text-slate-700"
               >
-                Ver todas
+                Ver todos
               </button>
             </div>
-            {newLeads.length === 0 && pendingLeads.length === 0 ? (
-              <p className="px-4 py-4 text-sm text-slate-400">Sin solicitudes pendientes.</p>
+            {pendingQuotes.length === 0 ? (
+              <p className="px-4 py-4 text-sm text-slate-400">Sin presupuestos pendientes.</p>
             ) : (
               <div className="divide-y divide-slate-100">
-                {[...newLeads, ...pendingLeads].slice(0, 4).map((lead) => (
+                {pendingQuotes.slice(0, 4).map((quote) => (
                   <div
-                    key={lead.id}
-                    onClick={() => navigate(ROUTES.LEADS + '/' + lead.id)}
+                    key={quote.id}
+                    onClick={() => navigate(ROUTES.QUOTES)}
                     className="px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
                   >
                     <p className="text-sm font-medium text-slate-900 truncate">
-                      {lead.contactName}
+                      {quote.investigationType}
                     </p>
-                    <p className="text-xs text-slate-500">{lead.investigationType}</p>
+                    <p className="text-xs text-slate-500 font-mono">{quote.quoteNumber}</p>
                   </div>
                 ))}
               </div>
@@ -230,11 +225,11 @@ export function DashboardPage() {
             <h2 className="text-sm font-semibold text-slate-900 mb-3">Acceso rápido</h2>
             <div className="space-y-1">
               <button
-                onClick={() => navigate(ROUTES.LEADS)}
+                onClick={() => navigate(ROUTES.CONTACTS)}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-left"
               >
-                <Inbox className="w-4 h-4 text-slate-400" />
-                Nueva solicitud
+                <Users className="w-4 h-4 text-slate-400" />
+                Nuevo contacto
               </button>
               <button
                 onClick={() => navigate(ROUTES.CASES)}

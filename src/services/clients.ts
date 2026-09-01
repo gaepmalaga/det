@@ -43,7 +43,7 @@ function mapClient(id: string, data: Record<string, unknown>): Client {
     frameworkContractId: data.frameworkContractId as string | undefined,
     portalAccessEnabled: (data.portalAccessEnabled as boolean) ?? false,
     portalUserId: data.portalUserId as string | undefined,
-    convertedFromLeadId: data.convertedFromLeadId as string | undefined,
+    convertedFromContactId: data.convertedFromContactId as string | undefined,
     isActive: (data.isActive as boolean) ?? true,
     createdAt: toDate(data.createdAt),
     createdBy: data.createdBy as string,
@@ -59,7 +59,7 @@ export interface CreateClientData {
   taxId?: string
   email: string
   phone: string
-  convertedFromLeadId?: string
+  convertedFromContactId?: string
 }
 
 export async function getClients(firmId: string): Promise<Client[]> {
@@ -99,7 +99,7 @@ export async function createClient(
   if (data.corporateType) cleanData.corporateType = data.corporateType
   if (data.tradeName) cleanData.tradeName = data.tradeName
   if (data.taxId) cleanData.taxId = data.taxId
-  if (data.convertedFromLeadId) cleanData.convertedFromLeadId = data.convertedFromLeadId
+  if (data.convertedFromContactId) cleanData.convertedFromContactId = data.convertedFromContactId
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id

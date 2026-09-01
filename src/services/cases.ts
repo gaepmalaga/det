@@ -46,7 +46,7 @@ function mapCase(id: string, data: Record<string, unknown>): Case {
     caseNumberInt: data.caseNumberInt as number,
     createdAt: toDate(data.createdAt),
     updatedAt: toDate(data.updatedAt),
-    leadId: data.leadId as string | undefined,
+    quoteId: data.quoteId as string | undefined,
     clientId: data.clientId as string | undefined,
     branchId: data.branchId as string | undefined,
     status: data.status as CaseStatus,
@@ -116,7 +116,7 @@ export interface CreateCaseData {
   investigatedAddress: string
   assignedDetectiveId: string
   assignedDetectiveTip: string
-  leadId?: string
+  quoteId?: string
   clientId?: string
   branchId?: string
 }
