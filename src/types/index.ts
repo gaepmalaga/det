@@ -198,6 +198,10 @@ export interface Case {
   legitimateInterest: string
   legitimateInterestValidated: boolean
 
+  // Investigado (obligatorio para el libro-registro, Anexo VII)
+  investigatedName: string
+  investigatedAddress: string
+
   // Asignación
   assignedDetectiveId: string
   assignedDetectiveTip: string
@@ -358,6 +362,10 @@ export interface RegistryEntry {
   clientTaxId: string
   clientType: ContactType
   investigationObject: string
+  investigatedName: string
+  investigatedAddress: string
+  knownOffenses: string
+  offensesReportedTo: string
   detectiveName: string
   detectiveTip: string
   startDate: Date

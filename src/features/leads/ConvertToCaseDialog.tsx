@@ -28,6 +28,8 @@ export function ConvertToCaseDialog({
     description: lead.description,
     objectScope: '',
     legitimateInterest: '',
+    investigatedName: '',
+    investigatedAddress: '',
   })
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -69,6 +71,8 @@ const handleSubmit = async (e: React.FormEvent) => {
         description: form.description,
         objectScope: form.objectScope,
         legitimateInterest: form.legitimateInterest,
+        investigatedName: form.investigatedName,
+        investigatedAddress: form.investigatedAddress,
         assignedDetectiveId: user.uid,
         assignedDetectiveTip: '',
         leadId: lead.id,
@@ -165,6 +169,38 @@ const handleSubmit = async (e: React.FormEvent) => {
             />
             <p className="text-xs text-slate-400 mt-1">
               Requisito legal. Debe quedar acreditado antes de iniciar la investigación.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Investigado <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="investigatedName"
+                value={form.investigatedName}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Nombre y apellidos o razón social"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Domicilio/localidad <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="investigatedAddress"
+                value={form.investigatedAddress}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Del investigado"
+              />
+            </div>
+            <p className="sm:col-span-2 text-xs text-slate-400 -mt-1">
+              Requisito legal para el libro-registro (Anexo VII).
             </p>
           </div>
 

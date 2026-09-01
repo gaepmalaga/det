@@ -78,6 +78,8 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
         clientTaxId,
         clientType,
         investigationObject: caseData.objectScope || caseData.description,
+        investigatedName: caseData.investigatedName,
+        investigatedAddress: caseData.investigatedAddress,
         detectiveName: (memberData?.displayName as string) || user.displayName || '',
         detectiveTip,
         caseId: caseData.id,

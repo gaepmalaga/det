@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { BookOpen, Search, Download } from 'lucide-react'
+import { BookOpen, Search, Download, AlertTriangle, Pencil } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getRegistryEntries } from '@/services/registry'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { RegistryOffensesDialog } from './RegistryOffensesDialog'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RegistryEntry } from '@/types'
@@ -15,6 +16,7 @@ export function RegistryBookPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'todos' | 'abierto' | 'cerrado'>('todos')
+  const [editingEntry, setEditingEntry] = useState<RegistryEntry | null>(null)
 
   const load = useCallback(async () => {
     if (!user?.firmId) return
@@ -143,6 +145,21 @@ export function RegistryBookPage() {
                     </p>
                   </div>
 
+                  <div>
+                    <p className="text-xs text-slate-500">Investigado</p>
+                    <p className="text-sm text-slate-900">{entry.investigatedName || '—'}</p>
+                    {entry.investigatedAddress && (
+                      <p className="text-xs text-slate-500">{entry.investigatedAddress}</p>
+                    )}
+                  </div>
+
+                  {entry.knownOffenses && (
+                    <div className="flex gap-1.5 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800 line-clamp-2">{entry.knownOffenses}</p>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-1 border-t border-slate-100">
                     <div>
                       <p className="text-xs text-slate-500">Detective</p>
@@ -153,9 +170,18 @@ export function RegistryBookPage() {
                         </p>
                       )}
                     </div>
-                    <span className="font-mono text-xs text-slate-400">
-                      {entry.caseNumber}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-slate-400">
+                        {entry.caseNumber}
+                      </span>
+                      <button
+                        onClick={() => setEditingEntry(entry)}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                        aria-label="Editar delitos perseguibles de oficio"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -179,6 +205,9 @@ export function RegistryBookPage() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden lg:table-cell">
                     Objeto
                   </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden xl:table-cell">
+                    Investigado
+                  </th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
                     Detective
                   </th>
@@ -187,6 +216,9 @@ export function RegistryBookPage() {
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
                     Estado
+                  </th>
+                  <th className="px-4 py-3 w-10">
+                    <span className="sr-only">Acciones</span>
                   </th>
                 </tr>
               </thead>
@@ -217,6 +249,22 @@ export function RegistryBookPage() {
                         {entry.investigationObject}
                       </p>
                     </td>
+                    <td className="px-4 py-3 max-w-xs hidden xl:table-cell">
+                      <p className="text-xs text-slate-900 truncate">
+                        {entry.investigatedName || '—'}
+                      </p>
+                      {entry.investigatedAddress && (
+                        <p className="text-xs text-slate-500 truncate">
+                          {entry.investigatedAddress}
+                        </p>
+                      )}
+                      {entry.knownOffenses && (
+                        <span className="inline-flex items-center gap-1 mt-0.5 text-xs text-amber-700">
+                          <AlertTriangle className="w-3 h-3" />
+                          Delitos conocidos
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <p className="text-sm text-slate-700">
                         {entry.detectiveName}
@@ -241,12 +289,33 @@ export function RegistryBookPage() {
                         {entry.status === 'abierto' ? 'Abierto' : 'Cerrado'}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setEditingEntry(entry)}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                        aria-label="Editar delitos perseguibles de oficio"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </>
+      )}
+
+      {editingEntry && (
+        <RegistryOffensesDialog
+          open={true}
+          entry={editingEntry}
+          onClose={() => setEditingEntry(null)}
+          onSaved={() => {
+            setEditingEntry(null)
+            load()
+          }}
+        />
       )}
     </div>
   )

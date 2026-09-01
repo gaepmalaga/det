@@ -50,6 +50,10 @@ function mapEntry(id: string, data: Record<string, unknown>): RegistryEntry {
     clientTaxId: (data.clientTaxId as string) ?? '',
     clientType: data.clientType as ContactType,
     investigationObject: data.investigationObject as string,
+    investigatedName: (data.investigatedName as string) ?? '',
+    investigatedAddress: (data.investigatedAddress as string) ?? '',
+    knownOffenses: (data.knownOffenses as string) ?? '',
+    offensesReportedTo: (data.offensesReportedTo as string) ?? '',
     detectiveName: data.detectiveName as string,
     detectiveTip: data.detectiveTip as string,
     startDate: toDate(data.startDate),
@@ -70,6 +74,8 @@ export interface CreateRegistryEntryData {
   clientTaxId: string
   clientType: ContactType
   investigationObject: string
+  investigatedName: string
+  investigatedAddress: string
   detectiveName: string
   detectiveTip: string
   caseId: string
@@ -101,6 +107,10 @@ export async function createRegistryEntry(
     clientTaxId: data.clientTaxId,
     clientType: data.clientType,
     investigationObject: data.investigationObject,
+    investigatedName: data.investigatedName,
+    investigatedAddress: data.investigatedAddress,
+    knownOffenses: '',
+    offensesReportedTo: '',
     detectiveName: data.detectiveName,
     detectiveTip: data.detectiveTip,
     startDate: serverTimestamp(),

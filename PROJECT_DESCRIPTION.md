@@ -182,9 +182,9 @@ Fuente: `BOE-058_Codigo_de_Seguridad_Privada (2).pdf` (en el repo, rama
 
 Antes de aceptar el encargo, hay que **dejar constancia del interés legítimo
 alegado** por quien contrata, en el expediente de contratación e
-investigación. **No está reflejado todavía en el flujo propuesto** (§3) —
-habría que añadir un campo obligatorio "interés legítimo alegado" al aceptar
-el presupuesto/abrir expediente, no solo el objeto de la investigación.
+investigación. **Ya cubierto**: el campo `legitimateInterest` ya existe en
+`Case` y es obligatorio en `ConvertToCaseDialog.tsx` — la corrección
+pendiente que se apuntó aquí inicialmente no era tal.
 
 ### Art. 49 — Informes de investigación
 
@@ -216,16 +216,18 @@ Columnas exactas del modelo oficial (Anexo VII):
 | Investigado | Nombre y apellidos o razón social, domicilio/localidad |
 | — | Delitos perseguibles de oficio conocidos, órgano al que se comunicaron |
 
-**Gap detectado contra el modelo actual** (`RegistryEntry` en
-`src/types/index.ts:350`): el tipo existente tiene `entryNumber`,
-`entryDate`, `clientName`, `clientTaxId`, `investigationObject`,
-`detectiveName`, `detectiveTip`, `startDate`, `endDate`, `status`,
-`amendments` — pero **le faltan 4 campos que exige la ley explícitamente**:
-nombre y domicilio del **investigado**, y **delitos perseguibles de oficio
-conocidos + órgano al que se comunicaron** (relevante porque el Art. 37.4
-obliga a los detectives a denunciar estos delitos si los detectan, aunque no
-puedan investigarlos ellos mismos). Hay que añadirlos al modelo nuevo de
-`registryBooks`.
+**Gap detectado y resuelto** (commit en `main`): el `RegistryEntry` original
+en `src/types/index.ts` no tenía los 4 campos que la ley exige
+explícitamente. Ya están añadidos: `investigatedName`, `investigatedAddress`
+(obligatorios, se capturan al crear el expediente en
+`ConvertToCaseDialog.tsx` junto a objeto/interés legítimo, y viajan a través
+de `Case` → `createRegistryEntry` al firmar el contrato) y `knownOffenses` +
+`offensesReportedTo` (opcionales, casi siempre vacíos — se editan por
+asiento desde el Libro-registro con un diálogo dedicado que usa el mecanismo
+de enmienda ya existente, `amendRegistryEntry`, así que quedan con su propio
+rastro de auditoría). De paso: el interés legítimo (Art. 48.2) **ya estaba
+cubierto** en el modelo actual (`legitimateInterest` en `Case`) — la nota
+anterior de este documento que lo daba por pendiente estaba equivocada.
 
 ### TIP (Tarjeta de Identidad Profesional)
 
@@ -280,7 +282,22 @@ llevamos dos conversaciones recortando. En su lugar:
 - El PR #1 se fusionó a `main`. A partir de ahora el trabajo se hace
   directamente sobre `main`, sin ramas ni PRs intermedios (petición explícita
   del usuario).
-- Nada de lo descrito en este documento (§1-§7) está implementado todavía —
-  es una fase de definición de alcance. El siguiente paso natural es cerrar
-  los puntos abiertos de §7 y planificar la implementación (probablemente
-  empezando por el modelo de datos de §5 con las correcciones de §6).
+- El resto de este documento (§1-§5, §7) sigue siendo diseño, sin
+  implementar — la reescritura grande (nuevas colecciones, quitar
+  evidencias/compliance/portal-mensajería, informe con IA, plantillas de
+  contrato, colaboradores híbridos, marco/estadísticas) no ha empezado.
+- **Ya implementado y en `main`**: el gap del libro-registro de §6 (Anexo
+  VII) — `investigatedName`/`investigatedAddress` obligatorios en la
+  creación de expediente, `knownOffenses`/`offensesReportedTo` editables
+  por asiento desde el Libro-registro. `npm run build` y `npm run lint`
+  verificados sin errores nuevos antes de subir.
+- Nota operativa: `firebase-hosting-merge.yml` despliega a producción en
+  cada push a `main` — al trabajar sin PRs, cada commit a `main` se
+  despliega directo. Se verifica build/lint localmente antes de cada push
+  para no romper producción.
+- El siguiente paso natural es seguir con la implementación por fases
+  (ver propuesta de fases en la conversación): modelo de datos completo
+  (`contacts`/`quotes`/`caseActions`/`contractTemplates`), luego ir
+  retirando evidencias/compliance/portal-mensajería y construyendo el
+  flujo nuevo — o cerrar antes los 3 puntos abiertos de §7 si se prefiere
+  rematar el alcance primero.

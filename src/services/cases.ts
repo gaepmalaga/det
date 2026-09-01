@@ -57,6 +57,8 @@ function mapCase(id: string, data: Record<string, unknown>): Case {
     objectScope: data.objectScope as string,
     legitimateInterest: data.legitimateInterest as string,
     legitimateInterestValidated: data.legitimateInterestValidated as boolean ?? false,
+    investigatedName: (data.investigatedName as string) ?? '',
+    investigatedAddress: (data.investigatedAddress as string) ?? '',
     assignedDetectiveId: data.assignedDetectiveId as string,
     assignedDetectiveTip: data.assignedDetectiveTip as string,
     collaboratingFirmId: data.collaboratingFirmId as string | undefined,
@@ -110,6 +112,8 @@ export interface CreateCaseData {
   description: string
   objectScope: string
   legitimateInterest: string
+  investigatedName: string
+  investigatedAddress: string
   assignedDetectiveId: string
   assignedDetectiveTip: string
   leadId?: string
