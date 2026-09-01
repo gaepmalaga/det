@@ -871,3 +871,75 @@ si hace falta en el futuro, añadir `,storage` ahora debería funcionar
 ya que el rol "Administrador de Firebase" también lo cubre; no se ha
 hecho porque no había una necesidad inmediata. Pendiente de que el
 usuario confirme que Contactos y Presupuestos cargan en producción.
+
+## Incidente — fuga de datos entre despachos vía `cases`/`portalClients` (2026-09-01)
+
+Hallado por casualidad diseñando el acceso de colaboradores para la
+Fase 5 (no relacionado con el trabajo de esa fase ni con nada de esta
+sesión — el bug es anterior). Dos reglas de `firestore.rules` eran
+mucho más permisivas de lo que su propio uso necesitaba:
+
+- **`firms/{firmId}/cases/{caseId}`**: `allow read: if isSuperAdmin()
+  || isActiveMember(firmId) || isAuth();` — el último `|| isAuth()`
+  significa que **cualquier usuario con sesión iniciada en la
+  plataforma** (un cliente del portal de cualquier despacho, un
+  empleado de cualquier otro despacho, cualquiera con cuenta) podía
+  leer cualquier expediente de cualquier despacho conociendo o
+  adivinando su ID — no solo los suyos. La misma regla exacta estaba
+  duplicada en `portalAccess` (subcolección de cada expediente).
+- **`portalClients`** (índice global cliente→despachos/expedientes
+  usado para resolver el acceso al portal en el login): `allow
+  create/update: if isAuth();` sin ninguna comprobación de quién
+  escribe. Cualquier usuario autenticado podía añadir a su **propio**
+  registro `firmIds`/`caseIds` arbitrarios — y como la lectura de
+  `cases` era igual de abierta, eso equivalía a poder auto-concederse
+  acceso al expediente de cualquier cliente de cualquier despacho.
+
+**Por qué estaba así**: el modelo de acceso del portal resuelve "¿qué
+puede ver este cliente?" mediante `portalClients` (consultado por
+email) más `portalAccess` por expediente (consultado por lista, sin
+filtrar por usuario) — ninguna de las dos comprobaciones originales
+verificaba de verdad la identidad de quien pedía los datos, solo que
+tuviera *alguna* sesión.
+
+**Arreglado**:
+- `services/portal.ts` — `createPortalAccess` ya no usa un ID de
+  documento aleatorio (`addDoc`) para `portalAccess`; usa el email
+  normalizado del cliente como ID (`setDoc(doc(ref, email), ...)`).
+  Esto permite que la regla de seguridad compruebe con un `exists()`/
+  `get()` exacto — sin consultas — si existe un acceso activo cuyo ID
+  coincide con `request.auth.token.email` (el email verificado por
+  Google en el token de sesión, no un dato que el cliente pueda
+  falsear).
+- `firestore.rules`:
+  - `cases`: la lectura de un no-miembro del despacho ahora exige que
+    exista `portalAccess/{tu-email}` con `isActive == true` para ese
+    expediente concreto — ya no basta con estar autenticado.
+  - `portalAccess`: mismo cambio, comparando el ID del documento
+    directamente con `request.auth.token.email`.
+  - `portalClients`: `create` exige ser `isActiveMember` del primer
+    despacho del array (siempre es así al crear, ver el código);
+    `update` exige ser `isActiveMember` del último despacho añadido al
+    array **o** ser el propio dueño del registro (email verificado)
+    tocando solo `userId`/`lastAccessAt` (el único caso en que el
+    cliente se actualiza a sí mismo, al iniciar sesión por primera
+    vez). La lectura de `portalClients` se deja abierta a
+    autenticados a propósito — solo contiene un índice
+    (email/nombre/IDs), no contenido de expedientes, y evita tener que
+    reproducir aquí la lógica de "pertenece a cualquiera de estos
+    despachos" que las reglas no expresan bien sobre arrays.
+
+**No verificado con el emulador de Firestore** (no disponible en este
+entorno) — solo revisión manual de la lógica contra los flujos de
+código reales (`createPortalAccess`, `updatePortalClientUserId`,
+`getCase`, `useClientPortal`). Verificado: `npx tsc -b`, `npm run
+build` y `npm run lint` limpios (mismos 16 problemas preexistentes).
+Se apoya en que la CI **ya despliega automáticamente** `firestore.rules`
+tras el incidente anterior de esta misma sesión, así que este cambio
+llegará a producción con el próximo push sin pasos manuales.
+
+**Pendiente de verificación real**: pedir al usuario que, tras el
+despliegue, compruebe que el flujo de portal existente (conceder
+acceso desde `CasePortalTab`, el cliente inicia sesión y ve su
+expediente) sigue funcionando — es el área con más riesgo de regresión
+de este cambio, al no haber podido probarlo contra Firestore real.

@@ -54,10 +54,30 @@ service cloud.firestore {
 
     // ─── PORTAL CLIENTS ──────────────────────────────────────────────────────
 
+    // Antes: create/update sin ninguna comprobación de quién escribe, lo
+    // que permitía a cualquier usuario autenticado añadirse a sí mismo
+    // firmIds/caseIds arbitrarios en su propio registro (y de ahí acceder
+    // a expedientes de despachos y clientes ajenos). Lectura se deja
+    // abierta a autenticados a propósito — este documento solo guarda un
+    // índice (email/nombre/IDs), no contenido del expediente, y así se
+    // evita reconstruir aquí la lógica multi-despacho de comprobar
+    // pertenencia a "cualquiera de los firmIds del array".
     match /portalClients/{docId} {
       allow read: if isAuth();
-      allow create: if isAuth();
-      allow update: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.firmIds.size() > 0
+        && isActiveMember(request.resource.data.firmIds[0]);
+      allow update: if isSuperAdmin()
+        || (
+          isAuth() &&
+          request.resource.data.firmIds.size() > 0 &&
+          isActiveMember(request.resource.data.firmIds[request.resource.data.firmIds.size() - 1])
+        )
+        || (
+          isAuth() &&
+          resource.data.email == request.auth.token.email &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId', 'lastAccessAt'])
+        );
       allow delete: if isSuperAdmin();
     }
 
@@ -152,7 +172,18 @@ service cloud.firestore {
       // ── CASES ────────────────────────────────────────────────────────────
 
       match /cases/{caseId} {
-        allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+        // Antes: "|| isAuth()" dejaba leer CUALQUIER expediente de CUALQUIER
+        // despacho a cualquier usuario con sesión iniciada (un cliente del
+        // portal, o un empleado de otro despacho). El acceso de un cliente
+        // del portal ahora se comprueba de verdad: debe existir un
+        // portalAccess activo para este expediente cuyo ID sea su propio
+        // email verificado por Google (ver el bloque portalAccess más abajo,
+        // donde el ID del documento pasó a ser el email en vez de aleatorio).
+        allow read: if isSuperAdmin() || isActiveMember(firmId) || (
+          isAuth() &&
+          exists(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)) &&
+          get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)).data.isActive == true
+        );
         allow create: if isActiveMember(firmId);
         allow update: if isActiveMember(firmId);
         allow delete: if isSuperAdmin() || isOwner(firmId);
@@ -189,9 +220,12 @@ service cloud.firestore {
           allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
         }
 
-        // Portal — accesos
+        // Portal — accesos. El ID de cada documento es el email normalizado
+        // del cliente (no un ID aleatorio) precisamente para poder hacer
+        // esta comprobación exacta sin un "|| isAuth()" genérico.
         match /portalAccess/{accessId} {
-          allow read: if isSuperAdmin() || isActiveMember(firmId) || isAuth();
+          allow read: if isSuperAdmin() || isActiveMember(firmId) ||
+            (isAuth() && accessId == request.auth.token.email);
           allow create: if isActiveMember(firmId);
           allow update: if isActiveMember(firmId);
           allow delete: if isOwnerOrDirector(firmId) || isSuperAdmin();

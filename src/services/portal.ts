@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   updateDoc,
   getDocs,
   query,
@@ -74,13 +75,20 @@ export async function createPortalAccess(
   clientEmail: string,
   clientName: string
 ): Promise<string> {
-  const ref = collection(db, 'firms', firmId, 'cases', caseId, 'portalAccess')
+  // El ID del documento es el email normalizado (no un ID aleatorio) a
+  // propósito: así la regla de seguridad puede comprobar "¿existe un
+  // portalAccess cuyo ID es mi propio email verificado?" sin necesitar un
+  // índice aparte. Ver firestore.rules — antes esta colección se leía con
+  // un `|| isAuth()` que dejaba leer el expediente a cualquier usuario
+  // autenticado, de cualquier despacho.
+  const normalizedEmail = clientEmail.toLowerCase().trim()
+  const ref = doc(db, 'firms', firmId, 'cases', caseId, 'portalAccess', normalizedEmail)
 
-  const docRef = await addDoc(ref, {
+  await setDoc(ref, {
     firmId,
     caseId,
     caseNumber,
-    clientEmail: clientEmail.toLowerCase().trim(),
+    clientEmail: normalizedEmail,
     clientName: clientName.trim(),
     isActive: true,
     createdBy: userId,
@@ -90,12 +98,12 @@ export async function createPortalAccess(
   // Registrar en portalClients para resolución de auth
   const portalRef = collection(db, 'portalClients')
   const existing = await getDocs(
-    query(portalRef, where('email', '==', clientEmail.toLowerCase().trim()))
+    query(portalRef, where('email', '==', normalizedEmail))
   )
 
   if (existing.empty) {
     await addDoc(portalRef, {
-      email: clientEmail.toLowerCase().trim(),
+      email: normalizedEmail,
       clientName: clientName.trim(),
       firmIds: [firmId],
       caseIds: [caseId],
@@ -111,7 +119,7 @@ export async function createPortalAccess(
     await updateDoc(existingDoc.ref, { firmIds, caseIds })
   }
 
-  return docRef.id
+  return ref.id
 }
 
 export async function revokePortalAccess(
