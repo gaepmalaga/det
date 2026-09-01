@@ -761,3 +761,46 @@ de bienvenida más elaborada, no como inconsistencia.
 Verificado build/lint limpios (16 problemas preexistentes, cero
 nuevos). Sin verificación visual posible por la misma limitación de
 red de siempre.
+
+**Segunda corrección — el problema real es el rol IAM del service
+account (2026-09-01)**: quitar `storage` no arregló nada. El mismo
+error 403 aparece con `firestore:rules,firestore:indexes` a solas:
+
+```
+Error: Request to https://serviceusage.googleapis.com/v1/projects/.../
+services/firestore.googleapis.com had HTTP Error: 403, Permission
+denied to get service [firestore.googleapis.com]
+```
+
+Esto **no** es que la API de Firestore esté deshabilitada (obviamente
+no lo está, la app la usa constantemente) — es que el service account
+de `FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP` tiene un rol IAM
+tan estrecho (probablemente solo "Firebase Hosting Admin", suficiente
+para lo único que se le pedía hasta ahora) que ni siquiera puede
+*consultar* si una API está habilitada — permiso
+`serviceusage.services.get`, que firebase-tools comprueba antes de
+desplegar cualquier producto que no sea Hosting. Pasaría lo mismo con
+cualquier `--only` que no sea `hosting`.
+
+**No hay arreglo posible desde el código o desde este entorno** — hace
+falta que el usuario amplíe el rol del service account en Google Cloud
+Console (no hay API para esto, es una acción manual en IAM):
+
+1. Entrar en https://console.cloud.google.com/iam-admin/iam?project=detectivesprivadosesp
+2. Buscar la cuenta de servicio cuyo email coincide con el campo
+   `client_email` del JSON que se subió al secret
+   `FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP` (algo con forma
+   `firebase-adminsdk-xxxxx@detectivesprivadosesp.iam.gserviceaccount.com`).
+3. Editar sus roles (icono de lápiz) y añadir el rol **"Firebase
+   Admin"** (cubre Firestore, Storage e Índices de una vez — es el rol
+   estándar recomendado para un service account de CI que despliega un
+   proyecto Firebase completo).
+4. Guardar.
+
+Mientras tanto, el paso "Deploy Firestore rules and indexes" del
+workflow se marcó `continue-on-error: true` para que no tumbe todo el
+job (el hosting sigue desplegándose bien, solo ese paso concreto queda
+en rojo/advertencia) — en cuanto se amplíe el rol, el mismo paso
+empezará a funcionar solo, sin tocar más código. **El bug de
+Contactos/Presupuestos sigue sin arreglarse en producción hasta que
+se complete este paso manual.**

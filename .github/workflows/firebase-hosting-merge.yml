@@ -28,6 +28,11 @@ jobs:
           channelId: live
           projectId: detectivesprivadosesp
       - name: Deploy Firestore rules and indexes
+        # Fails until the service account's IAM role is widened beyond
+        # Hosting-only (see PROJECT_DESCRIPTION.md) — non-blocking so it
+        # doesn't mark the whole deploy red while that's pending; it starts
+        # succeeding on its own the moment the role is granted.
+        continue-on-error: true
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json
         run: |
