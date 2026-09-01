@@ -810,3 +810,17 @@ Firebase" al service account desde IAM (manteniendo los tres roles que
 ya tenía: Firebase Authentication Admin, Admin SDK Service Agent y
 Service Account Token Creator) y lo guardó. Este commit es solo para
 disparar un despliegue nuevo y comprobar si el paso de reglas ya pasa.
+
+**Resuelto**: el run del commit `9a13ff7` (run 26,
+2026-09-01T12:09Z) muestra el paso "Deploy Firestore rules and
+indexes" en `conclusion: success` de verdad, no enmascarado por
+`continue-on-error` — las reglas de `firms/{firmId}/contacts` y
+`firms/{firmId}/quotes` ya están desplegadas en el Firestore real.
+`continue-on-error: true` se deja en el workflow como red de
+seguridad (si algún día vuelve a fallar por lo que sea, no debe tumbar
+el despliegue de hosting), no hace falta quitarlo. Storage sigue sin
+desplegarse automáticamente (no estaba en el `--only` de este paso) —
+si hace falta en el futuro, añadir `,storage` ahora debería funcionar
+ya que el rol "Administrador de Firebase" también lo cubre; no se ha
+hecho porque no había una necesidad inmediata. Pendiente de que el
+usuario confirme que Contactos y Presupuestos cargan en producción.
