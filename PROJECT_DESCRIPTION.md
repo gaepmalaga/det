@@ -667,3 +667,55 @@ build/despliegue (variables de entorno, secretos, workflows) necesita
 una verificación explícita de que el sitio carga de verdad después del
 deploy — build/lint limpios no son suficiente señal cuando lo que
 cambia es precisamente la infraestructura que build/lint no ejercitan.
+
+## Incidente — reglas de Firestore nunca desplegadas (2026-09-01)
+
+Usuario reportó "Error al cargar los contactos" / "Error al cargar
+los presupuestos" en producción, con capturas de pantalla del móvil.
+**No tiene relación con los cambios de diseño de hoy** — es un bug de
+infraestructura que lleva ahí desde la Fase 2.
+
+**Causa**: `firebase-hosting-merge.yml` y `firebase-hosting-pull-
+request.yml` solo despliegan **Hosting** (`FirebaseExtended/action-
+hosting-deploy@v0`). Ninguno de los dos ejecuta nunca `firebase
+deploy --only firestore:rules,firestore:indexes` — así que aunque
+`firestore.rules` lleva desde la Fase 2 con reglas para
+`firms/{firmId}/contacts` y `firms/{firmId}/quotes` (y desde la Fase 4
+con la regla de firma pública de contratos), **esas reglas nunca han
+llegado a Firestore real**. El proyecto sigue sirviendo las reglas
+manuales de antes de este rediseño, que no contemplan esas
+subcolecciones — Firestore deniega por defecto cualquier colección sin
+match, de ahí el error genérico (el código atrapa el
+`permission-denied` y lo convierte en "Error al cargar...").
+
+Esto también significa que **la firma pública de contratos
+(`/sign/:firmId/:contractId`) probablemente lleva rota desde la Fase
+4** por el mismo motivo — la regla `allow get: if true` para el enlace
+público tampoco se ha desplegado nunca.
+
+**Arreglado**: añadido un paso "Deploy Firestore rules, indexes and
+Storage rules" a `firebase-hosting-merge.yml` (solo al workflow de
+merge a main, no al de preview de PR, para no tocar producción desde
+una preview) que escribe el secret
+`FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP` ya existente a un
+fichero temporal, lo usa como `GOOGLE_APPLICATION_CREDENTIALS` y
+ejecuta `npx firebase-tools deploy --only
+firestore:rules,firestore:indexes,storage`. A partir de este commit,
+cualquier cambio futuro a `firestore.rules`, `firestore.indexes.json`
+o `storage.rules` se desplegará automáticamente en cada push a main,
+igual que ya pasaba con el hosting.
+
+**No verificado tras el fix** (misma limitación de siempre: sin
+acceso de red a Firebase desde este entorno) — pendiente de que el
+usuario recargue Contactos y Presupuestos en producción y confirme
+que cargan. Si sigue fallando, el siguiente paso es revisar los logs
+del propio paso de deploy en GitHub Actions (puede fallar por
+permisos del service account sobre Firestore/Storage, no solo sobre
+Hosting) y, si es necesario, verificar en la consola de Firebase que
+las reglas mostradas coinciden con `firestore.rules` del repo.
+
+**Lección para el futuro**: un cambio a `firestore.rules` sin un paso
+de CI que lo despliegue es un cambio que no existe en producción,
+por mucho que esté commiteado y el build pase — build/lint no
+detectan esto porque las reglas de seguridad no se ejecutan en el
+build local, solo en el servidor de Firestore real.
