@@ -1,7 +1,15 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Fingerprint, FileSearch, ShieldCheck, BookOpen } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
+
+const HIGHLIGHTS = [
+  { icon: FileSearch, text: 'Del contacto al expediente, sin hojas de cálculo sueltas' },
+  { icon: BookOpen, text: 'Libro-registro fiel a la Ley de Seguridad Privada' },
+  { icon: ShieldCheck, text: 'Cada despacho en su propio espacio, sin cruces de datos' },
+]
 
 export function LoginPage() {
   const { user, loading, signInWithGoogle } = useAuth()
@@ -17,34 +25,70 @@ export function LoginPage() {
   }, [user, loading, navigate])
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 mb-6">
-            <span className="text-white text-lg font-bold">D</span>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      {/* Panel de marca — solo en pantallas grandes */}
+      <div className="hidden lg:flex relative flex-col justify-between overflow-hidden bg-primary px-12 py-12 text-primary-foreground">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1.5px 1.5px, currentColor 1.5px, transparent 0)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        <div className="relative flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-gold text-brand-gold-foreground">
+            <Fingerprint className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-            DetectiveOS
-          </h1>
-          <p className="text-sm text-slate-500 mt-2">
-            Plataforma de gestión para despachos de detectives
-          </p>
+          <span className="text-sm font-semibold tracking-wide">DetectiveOS</span>
         </div>
 
-        {/* Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-900 mb-1">
-            Acceder
-          </h2>
-          <p className="text-sm text-slate-500 mb-6">
-            Inicia sesión con tu cuenta de Google para acceder a tu despacho.
+        <div className="relative max-w-md">
+          <p className="text-3xl font-semibold leading-tight tracking-tight text-balance">
+            La operativa de tu despacho de investigación, en un solo sitio.
           </p>
+          <ul className="mt-10 space-y-4">
+            {HIGHLIGHTS.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-start gap-3 text-sm text-primary-foreground/80">
+                <Icon className="w-4 h-4 mt-0.5 shrink-0 text-brand-gold" />
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <button
+        <p className="relative text-xs text-primary-foreground/50">
+          Plataforma de gestión para despachos de detectives privados
+        </p>
+      </div>
+
+      {/* Formulario */}
+      <div className="flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-sm">
+          <div className="flex lg:hidden items-center justify-center gap-2.5 mb-8">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
+              <Fingerprint className="w-5 h-5" />
+            </div>
+            <span className="text-base font-semibold tracking-tight text-foreground">
+              DetectiveOS
+            </span>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Acceder a tu despacho
+            </h1>
+            <p className="text-sm text-muted-foreground mt-2">
+              Inicia sesión con tu cuenta de Google para continuar.
+            </p>
+          </div>
+
+          <Button
             onClick={signInWithGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            size="lg"
+            variant="outline"
+            className="w-full justify-center gap-3 py-5 text-sm"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -65,15 +109,15 @@ export function LoginPage() {
               />
             </svg>
             Continuar con Google
-          </button>
-        </div>
+          </Button>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          ¿Nuevo despacho?{' '}
-          <a href={ROUTES.PRICING} className="text-slate-600 hover:underline">
-            Ver planes
-          </a>
-        </p>
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            ¿Nuevo despacho?{' '}
+            <a href={ROUTES.PRICING} className="text-foreground hover:underline underline-offset-4">
+              Ver planes
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )

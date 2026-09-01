@@ -426,6 +426,45 @@ seguimiento de implementación (§8).
   marco del cliente habitual, estadísticas) — con esto la Fase 4 queda
   completa.
 
+## Repaso visual (iniciado 2026-09-01)
+
+El usuario señaló que, aunque todo funciona, la app **visualmente sigue
+igual que al principio** — porque todo el código nuevo replicaba
+fielmente el estilo ya existente (divs de Tailwind a mano: `bg-slate-50`,
+tarjetas blancas, `bg-slate-900`), en vez de mejorarlo. Pidió
+explícitamente que no se vea "hecho por una IA" (plantilla gris
+genérica) y que sea agradable de usar.
+
+Hallazgo: el proyecto **tiene shadcn/ui instalado** (`Button`,
+`next-themes`, `tw-animate-css`) pero casi nada lo usa — ni el código
+original ni el mío hasta ahora. El tema de color en `src/index.css`
+era además el scaffold por defecto de shadcn: escala de grises pura
+(`oklch(... 0 0)` en casi todos los tokens), sin ninguna identidad de
+marca. Había incluso un bloque `@theme{}` duplicado y muerto (una
+paleta azul `hsl(221 70% 35%)` que nunca llegaba a aplicarse porque el
+bloque `@theme inline` posterior la pisaba).
+
+**Decidido**: paleta propia — tinta/navy como color de marca
+(`--primary`) + dorado cálido como acento (`--brand-gold`, evoca
+sellos/placas, encaja con "investigación privada" sin caer en cliché
+noir ni en el azul/morado genérico de SaaS). Fondo con un punto cálido
+(no blanco puro). Se limpió el bloque `@theme{}` muerto.
+
+**Piloto**: `LoginPage.tsx` rehecho por completo — panel de marca en
+escritorio (navy con textura de puntos, mensaje + 3 puntos fuertes del
+producto, icono de huella dactilar en vez de una letra "D" genérica),
+formulario a la derecha con el `Button` real de shadcn. En móvil colapsa
+a una sola columna. Capturas enviadas al usuario para validar la
+dirección antes de aplicarla al resto de la app (~30 pantallas) — **no
+se ha hecho el rollout completo todavía**, solo login + los tokens
+globales (que ya afectan a cualquier componente que use `bg-primary`
+etc., aunque la mayoría de pantallas siguen con clases `slate-*` fijas
+que no se enteran del cambio de tema hasta que se les toque).
+
+Verificado: build/lint limpios. Capturas de escritorio y móvil
+generadas localmente (`vite preview` + navegador headless) y revisadas
+antes de enviarlas.
+
 ## Incidente — producción caída (2026-09-01)
 
 Entre el commit `c116c7a` (fix del `.env`, ~08:29 UTC) y `b5a1a9f`
