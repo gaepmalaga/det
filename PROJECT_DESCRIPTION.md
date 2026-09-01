@@ -1363,9 +1363,17 @@ en la propia consola que **a partir del 2 de noviembre de 2026 la
 aplicación forzosa de App Check para AI Logic será obligatoria y no se
 podrá desactivar**. Antes de esa fecha hay que integrar de verdad el SDK
 de App Check en `src/lib/firebase.ts` (`initializeAppCheck` con
-`ReCaptchaV3Provider`, more probablemente, que no requiere backend) para
+`ReCaptchaV3Provider`, muy probablemente, que no requiere backend) para
 que el botón "Generar borrador con IA" no se vuelva a romper. Pendiente,
 no implementado en esta sesión.
+
+**Además, el modelo estaba retirado**: una vez resuelto el bloqueo de
+App Check, la llamada real devolvía `404 model models/gemini-2.0-flash-lite
+is no longer available`. Google lo retiró y recomienda
+`gemini-3.5-flash-lite` como sustituto directo — cambiado en
+`src/services/aiReport.ts` (`MODEL_ID`). Verificado con una llamada real
+contra producción (expediente demo, ver más abajo): el borrador se generó
+correctamente, en español, respetando el formato JSON pedido.
 
 ## Login con email/contraseña (2026-09-01, sesión local)
 
@@ -1437,3 +1445,54 @@ problemas preexistentes, cero nuevos).
 **Sin verificar de extremo a extremo en producción** — pendiente probar
 el ciclo completo (crear cuenta con email, recibir el correo, verificar,
 volver a la app) contra Firebase Auth real.
+
+**Actualización — sí se verificó, con el mismo cambio se probó todo el
+producto (2026-09-01)**: usando el truco de alias `+` de Gmail
+(`tucorreo+algo@gmail.com` sigue entregando en `tucorreo@gmail.com`),
+se creó una cuenta real de email/contraseña, se verificó abriendo el
+enlace real recibido por correo, y se completó el registro — confirma
+que el flujo de verificación funciona de extremo a extremo tal cual lo
+usaría un usuario real.
+
+## Despacho demo (2026-09-01, sesión local)
+
+A petición del usuario ("me podrían servir de muestra para vender la
+plataforma"), se creó un despacho de demostración completo y aislado —
+no mezclado con ningún despacho real — usando el login por
+email/contraseña recién implementado, para tener un ciclo de datos
+realista con el que enseñar la plataforma a clientes potenciales, y de
+paso sirvió como prueba de extremo a extremo del flujo completo del
+producto contra producción real (algo que ninguna sesión en la nube
+había podido hacer, por la limitación de red del sandbox).
+
+**Contenido del despacho demo** ("Investigaciones Sur Detectives S.L."):
+- Configuración: tarifas, plantilla de contrato con placeholders — todo
+  relleno, no vacío.
+- 3 contactos: uno particular con presupuesto **aceptado** → contrato
+  **firmado** → expediente **abierto** con 2 actuaciones + **informe
+  generado con IA real** (primera prueba end-to-end de Gemini en
+  producción, ver arriba) → asiento en libro-registro; uno corporativo
+  (aseguradora) con presupuesto **enviado, sin decidir**; uno particular
+  con presupuesto **rechazado** (con motivo). Cubre los tres estados
+  visibles del pipeline.
+- Acceso de portal concedido al cliente del expediente abierto.
+- Estadísticas: se comprobó que la pantalla agrega correctamente estos
+  datos (3 presupuestos, 50% conversión, gráfico por mes, importe por
+  tipo de investigación).
+
+**Cuenta del despacho demo**: email con alias `+` de la cuenta de Gmail
+del usuario (entrega en su misma bandeja), contraseña compartida solo
+por chat con el usuario, no guardada en este documento ni en el repo.
+
+**Verificado de paso, con datos reales de producción** (no del sandbox,
+que nunca tuvo acceso de red a Firebase):
+- El flujo completo Presupuesto → Contrato → Firma → Expediente →
+  Libro-registro funciona correctamente en producción (pendiente
+  original desde "Cambio de flujo: Contrato antes que Expediente").
+- El selector de ubicación con mapa (Leaflet) de las actuaciones carga y
+  renderiza bien en producción (sin GPS real disponible en el sandbox,
+  así que el umbral de 1 km entre puntos sigue sin probarse en
+  movimiento — eso solo lo puede hacer el usuario con su móvil).
+- El diseño navy/dorado se ve correcto en las pantallas autenticadas
+  (Dashboard, Expedientes, Configuración) — ninguna sesión anterior
+  había podido verlas renderizadas, solo revisar el código.
