@@ -48,8 +48,8 @@ export function InvestigationTypesTab() {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      <div>
+    <div className="space-y-6 max-w-2xl">
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
         <h3 className="text-sm font-semibold text-foreground mb-1">
           Tipos predefinidos del sistema
         </h3>
@@ -68,7 +68,7 @@ export function InvestigationTypesTab() {
         </div>
       </div>
 
-      <div>
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
         <h3 className="text-sm font-semibold text-foreground mb-1">
           Tipos personalizados del despacho
         </h3>

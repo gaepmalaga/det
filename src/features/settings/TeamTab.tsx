@@ -79,7 +79,7 @@ export function TeamTab() {
       </div>
 
       {showForm && (
-        <div className="bg-muted border border-border rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl shadow-sm p-5">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-semibold text-foreground">Nuevo miembro</h4>
             <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
@@ -172,10 +172,10 @@ export function TeamTab() {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted">
+            <tr className="border-b border-border bg-muted/60">
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Miembro
               </th>

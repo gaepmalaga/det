@@ -588,6 +588,47 @@ Configuración, Contactos/Presupuestos, y el panel de Superadmin — a la
 espera de que el usuario confirme que esta dirección también le
 convence antes de seguir.
 
+**Tercera pasada — Configuración y Superadmin (2026-09-01)**: usuario
+pidió seguir sin esperar confirmación. Mismo criterio que Dashboard/
+Expedientes, aplicado a:
+
+- `SettingsPage.tsx` (solo la pestaña, sin cambios — ya reutiliza
+  `PageHeader`) y sus 5 pestañas: `FirmSettingsTab.tsx`,
+  `TariffsTab.tsx`, `InvestigationTypesTab.tsx`,
+  `ContractTemplateTab.tsx` y `TeamTab.tsx` tenían formularios
+  "sueltos" directamente sobre el fondo de la página, sin ninguna
+  tarjeta que los contuviera — la sección más floja de toda la app.
+  Cada bloque de formulario (Datos del despacho / Sede principal,
+  Tarifas por hora / Gastos adicionales, tipos predefinidos /
+  personalizados, plantilla de contrato, alta de miembro) pasa a vivir
+  en `bg-card border border-border rounded-xl shadow-sm p-6`, con
+  insignia de icono en los títulos que ya tenían uno.
+- `SuperadminDashboard.tsx`: mismo tratamiento de tarjetas de métricas
+  que `DashboardPage.tsx` (insignia cuadrada, `shadow-sm` +
+  `hover:shadow-md`, número en `text-[1.75rem]`).
+- `FirmsPage.tsx` y `FirmDetailPage.tsx`: `shadow-sm` en tarjetas y
+  tabla, cabeceras de tabla en `bg-muted/60`, insignia del encabezado
+  de `FirmDetailPage` pasa de `bg-muted` a `bg-primary/10` para que
+  el icono destaque con el color de marca.
+- `PageHeader.tsx` (componente compartido, usado por Configuración,
+  Expedientes, Contactos, Presupuestos, Cumplimiento, Libro-registro,
+  Contratos, Informes, Colaboradores...): título de `text-xl` a
+  `text-2xl` para igualar el tamaño que ya tienen a mano Dashboard y
+  Superadmin — un solo cambio que homogeneiza el tamaño de título en
+  ~10 pantallas más sin tocarlas una a una.
+
+Verificado build/lint limpios (16 problemas preexistentes, cero
+nuevos). Sin cambios de lógica ni comportamiento. **Tampoco se pudo
+verificar visualmente** — misma limitación de red del sandbox;
+pendiente de confirmación del usuario en producción, especialmente en
+Configuración por ser la pantalla con más cambios de estructura de
+esta pasada.
+
+Pantallas que siguen solo con color de la pasada mecánica, sin este
+nivel de layout: Contactos, Presupuestos, Clientes, Colaboradores,
+Cumplimiento, Contratos, Informes, Libro-registro, y las pestañas de
+detalle de expediente (`CaseDetailPage` y sus tabs).
+
 Verificado en cada iteración: build/lint limpios, sin errores nuevos.
 Capturas de escritorio y móvil generadas localmente (`vite preview` +
 Playwright headless) y revisadas antes de enviarlas.

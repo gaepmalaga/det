@@ -120,12 +120,12 @@ export function FirmDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
-            <Building2 className="w-6 h-6 text-muted-foreground" />
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Building2 className="w-6 h-6 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-3 mb-1 flex-wrap">
-              <h1 className="text-xl font-semibold text-foreground">
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">
                 {firm.legalName}
               </h1>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${config.bg} ${config.border} ${config.text}`}>
@@ -144,7 +144,7 @@ export function FirmDetailPage() {
 
       {/* Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -154,7 +154,7 @@ export function FirmDetailPage() {
           <p className="text-2xl font-semibold text-foreground">{memberCount}</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <FolderOpen className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -164,7 +164,7 @@ export function FirmDetailPage() {
           <p className="text-2xl font-semibold text-foreground">{caseCount}</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -176,7 +176,7 @@ export function FirmDetailPage() {
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="w-4 h-4 text-muted-foreground" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -195,7 +195,7 @@ export function FirmDetailPage() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Equipo */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <div className="px-5 py-4 border-b border-border">
               <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Users className="w-4 h-4 text-muted-foreground" />
@@ -207,7 +207,7 @@ export function FirmDetailPage() {
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted">
+                  <tr className="border-b border-border bg-muted/60">
                     <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                       Nombre
                     </th>
@@ -258,7 +258,7 @@ export function FirmDetailPage() {
         <div className="space-y-4">
 
           {/* Datos del despacho */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-4">
               Datos legales
             </h2>
@@ -291,7 +291,7 @@ export function FirmDetailPage() {
           </div>
 
           {/* Dirección */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground" />
               Sede principal
@@ -306,7 +306,7 @@ export function FirmDetailPage() {
           </div>
 
           {/* Gestión del plan */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-3">
               Plan
             </h2>
@@ -325,7 +325,7 @@ export function FirmDetailPage() {
           </div>
 
           {/* Gestión del estado */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-3">
               Estado del despacho
             </h2>

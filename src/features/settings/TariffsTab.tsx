@@ -56,10 +56,12 @@ export function TariffsTab() {
   if (loading) return <LoadingSpinner />
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
-          <Euro className="w-4 h-4 text-muted-foreground" />
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 shrink-0">
+            <Euro className="w-3.5 h-3.5 text-primary" />
+          </span>
           Tarifas por hora
         </h3>
         <p className="text-xs text-muted-foreground mb-4">
@@ -98,7 +100,7 @@ export function TariffsTab() {
         </div>
       </div>
 
-      <div>
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
         <h3 className="text-sm font-semibold text-foreground mb-4">Gastos adicionales</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>

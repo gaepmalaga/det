@@ -76,8 +76,8 @@ export function FirmsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-foreground">Despachos</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Despachos</h1>
+        <p className="text-sm text-muted-foreground mt-1.5">
           {firms.length} despacho{firms.length !== 1 ? 's' : ''} registrado{firms.length !== 1 ? 's' : ''} en la plataforma.
         </p>
       </div>
@@ -112,7 +112,7 @@ export function FirmsPage() {
           placeholder="Buscar por nombre o RNSP..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
+          className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
         />
       </div>
 
@@ -123,10 +123,10 @@ export function FirmsPage() {
           description="No se encontraron despachos con los filtros aplicados."
         />
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted">
+              <tr className="border-b border-border bg-muted/60">
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Despacho
                 </th>

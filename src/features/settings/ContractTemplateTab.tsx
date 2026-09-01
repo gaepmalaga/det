@@ -47,48 +47,50 @@ export function ContractTemplateTab() {
         </p>
       </div>
 
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-1.5">
-          Nombre de la plantilla
-        </label>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          placeholder="Ej: Contrato de prestación de servicios"
-        />
-      </div>
-
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-1.5">
-          Placeholders disponibles — pulsa para insertar
-        </label>
-        <div className="flex flex-wrap gap-1.5">
-          {CONTRACT_PLACEHOLDERS.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              onClick={() => insertPlaceholder(p.key)}
-              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-muted text-muted-foreground border border-border hover:bg-muted transition-colors"
-              title={p.label}
-            >
-              {`{{${p.key}}}`}
-            </button>
-          ))}
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6 space-y-6">
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            Nombre de la plantilla
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            placeholder="Ej: Contrato de prestación de servicios"
+          />
         </div>
-      </div>
 
-      <div>
-        <label className="block text-xs font-medium text-foreground mb-1.5">
-          Texto del contrato
-        </label>
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={16}
-          className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y focus:border-primary font-mono"
-          placeholder={`Entre {{despacho_nombre}} (RNSP {{despacho_rnsp}}) y {{cliente_nombre}} (DNI/NIF {{cliente_dni}}), con domicilio en {{cliente_domicilio}}, se acuerda la prestación del siguiente servicio de investigación privada:\n\nObjeto: {{objeto}}\n\nImporte acordado: {{importe}}\n\nFecha: {{fecha}}`}
-        />
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            Placeholders disponibles — pulsa para insertar
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {CONTRACT_PLACEHOLDERS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => insertPlaceholder(p.key)}
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-muted text-muted-foreground border border-border hover:bg-muted transition-colors"
+                title={p.label}
+              >
+                {`{{${p.key}}}`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            Texto del contrato
+          </label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={16}
+            className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y focus:border-primary font-mono"
+            placeholder={`Entre {{despacho_nombre}} (RNSP {{despacho_rnsp}}) y {{cliente_nombre}} (DNI/NIF {{cliente_dni}}), con domicilio en {{cliente_domicilio}}, se acuerda la prestación del siguiente servicio de investigación privada:\n\nObjeto: {{objeto}}\n\nImporte acordado: {{importe}}\n\nFecha: {{fecha}}`}
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

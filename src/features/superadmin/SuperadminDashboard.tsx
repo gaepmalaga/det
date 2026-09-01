@@ -64,8 +64,8 @@ export function SuperadminDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-xl font-semibold text-foreground">Panel de control</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Panel de control</h1>
+        <p className="text-sm text-muted-foreground mt-1.5 capitalize">
           {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
       </div>
@@ -74,32 +74,36 @@ export function SuperadminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div
           onClick={() => navigate('/superadmin/firms')}
-          className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-foreground/20 transition-colors"
+          className="group bg-card border border-border rounded-xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-primary/25 transition-all"
         >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Total despachos
             </p>
-            <Building2 className="w-4 h-4 text-muted-foreground" />
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors shrink-0">
+              <Building2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </span>
           </div>
-          <p className="text-3xl font-semibold text-foreground">
+          <p className="text-[1.75rem] leading-none font-semibold text-foreground">
             {metrics.totalFirms}
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Usuarios totales
             </p>
-            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted shrink-0">
+              <Users className="w-4 h-4 text-muted-foreground" />
+            </span>
           </div>
-          <p className="text-3xl font-semibold text-foreground">
+          <p className="text-[1.75rem] leading-none font-semibold text-foreground">
             {metrics.totalMembers}
           </p>
         </div>
 
-        <div className={`rounded-xl p-5 border ${
+        <div className={`rounded-xl p-5 border shadow-sm hover:shadow-md transition-all ${
           metrics.activeFirms > 0
             ? 'bg-green-50 border-green-200'
             : 'bg-card border-border'
@@ -110,18 +114,22 @@ export function SuperadminDashboard() {
             }`}>
               Activos
             </p>
-            <CheckCircle className={`w-4 h-4 ${
-              metrics.activeFirms > 0 ? 'text-green-500' : 'text-muted-foreground'
-            }`} />
+            <span className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${
+              metrics.activeFirms > 0 ? 'bg-green-100' : 'bg-muted'
+            }`}>
+              <CheckCircle className={`w-4 h-4 ${
+                metrics.activeFirms > 0 ? 'text-green-500' : 'text-muted-foreground'
+              }`} />
+            </span>
           </div>
-          <p className={`text-3xl font-semibold ${
+          <p className={`text-[1.75rem] leading-none font-semibold ${
             metrics.activeFirms > 0 ? 'text-green-700' : 'text-foreground'
           }`}>
             {metrics.activeFirms}
           </p>
         </div>
 
-        <div className={`rounded-xl p-5 border ${
+        <div className={`rounded-xl p-5 border shadow-sm hover:shadow-md transition-all ${
           metrics.trialFirms > 0
             ? 'bg-amber-50 border-amber-200'
             : 'bg-card border-border'
@@ -132,11 +140,15 @@ export function SuperadminDashboard() {
             }`}>
               En trial
             </p>
-            <Clock className={`w-4 h-4 ${
-              metrics.trialFirms > 0 ? 'text-amber-500' : 'text-muted-foreground'
-            }`} />
+            <span className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${
+              metrics.trialFirms > 0 ? 'bg-amber-100' : 'bg-muted'
+            }`}>
+              <Clock className={`w-4 h-4 ${
+                metrics.trialFirms > 0 ? 'text-amber-500' : 'text-muted-foreground'
+              }`} />
+            </span>
           </div>
-          <p className={`text-3xl font-semibold ${
+          <p className={`text-[1.75rem] leading-none font-semibold ${
             metrics.trialFirms > 0 ? 'text-amber-700' : 'text-foreground'
           }`}>
             {metrics.trialFirms}
@@ -145,10 +157,12 @@ export function SuperadminDashboard() {
       </div>
 
       {/* Despachos recientes */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2.5">
+            <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/10 shrink-0">
+              <TrendingUp className="w-3.5 h-3.5 text-primary" />
+            </span>
             Despachos recientes
           </h2>
           <button
@@ -169,7 +183,7 @@ export function SuperadminDashboard() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted">
+              <tr className="border-b border-border bg-muted/60">
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Despacho
                 </th>

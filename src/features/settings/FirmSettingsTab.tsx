@@ -64,10 +64,12 @@ export function FirmSettingsTab() {
   if (!firm) return null
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-muted-foreground" />
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-md bg-primary/10 shrink-0">
+            <Building2 className="w-3.5 h-3.5 text-primary" />
+          </span>
           Datos del despacho
         </h3>
         <div className="space-y-4">
@@ -147,7 +149,7 @@ export function FirmSettingsTab() {
         </div>
       </div>
 
-      <div>
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
         <h3 className="text-sm font-semibold text-foreground mb-4">Sede principal</h3>
         <div className="space-y-3">
           <div>
