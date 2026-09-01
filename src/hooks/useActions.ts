@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   getCaseActions,
   createAction,
-  updateAction,
+  updateActionDescription,
   deleteAction,
   type CreateActionData,
 } from '@/services/actions'
@@ -49,10 +49,10 @@ export function useCaseActions(caseId: string) {
     }
   }
 
-  const update = async (actionId: string, data: Partial<CreateActionData>) => {
+  const updateDescription = async (actionId: string, description: string) => {
     if (!firmId) return
     try {
-      await updateAction(firmId, caseId, actionId, data)
+      await updateActionDescription(firmId, caseId, actionId, description)
       await load()
     } catch (err) {
       console.error(err)
@@ -71,7 +71,5 @@ export function useCaseActions(caseId: string) {
     }
   }
 
-  const totalHours = actions.reduce((sum, a) => sum + a.hoursWorked, 0)
-
-  return { actions, loading, error, create, update, remove, totalHours, reload: load }
+  return { actions, loading, error, create, updateDescription, remove, reload: load }
 }

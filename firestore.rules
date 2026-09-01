@@ -165,14 +165,6 @@ service cloud.firestore {
           allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
         }
 
-        // Evidencias
-        match /evidence/{evidenceId} {
-          allow read: if isSuperAdmin() || isActiveMember(firmId);
-          allow create: if isActiveMember(firmId);
-          allow update: if isActiveMember(firmId);
-          allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
-        }
-
         // Informes
         match /reports/{reportId} {
           allow read: if isSuperAdmin() || isActiveMember(firmId);

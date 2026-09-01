@@ -320,12 +320,34 @@ seguimiento de implementación (§8).
     sustituyendo a "Solicitudes" y al placeholder "Pre-expedientes" en el
     menú lateral. Dashboard, reglas de Firestore (`contacts`/`quotes`) e
     índices compuestos actualizados en consecuencia.
+  - **Fase 3 — actuaciones "captura rápida" + informe**: `CaseAction` se
+    redujo a lo que describe §4.1 — `description` (lo único que escribe el
+    detective) más `locationLat`/`locationLng` capturados por
+    `navigator.geolocation` al abrir el formulario (con aviso claro si el
+    dispositivo la deniega o no está disponible, guardable igualmente sin
+    ubicación). Se eliminaron `startTime`/`endTime`/`hoursWorked`/`rateType`
+    y el enlace a evidencias — y con ellos, **todo el módulo de Evidencias**
+    (`CaseEvidenceTab`, tipos `Evidence`/`EvidenceType`/`EvidenceVisibility`,
+    regla de Firestore `evidence`, rutas `EVIDENCE`/`CASE_EVIDENCE`), tal
+    como fijaba §2 — Storage se queda solo para contratos escaneados y (más
+    adelante) logos de despacho. En el informe, un botón "Compilar N
+    actuaciones" rellena el campo "Actuaciones realizadas" ordenando
+    cronológicamente las actuaciones del expediente — **esto es una
+    compilación determinista, no una llamada a un modelo de lenguaje**: no
+    hay ninguna integración de IA real conectada todavía. Para la
+    redacción en lenguaje de informe que describe §4.2 (la IA reordena y
+    redacta, no solo concatena) haría falta una Cloud Function que llame a
+    un LLM con una API key — infraestructura que este entorno no tiene
+    configurada y que requiere que el usuario la provea. El resto del flujo
+    del informe (bloqueo tras entrega, campos legales del Art. 49) ya
+    funcionaba correctamente y no se ha tocado.
   - `npm run build` y `npm run lint` verificados sin errores nuevos antes de
-    cada subida. Las páginas autenticadas nuevas (Contactos, Presupuestos)
-    no se han podido verificar visualmente en navegador porque el login
-    requiere credenciales reales de Google/Firebase no disponibles en este
-    entorno — solo se verificó que la página de login (no autenticada) carga
-    sin errores de consola y se ve bien en móvil/escritorio.
+    cada subida. Las páginas autenticadas nuevas o modificadas (Contactos,
+    Presupuestos, Actuaciones, Informe) no se han podido verificar
+    visualmente en navegador porque el login requiere credenciales reales
+    de Google/Firebase no disponibles en este entorno — solo se verificó
+    que la página de login (no autenticada) carga sin errores de consola y
+    se ve bien en móvil/escritorio.
 - Nota operativa: `firebase-hosting-merge.yml` despliega a producción en
   cada push a `main` — al trabajar sin PRs, cada commit a `main` se
   despliega directo. Se verifica build/lint localmente antes de cada push

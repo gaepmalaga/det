@@ -276,49 +276,16 @@ export interface Subject {
   createdBy: string
 }
 
-// ─── ACTION ──────────────────────────────────────────────────────────────────
-
-export type RateType = 'diurna' | 'nocturna' | 'festivo' | 'finde'
+// ─── ACTION (actuación — captura rápida) ──────────────────────────────────────
 
 export interface CaseAction {
   id: string
   caseId: string
-  date: Date
-  startTime: string
-  endTime: string
-  hoursWorked: number
-  rateType: RateType
-  location: string
   description: string
+  locationLat?: number
+  locationLng?: number
   detectiveId: string
   detectiveTip: string
-  evidenceIds: string[]
-  createdAt: Date
-  createdBy: string
-}
-
-// ─── EVIDENCE ────────────────────────────────────────────────────────────────
-
-export type EvidenceType = 'photo' | 'video' | 'audio' | 'document' | 'geolocation' | 'other'
-export type EvidenceVisibility = 'internal' | 'client'
-
-export interface Evidence {
-  id: string
-  caseId: string
-  type: EvidenceType
-  description: string
-  fileUrl?: string
-  fileName?: string
-  fileSize?: number
-  mimeType?: string
-  hash?: string
-  obtainedAt: Date
-  actionId?: string
-  detectiveId: string
-  detectiveTip: string
-  visibility: EvidenceVisibility
-  conservationDeadline?: Date
-  hasActiveException: boolean
   createdAt: Date
   createdBy: string
 }

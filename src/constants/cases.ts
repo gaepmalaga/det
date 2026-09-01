@@ -45,13 +45,6 @@ export const CASE_STATUS_FLOW: Partial<Record<CaseStatus, CaseStatus[]>> = {
   trabajo_terminado: ['cerrado'],
 }
 
-export const RATE_TYPE_LABELS = {
-  diurna: 'Diurna',
-  nocturna: 'Nocturna',
-  festivo: 'Festivo',
-  finde: 'Fin de semana',
-}
-
 export const COMPLIANCE_COLORS = {
   green: 'bg-green-50 text-green-700 border-green-200',
   amber: 'bg-amber-50 text-amber-700 border-amber-200',

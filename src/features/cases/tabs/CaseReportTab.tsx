@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { FileText, Plus, CheckCircle, Send, AlertTriangle } from 'lucide-react'
+import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles } from 'lucide-react'
 import { useCaseReport } from '@/hooks/useReports'
+import { useCaseActions } from '@/hooks/useActions'
 import { useAuth } from '@/contexts/AuthContext'
 import { createAuditLog } from '@/services/auditLog'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
@@ -9,7 +10,23 @@ import { closeRegistryEntry } from '@/services/registry'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import type { Case } from '@/types'
+import type { Case, CaseAction } from '@/types'
+
+function compileActionsText(actions: CaseAction[]): string {
+  const chronological = [...actions].sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+  )
+  return chronological
+    .map((a) => {
+      const when = format(a.createdAt, "dd/MM/yyyy HH:mm", { locale: es })
+      const location =
+        a.locationLat !== undefined && a.locationLng !== undefined
+          ? ` (ubicación: ${a.locationLat.toFixed(5)}, ${a.locationLng.toFixed(5)})`
+          : ''
+      return `[${when}]${location} ${a.description}`
+    })
+    .join('\n\n')
+}
 
 const REPORT_STATUS_LABELS = {
   borrador: 'Borrador',
@@ -35,6 +52,7 @@ interface CaseReportTabProps {
 export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const { user } = useAuth()
   const { report, loading, create, update, approve, deliver } = useCaseReport(caseData.id)
+  const { actions: caseActions } = useCaseActions(caseData.id)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -318,18 +336,41 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Actuaciones realizadas <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-slate-700">
+                Actuaciones realizadas <span className="text-red-500">*</span>
+              </label>
+              {caseActions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      actionsPerformed: compileActionsText(caseActions),
+                    }))
+                  }
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Compilar {caseActions.length} actuaciones
+                </button>
+              )}
+            </div>
             <textarea
               name="actionsPerformed"
               value={form.actionsPerformed}
               onChange={handleChange}
               required
-              rows={4}
+              rows={6}
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe cronológicamente las actuaciones realizadas durante la investigación..."
             />
+            {caseActions.length > 0 && (
+              <p className="text-xs text-slate-400 mt-1">
+                "Compilar" ordena cronológicamente las actuaciones registradas en la pestaña
+                Actuaciones. Revisa y redacta el texto en lenguaje de informe antes de guardar.
+              </p>
+            )}
           </div>
 
           <div>

@@ -6,7 +6,6 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
 import { CaseContractTab } from './tabs/CaseContractTab'
 import { CaseActionsTab } from './tabs/CaseActionsTab'
-import { CaseEvidenceTab } from './tabs/CaseEvidenceTab'
 import { CaseReportTab } from './tabs/CaseReportTab'
 import { CaseAuditTab } from './tabs/CaseAuditTab'
 import { CasePortalTab } from './tabs/CasePortalTab'
@@ -20,7 +19,6 @@ const TABS = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'contrato', label: 'Contrato' },
   { id: 'actuaciones', label: 'Actuaciones' },
-  { id: 'evidencias', label: 'Evidencias' },
   { id: 'informe', label: 'Informe' },
   { id: 'portal', label: 'Portal cliente' },
   { id: 'auditoria', label: 'Auditoría' },
@@ -268,10 +266,6 @@ const handleCaseUpdated = useCallback(() => {
 
       {activeTab === 'actuaciones' && (
         <CaseActionsTab caseData={caseData} />
-      )}
-
-      {activeTab === 'evidencias' && (
-        <CaseEvidenceTab caseData={caseData} />
       )}
 
       {activeTab === 'informe' && (
