@@ -1292,3 +1292,51 @@ problemas preexistentes, cero nuevos).
 se pueden probar en este entorno sandbox; el usuario deberá probarlo en
 el móvil, idealmente en movimiento, para confirmar que el umbral de
 1 km es razonable.
+
+## Borrador de informe con IA (2026-09-01)
+
+Cerrado el hueco de "informe generado por IA" que quedaba pendiente
+desde Fase 4 (§4.2). El usuario pidió una IA barata/gratuita, sin
+necesidad de que sea de última generación — compilar actuaciones en
+prosa de informe no requiere razonamiento avanzado.
+
+**Elegido: Gemini (`gemini-2.0-flash-lite`) vía Firebase AI Logic**
+(paquete `firebase/ai`, ya incluido en el SDK de `firebase` que este
+proyecto ya usa — no ha hecho falta instalar nada nuevo). Backend
+`GoogleAIBackend` (Gemini Developer API): capa gratuita, sin tarjeta de
+facturación.
+
+**Corrección a lo dicho en el chat**: se había hablado de "pega la key
+después" — no es así. `GoogleAIBackend` no acepta ninguna clave desde
+el código del cliente (por diseño: así no queda expuesta en el bundle
+del navegador). Lo único que falta para que funcione en producción es
+**un paso en Firebase Console**: Build → AI Logic → Get started →
+elegir "Gemini Developer API" (unos clics, gratis). Sin eso, las
+llamadas a `generateReportDraft()` fallarán — el botón lo captura y
+muestra el error en la UI sin romper nada.
+
+- **`src/lib/firebase.ts`** — nuevo export `ai` (`getAI(app, {backend:
+  new GoogleAIBackend()})`).
+- **`src/services/aiReport.ts` (nuevo)** — `generateReportDraft()`:
+  arma un prompt con los datos del expediente + el texto compilado de
+  las actuaciones (misma función `compileActionsText` que ya existía),
+  pide a Gemini que devuelva JSON (`responseMimeType:
+  'application/json'`) con `methodsUsed`, `actionsPerformed`,
+  `results`, `conclusions`, y lo valida antes de usarlo (si el JSON
+  viene mal formado o incompleto, lanza un error legible en vez de
+  rellenar el formulario con basura).
+- **`CaseReportTab.tsx`** — botón "Generar borrador con IA" junto a
+  "Redactar informe" (solo visible si hay actuaciones registradas —
+  sin eso no hay nada que resumir). Rellena el formulario y muestra un
+  aviso azul: *"revísalo y corrígelo antes de guardar — la
+  responsabilidad del contenido del informe es tuya"* — importante
+  porque el informe tiene valor legal (art. 49 Ley 5/2014) y la IA
+  puede equivocarse o alucinar pese al system prompt que le pide
+  ceñirse estrictamente a los hechos.
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos).
+
+**Sin verificar de extremo a extremo** — no se puede probar la llamada
+real a Gemini hasta que el usuario active AI Logic en la consola de
+Firebase (paso manual, no bloquea el resto de la app mientras tanto).

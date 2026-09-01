@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles } from 'lucide-react'
+import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles, Loader2 } from 'lucide-react'
 import { useCaseReport } from '@/hooks/useReports'
 import { useCaseActions } from '@/hooks/useActions'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,6 +7,7 @@ import { createAuditLog } from '@/services/auditLog'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { closeRegistryEntry } from '@/services/registry'
+import { generateReportDraft } from '@/services/aiReport'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -58,6 +59,9 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const [submitting, setSubmitting] = useState(false)
   const [deliveredTo, setDeliveredTo] = useState('')
   const [showDeliverForm, setShowDeliverForm] = useState(false)
+  const [generatingDraft, setGeneratingDraft] = useState(false)
+  const [draftError, setDraftError] = useState<string | null>(null)
+  const [draftGenerated, setDraftGenerated] = useState(false)
 
   const [form, setForm] = useState({
     clientName: '',
@@ -106,6 +110,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
       )
 
       setShowForm(false)
+      setDraftGenerated(false)
     } finally {
       setSubmitting(false)
     }
@@ -189,6 +194,39 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
     }
   }
 
+  const handleGenerateDraft = async () => {
+    if (generatingDraft || caseActions.length === 0) return
+    setDraftError(null)
+    setGeneratingDraft(true)
+    try {
+      const draft = await generateReportDraft({
+        caseNumber: caseData.caseNumber,
+        investigationType: caseData.investigationTypeCustom || caseData.investigationType,
+        objectScope: caseData.objectScope || caseData.description,
+        investigatedName: caseData.investigatedName,
+        investigatedAddress: caseData.investigatedAddress,
+        actionsText: compileActionsText(caseActions),
+      })
+      setForm((prev) => ({
+        ...prev,
+        serviceObject: prev.serviceObject || caseData.objectScope || caseData.description,
+        methodsUsed: draft.methodsUsed,
+        actionsPerformed: draft.actionsPerformed,
+        results: draft.results,
+        conclusions: draft.conclusions,
+      }))
+      setDraftGenerated(true)
+      setShowForm(true)
+    } catch (err) {
+      console.error(err)
+      setDraftError(
+        err instanceof Error ? err.message : 'No se pudo generar el borrador. Redáctalo a mano.'
+      )
+    } finally {
+      setGeneratingDraft(false)
+    }
+  }
+
   const startEditing = () => {
     if (!report) return
     setForm({
@@ -236,16 +274,37 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             <p className="text-xs text-muted-foreground mb-4">
               Redacta el informe de investigación. Al entregarlo el expediente se cerrará automáticamente.
             </p>
-            <button
-              onClick={() => {
-                setForm((prev) => ({ ...prev, serviceObject: caseData.objectScope || caseData.description }))
-                setShowForm(true)
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Redactar informe
-            </button>
+            {draftError && (
+              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3 max-w-sm">
+                {draftError}
+              </p>
+            )}
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => {
+                  setForm((prev) => ({ ...prev, serviceObject: caseData.objectScope || caseData.description }))
+                  setShowForm(true)
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Redactar informe
+              </button>
+              {caseActions.length > 0 && (
+                <button
+                  onClick={handleGenerateDraft}
+                  disabled={generatingDraft}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {generatingDraft ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  {generatingDraft ? 'Generando borrador...' : 'Generar borrador con IA'}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -260,7 +319,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             {editing ? 'Editar informe' : 'Nuevo informe de investigación'}
           </h3>
           <button
-            onClick={() => { setShowForm(false); setEditing(false) }}
+            onClick={() => { setShowForm(false); setEditing(false); setDraftGenerated(false) }}
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             Cancelar
@@ -275,6 +334,16 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             y actuaciones realizadas.
           </p>
         </div>
+
+        {draftGenerated && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
+            <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-800">
+              Borrador generado con IA a partir de las actuaciones registradas. Revísalo y
+              corrígelo antes de guardar — la responsabilidad del contenido del informe es tuya.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={editing ? handleUpdate : handleCreate} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -421,7 +490,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={() => { setShowForm(false); setEditing(false) }}
+              onClick={() => { setShowForm(false); setEditing(false); setDraftGenerated(false) }}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Cancelar
