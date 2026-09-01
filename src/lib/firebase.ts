@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app'
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
@@ -14,6 +15,17 @@ const firebaseConfig = {
 }
 
 const app = initializeApp(firebaseConfig)
+
+// App Check protege la API de Gemini (AI Logic) contra uso no autorizado.
+// La clave de sitio de reCAPTCHA v3 es pública por diseño (va en el bundle
+// del navegador a propósito) — Google la valida junto con el dominio de
+// origen, y no concede ningún acceso por sí sola. Registrada en
+// google.com/recaptcha/admin para detectivesprivadosesp.web.app y
+// detectivesprivadosesp.firebaseapp.com — ver PROJECT_DESCRIPTION.md.
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6LexHaQtAAAAAGekN77BSEj60zlSwq5K90jcYScP'),
+  isTokenAutoRefreshEnabled: true,
+})
 
 export const auth = getAuth(app)
 export const googleProvider = new GoogleAuthProvider()

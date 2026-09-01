@@ -27,15 +27,14 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP }}'
           channelId: live
           projectId: detectivesprivadosesp
-      - name: Deploy Firestore rules and indexes
-        # Fails until the service account's IAM role is widened beyond
-        # Hosting-only (see PROJECT_DESCRIPTION.md) — non-blocking so it
-        # doesn't mark the whole deploy red while that's pending; it starts
-        # succeeding on its own the moment the role is granted.
+      - name: Deploy Firestore rules, indexes and Storage rules
+        # continue-on-error stays as a safety net (see PROJECT_DESCRIPTION.md
+        # for the IAM incident this step went through) — the "Administrador
+        # de Firebase" role granted then already covers Storage too.
         continue-on-error: true
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP }}' > "$GOOGLE_APPLICATION_CREDENTIALS"
-          npx firebase-tools deploy --only firestore:rules,firestore:indexes --project detectivesprivadosesp --non-interactive
+          npx firebase-tools deploy --only firestore:rules,firestore:indexes,storage --project detectivesprivadosesp --non-interactive
           rm -f "$GOOGLE_APPLICATION_CREDENTIALS"

@@ -883,6 +883,13 @@ ya que el rol "Administrador de Firebase" también lo cubre; no se ha
 hecho porque no había una necesidad inmediata. Pendiente de que el
 usuario confirme que Contactos y Presupuestos cargan en producción.
 
+**Actualización — añadido (2026-09-01, sesión local)**: se añadió
+`,storage` al `--only` del paso "Deploy Firestore rules, indexes and
+Storage rules" en `firebase-hosting-merge.yml`. No hizo falta tocar IAM
+—el rol "Administrador de Firebase" ya concedido cubre Storage, como se
+anotó arriba—, así que `storage.rules` pasa a desplegarse
+automáticamente en cada push a `main` igual que Firestore.
+
 ## Incidente — fuga de datos entre despachos vía `cases`/`portalClients` (2026-09-01)
 
 Hallado por casualidad diseñando el acceso de colaboradores para la
@@ -1366,6 +1373,28 @@ de App Check en `src/lib/firebase.ts` (`initializeAppCheck` con
 `ReCaptchaV3Provider`, muy probablemente, que no requiere backend) para
 que el botón "Generar borrador con IA" no se vuelva a romper. Pendiente,
 no implementado en esta sesión.
+
+**Actualización — implementado (2026-09-01, más tarde en la misma
+sesión)**: se creó una clave de reCAPTCHA v3 (basada en puntuación) en
+`google.com/recaptcha/admin` — etiqueta "DetectiveOS App Check",
+dominios `detectivesprivadosesp.web.app` y
+`detectivesprivadosesp.firebaseapp.com`, asociada al proyecto de Google
+Cloud `detectivesprivadosesp` (no al proyecto por defecto que sugería el
+selector, que era otro proyecto del usuario sin relación con este). El
+selector de proyecto de esa página resultó muy inestable para
+automatizar por navegador (no confirmaba la selección de forma fiable
+tras muchos intentos) — el usuario terminó ese paso concreto a mano
+desde el móvil y pasó la clave de sitio (pública por diseño) por chat.
+
+`src/lib/firebase.ts` ahora llama a `initializeAppCheck(app, {provider:
+new ReCaptchaV3Provider('6LexHaQt...'), isTokenAutoRefreshEnabled:
+true})` antes de inicializar el resto de servicios. La clave de sitio es
+pública a propósito (viaja en el bundle del navegador) — Google la valida
+junto con el dominio de origen registrado, no concede acceso por sí
+sola; la clave secreta (que sí es sensible) nunca sale de la consola de
+Google, no se usa en el código del cliente. Verificado `npx tsc -b`,
+`npm run build` y `npm run lint` limpios (16 problemas preexistentes,
+cero nuevos).
 
 **Además, el modelo estaba retirado**: una vez resuelto el bloqueo de
 App Check, la llamada real devolvía `404 model models/gemini-2.0-flash-lite
