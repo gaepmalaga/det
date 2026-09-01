@@ -47,7 +47,7 @@ export function PortalCaseDetail() {
     <div>
       <button
         onClick={() => navigate('/portal/cases')}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a mis expedientes
@@ -55,38 +55,38 @@ export function PortalCaseDetail() {
 
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1 flex-wrap">
-          <span className="font-mono text-xs text-slate-400">{caseData.caseNumber}</span>
+          <span className="font-mono text-xs text-muted-foreground">{caseData.caseNumber}</span>
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
               isOpen
                 ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-slate-50 text-slate-600 border-slate-200'
+                : 'bg-muted text-muted-foreground border-border'
             }`}
           >
             {isOpen ? 'Abierto' : 'Cerrado'}
           </span>
         </div>
-        <h1 className="text-xl font-semibold text-slate-900">{caseData.investigationType}</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">{caseData.investigationType}</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Abierto el {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 max-w-xl">
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4 max-w-xl">
         {quote && (
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-center justify-between pb-4 border-b border-border">
             <div className="flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-slate-400" />
-              <p className="text-sm text-slate-700">Presupuesto {quote.quoteNumber}</p>
+              <Receipt className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm text-foreground">Presupuesto {quote.quoteNumber}</p>
             </div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-foreground">
               {currencyFormatter.format(quote.amount)}
             </p>
           </div>
         )}
         <div>
-          <p className="text-xs text-slate-500 mb-1">Objeto del encargo</p>
-          <p className="text-sm text-slate-900 whitespace-pre-wrap">
+          <p className="text-xs text-muted-foreground mb-1">Objeto del encargo</p>
+          <p className="text-sm text-foreground whitespace-pre-wrap">
             {caseData.objectScope || caseData.description}
           </p>
         </div>

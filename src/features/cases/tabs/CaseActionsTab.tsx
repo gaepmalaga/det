@@ -102,15 +102,15 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">Actuaciones</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-foreground">Actuaciones</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {actions.length} {actions.length === 1 ? 'actuación registrada' : 'actuaciones registradas'}
           </p>
         </div>
         {canAddActions && !isClosed && !showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Nueva actuación
@@ -128,9 +128,9 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
       )}
 
       {showForm && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-          <h4 className="text-sm font-semibold text-slate-900 mb-1">Captura rápida</h4>
-          <p className="text-xs text-slate-500 mb-4">
+        <div className="bg-muted border border-border rounded-xl p-5">
+          <h4 className="text-sm font-semibold text-foreground mb-1">Captura rápida</h4>
+          <p className="text-xs text-muted-foreground mb-4">
             Fecha, hora y ubicación se registran automáticamente. Solo anota lo que estás viendo.
           </p>
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -140,13 +140,13 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={4}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary bg-white"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary bg-card"
               placeholder="¿Qué está ocurriendo ahora mismo?"
             />
 
             <div className="flex items-center gap-1.5 text-xs">
               {location.status === 'locating' && (
-                <span className="inline-flex items-center gap-1.5 text-slate-500">
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Obteniendo ubicación...
                 </span>
@@ -158,7 +158,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                 </span>
               )}
               {location.status === 'denied' && (
-                <span className="inline-flex items-center gap-1.5 text-slate-400">
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                   <MapPinOff className="w-3.5 h-3.5" />
                   Ubicación no disponible — puedes guardar sin ella
                 </span>
@@ -173,14 +173,14 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                   setDescription('')
                   setLocation({ status: 'idle' })
                 }}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={submitting || !description.trim()}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Guardando...' : 'Guardar actuación'}
               </button>
@@ -191,11 +191,11 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
 
       {actions.length === 0 && !showForm ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-            <Clock className="w-5 h-5 text-slate-400" />
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-3">
+            <Clock className="w-5 h-5 text-muted-foreground" />
           </div>
-          <p className="text-sm font-medium text-slate-900 mb-1">Sin actuaciones</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm font-medium text-foreground mb-1">Sin actuaciones</p>
+          <p className="text-xs text-muted-foreground">
             Registra las actuaciones realizadas durante la investigación.
           </p>
         </div>
@@ -204,14 +204,14 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
           {actions.map((action) => (
             <div
               key={action.id}
-              className="bg-white border border-slate-200 rounded-xl p-4"
+              className="bg-card border border-border rounded-xl p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-slate-500 mb-1.5">
+                  <p className="text-xs text-muted-foreground mb-1.5">
                     {format(action.createdAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}
                   </p>
-                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
                     {action.description}
                   </p>
                   {action.locationLat !== undefined && action.locationLng !== undefined && (
@@ -229,7 +229,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                 {!isClosed && (
                   <button
                     onClick={() => handleRemove(action.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                    className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors shrink-0"
                     aria-label="Eliminar actuación"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

@@ -37,11 +37,11 @@ const REPORT_STATUS_LABELS = {
 }
 
 const REPORT_STATUS_COLORS = {
-  borrador: 'bg-slate-50 text-slate-700 border-slate-200',
+  borrador: 'bg-muted text-foreground border-border',
   en_revision: 'bg-amber-50 text-amber-700 border-amber-200',
   aprobado: 'bg-blue-50 text-blue-700 border-blue-200',
   entregado: 'bg-green-50 text-green-700 border-green-200',
-  archivado: 'bg-slate-50 text-slate-500 border-slate-200',
+  archivado: 'bg-muted text-muted-foreground border-border',
 }
 
 interface CaseReportTabProps {
@@ -223,17 +223,17 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
 
         {isClosed && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm text-slate-400">Expediente cerrado sin informe registrado.</p>
+            <p className="text-sm text-muted-foreground">Expediente cerrado sin informe registrado.</p>
           </div>
         )}
 
         {canCreateReport && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-              <FileText className="w-5 h-5 text-slate-400" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-3">
+              <FileText className="w-5 h-5 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium text-slate-900 mb-1">Sin informe</p>
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-sm font-medium text-foreground mb-1">Sin informe</p>
+            <p className="text-xs text-muted-foreground mb-4">
               Redacta el informe de investigación. Al entregarlo el expediente se cerrará automáticamente.
             </p>
             <button
@@ -241,7 +241,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
                 setForm((prev) => ({ ...prev, serviceObject: caseData.objectScope || caseData.description }))
                 setShowForm(true)
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Redactar informe
@@ -256,12 +256,12 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-foreground">
             {editing ? 'Editar informe' : 'Nuevo informe de investigación'}
           </h3>
           <button
             onClick={() => { setShowForm(false); setEditing(false) }}
-            className="text-xs text-slate-500 hover:text-slate-700"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             Cancelar
           </button>
@@ -279,7 +279,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         <form onSubmit={editing ? handleUpdate : handleCreate} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Nombre del contratante <span className="text-red-500">*</span>
               </label>
               <input
@@ -287,26 +287,26 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
                 value={form.clientName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre completo del cliente"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 NIF / NIE del contratante
               </label>
               <input
                 name="clientTaxId"
                 value={form.clientTaxId}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
                 placeholder="12345678A"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Objeto de la contratación <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -315,13 +315,13 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               onChange={handleChange}
               required
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe el objeto de la investigación contratada..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Medios utilizados <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -330,14 +330,14 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               onChange={handleChange}
               required
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe los medios técnicos y humanos empleados..."
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-foreground">
                 Actuaciones realizadas <span className="text-red-500">*</span>
               </label>
               {caseActions.length > 0 && (
@@ -362,11 +362,11 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               onChange={handleChange}
               required
               rows={6}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe cronológicamente las actuaciones realizadas durante la investigación..."
             />
             {caseActions.length > 0 && (
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 "Compilar" ordena cronológicamente las actuaciones registradas en la pestaña
                 Actuaciones. Revisa y redacta el texto en lenguaje de informe antes de guardar.
               </p>
@@ -374,7 +374,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Resultados obtenidos <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -383,37 +383,37 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               onChange={handleChange}
               required
               rows={4}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe los resultados y hallazgos de la investigación..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Conclusiones{' '}
-              <span className="text-slate-400 font-normal">(opcional)</span>
+              <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             <textarea
               name="conclusions"
               value={form.conclusions}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Conclusiones del detective..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Observaciones{' '}
-              <span className="text-slate-400 font-normal">(opcional)</span>
+              <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             <textarea
               name="observations"
               value={form.observations}
               onChange={handleChange}
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Observaciones adicionales..."
             />
           </div>
@@ -422,14 +422,14 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             <button
               type="button"
               onClick={() => { setShowForm(false); setEditing(false) }}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {submitting ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear informe'}
             </button>
@@ -446,13 +446,13 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-mono text-xs text-slate-400">{report.registryNumber}</span>
+              <span className="font-mono text-xs text-muted-foreground">{report.registryNumber}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${REPORT_STATUS_COLORS[report.status]}`}>
                 {REPORT_STATUS_LABELS[report.status]}
               </span>
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">Informe de investigación</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="text-sm font-semibold text-foreground">Informe de investigación</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Creado el {format(report.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}
             </p>
           </div>
@@ -462,14 +462,14 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               <>
                 <button
                   onClick={startEditing}
-                  className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
                 >
                   Editar
                 </button>
                 <button
                   onClick={handleApprove}
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   <CheckCircle className="w-3 h-3" />
                   Aprobar
@@ -479,7 +479,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
             {report.status === 'aprobado' && !isClosed && (
               <button
                 onClick={() => setShowDeliverForm(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Send className="w-3 h-3" />
                 Entregar al cliente
@@ -490,36 +490,36 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
 
         {/* Formulario de entrega */}
         {showDeliverForm && (
-          <div className="bg-white border border-green-200 rounded-xl p-5">
-            <h4 className="text-sm font-semibold text-slate-900 mb-3">
+          <div className="bg-card border border-green-200 rounded-xl p-5">
+            <h4 className="text-sm font-semibold text-foreground mb-3">
               Confirmar entrega del informe
             </h4>
-            <p className="text-xs text-slate-500 mb-3">
+            <p className="text-xs text-muted-foreground mb-3">
               Al confirmar la entrega el expediente se cerrará automáticamente
               y quedará bloqueado para edición.
             </p>
             <div className="mb-3">
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Entregado a <span className="text-red-500">*</span>
               </label>
               <input
                 value={deliveredTo}
                 onChange={(e) => setDeliveredTo(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre del receptor del informe"
               />
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDeliverForm(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeliver}
                 disabled={submitting || !deliveredTo.trim()}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-sm font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Procesando...' : 'Confirmar entrega y cerrar expediente'}
               </button>
@@ -528,39 +528,39 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
         )}
 
         {/* Contenido del informe */}
-        <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+        <div className="bg-card border border-border rounded-xl divide-y divide-border">
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Datos del contratante
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-slate-500">Nombre</p>
-                <p className="text-sm text-slate-900 font-medium">{report.clientName}</p>
+                <p className="text-xs text-muted-foreground">Nombre</p>
+                <p className="text-sm text-foreground font-medium">{report.clientName}</p>
               </div>
               {report.clientTaxId && (
                 <div>
-                  <p className="text-xs text-slate-500">NIF / NIE</p>
-                  <p className="text-sm text-slate-900 uppercase">{report.clientTaxId}</p>
+                  <p className="text-xs text-muted-foreground">NIF / NIE</p>
+                  <p className="text-sm text-foreground uppercase">{report.clientTaxId}</p>
                 </div>
               )}
             </div>
           </div>
 
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Detectives intervinientes
             </p>
             <div className="space-y-2">
               {report.detectives.map((d, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-600 font-medium shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium shrink-0">
                     {d.detectiveName[0]}
                   </div>
                   <div>
-                    <p className="text-sm text-slate-900">{d.detectiveName}</p>
+                    <p className="text-sm text-foreground">{d.detectiveName}</p>
                     {d.detectiveTip && (
-                      <p className="text-xs text-slate-500 font-mono">TIP: {d.detectiveTip}</p>
+                      <p className="text-xs text-muted-foreground font-mono">TIP: {d.detectiveTip}</p>
                     )}
                   </div>
                 </div>
@@ -569,48 +569,48 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
           </div>
 
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Objeto de la contratación
             </p>
-            <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.serviceObject}</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{report.serviceObject}</p>
           </div>
 
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Medios utilizados
             </p>
-            <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.methodsUsed}</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{report.methodsUsed}</p>
           </div>
 
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Actuaciones realizadas
             </p>
-            <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.actionsPerformed}</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{report.actionsPerformed}</p>
           </div>
 
           <div className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
               Resultados obtenidos
             </p>
-            <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.results}</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{report.results}</p>
           </div>
 
           {report.conclusions && (
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                 Conclusiones
               </p>
-              <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.conclusions}</p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{report.conclusions}</p>
             </div>
           )}
 
           {report.observations && (
             <div className="p-5">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                 Observaciones
               </p>
-              <p className="text-sm text-slate-900 whitespace-pre-wrap">{report.observations}</p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{report.observations}</p>
             </div>
           )}
 

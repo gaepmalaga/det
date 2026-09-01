@@ -50,20 +50,20 @@ export function ClientsPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 border-b border-slate-200">
+      <div className="flex gap-1 mb-4 border-b border-border">
         {TYPE_TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
             className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.value
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
             {tab.value !== 'todos' && counts[tab.value] ? (
-              <span className="ml-1.5 text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                 {counts[tab.value]}
               </span>
             ) : null}
@@ -73,13 +73,13 @@ export function ClientsPage() {
 
       {/* Buscador */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Buscar por nombre o email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+          className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
         />
       </div>
 
@@ -97,32 +97,32 @@ export function ClientsPage() {
               <div
                 key={client.id}
                 onClick={() => navigate('/app/clients/' + client.id)}
-                className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors active:bg-slate-50"
+                className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors active:bg-muted"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
                     {client.clientType === 'corporate'
-                      ? <Building2 className="w-4 h-4 text-slate-500" />
-                      : <User className="w-4 h-4 text-slate-500" />
+                      ? <Building2 className="w-4 h-4 text-muted-foreground" />
+                      : <User className="w-4 h-4 text-muted-foreground" />
                     }
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-900 truncate">
+                    <p className="font-medium text-foreground truncate">
                       {client.legalName}
                     </p>
                     {client.tradeName && (
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {client.tradeName}
                       </p>
                     )}
                   </div>
-                  <span className="ml-auto text-xs text-slate-400 shrink-0">
+                  <span className="ml-auto text-xs text-muted-foreground shrink-0">
                     {client.clientType === 'individual' ? 'Particular' : 'Corporativo'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between pl-12">
-                  <p className="text-xs text-slate-600 truncate">{client.email}</p>
-                  <p className="text-xs text-slate-400 shrink-0 ml-2">
+                  <p className="text-xs text-muted-foreground truncate">{client.email}</p>
+                  <p className="text-xs text-muted-foreground shrink-0 ml-2">
                     {format(client.createdAt, 'dd MMM yyyy', { locale: es })}
                   </p>
                 </div>
@@ -131,59 +131,59 @@ export function ClientsPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <tr className="border-b border-border bg-muted">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Cliente
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Tipo
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Contacto
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden lg:table-cell">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
                     Alta
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filtered.map((client) => (
                   <tr
                     key={client.id}
                     onClick={() => navigate('/app/clients/' + client.id)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="hover:bg-muted cursor-pointer transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
                           {client.clientType === 'corporate'
-                            ? <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                            : <User className="w-3.5 h-3.5 text-slate-500" />
+                            ? <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                            : <User className="w-3.5 h-3.5 text-muted-foreground" />
                           }
                         </div>
                         <div>
-                          <p className="font-medium text-slate-900">
+                          <p className="font-medium text-foreground">
                             {client.legalName}
                           </p>
                           {client.tradeName && (
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted-foreground">
                               {client.tradeName}
                             </p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 text-xs">
+                    <td className="px-4 py-3 text-muted-foreground text-xs">
                       {client.clientType === 'individual' ? 'Particular' : 'Corporativo'}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-sm text-slate-700">{client.email}</p>
-                      <p className="text-xs text-slate-500">{client.phone}</p>
+                      <p className="text-sm text-foreground">{client.email}</p>
+                      <p className="text-xs text-muted-foreground">{client.phone}</p>
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs hidden lg:table-cell">
+                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
                       {format(client.createdAt, 'dd MMM yyyy', { locale: es })}
                     </td>
                   </tr>

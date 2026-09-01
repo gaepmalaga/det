@@ -30,7 +30,7 @@ export function ContactDetailPage() {
     <div>
       <button
         onClick={() => navigate(ROUTES.CONTACTS)}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a contactos
@@ -39,14 +39,14 @@ export function ContactDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className="font-mono text-xs text-slate-400">{contact.referenceNumber}</span>
-          <span className="text-xs text-slate-400">
+          <span className="font-mono text-xs text-muted-foreground">{contact.referenceNumber}</span>
+          <span className="text-xs text-muted-foreground">
             {contact.contactType === 'individual' ? 'Particular' : 'Empresa'}
           </span>
         </div>
-        <h1 className="text-xl font-semibold text-slate-900">{contact.contactName}</h1>
+        <h1 className="text-xl font-semibold text-foreground">{contact.contactName}</h1>
         {contact.companyName && (
-          <p className="text-sm text-slate-500 mt-0.5">{contact.companyName}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{contact.companyName}</p>
         )}
       </div>
 
@@ -55,13 +55,13 @@ export function ContactDetailPage() {
         {/* Columna principal — presupuestos */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-slate-400" />
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-muted-foreground" />
               Presupuestos
             </h2>
             <button
               onClick={() => setShowCreateQuote(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Nuevo presupuesto
@@ -92,21 +92,21 @@ export function ContactDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <User className="w-4 h-4 text-slate-400" />
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
               Contacto
             </h2>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                 <a href={'mailto:' + contact.contactEmail} className="text-sm text-primary hover:underline truncate">
                   {contact.contactEmail}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <a href={'tel:' + contact.contactPhone} className="text-sm text-slate-700">
+                <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <a href={'tel:' + contact.contactPhone} className="text-sm text-foreground">
                   {contact.contactPhone}
                 </a>
               </div>
@@ -120,12 +120,12 @@ export function ContactDetailPage() {
             </div>
           )}
 
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-slate-900 mb-4">Información</h2>
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Información</h2>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-slate-500">Fecha de alta</p>
-                <p className="text-sm text-slate-700">
+                <p className="text-xs text-muted-foreground">Fecha de alta</p>
+                <p className="text-sm text-foreground">
                   {format(contact.createdAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}
                 </p>
               </div>

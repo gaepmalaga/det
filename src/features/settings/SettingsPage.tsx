@@ -25,15 +25,15 @@ export function SettingsPage() {
       />
 
       {/* Tabs — scroll horizontal en móvil */}
-      <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
+      <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}

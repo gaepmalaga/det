@@ -66,14 +66,14 @@ export function FirmSettingsTab() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-slate-400" />
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-muted-foreground" />
           Datos del despacho
         </h3>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 {firm.legalType === 'individual' ? 'Nombre completo' : 'Razón social'}
                 <span className="text-red-500 ml-0.5">*</span>
               </label>
@@ -82,26 +82,26 @@ export function FirmSettingsTab() {
                 value={form.legalName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Nombre comercial
-                <span className="text-slate-400 font-normal ml-1">(opcional)</span>
+                <span className="text-muted-foreground font-normal ml-1">(opcional)</span>
               </label>
               <input
                 name="tradeName"
                 value={form.tradeName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 {firm.legalType === 'individual' ? 'DNI / NIE' : 'CIF'}
                 <span className="text-red-500 ml-0.5">*</span>
               </label>
@@ -110,11 +110,11 @@ export function FirmSettingsTab() {
                 value={form.taxId}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Número RNSP
                 <span className="text-red-500 ml-0.5">*</span>
               </label>
@@ -123,13 +123,13 @@ export function FirmSettingsTab() {
                 value={form.rnsp}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               TIP del titular
               <span className="text-red-500 ml-0.5">*</span>
             </label>
@@ -138,9 +138,9 @@ export function FirmSettingsTab() {
               value={form.tipNumber}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
             />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Tarjeta de Identidad Profesional del detective titular habilitado.
             </p>
           </div>
@@ -148,10 +148,10 @@ export function FirmSettingsTab() {
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Sede principal</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">Sede principal</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Dirección <span className="text-red-500">*</span>
             </label>
             <input
@@ -159,7 +159,7 @@ export function FirmSettingsTab() {
               value={form.street}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Calle, número, piso..."
             />
           </div>
@@ -169,7 +169,7 @@ export function FirmSettingsTab() {
               value={form.city}
               onChange={handleChange}
               required
-              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Ciudad"
             />
             <input
@@ -177,7 +177,7 @@ export function FirmSettingsTab() {
               value={form.province}
               onChange={handleChange}
               required
-              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Provincia"
             />
             <input
@@ -185,7 +185,7 @@ export function FirmSettingsTab() {
               value={form.postalCode}
               onChange={handleChange}
               required
-              className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="C.P."
             />
           </div>
@@ -196,7 +196,7 @@ export function FirmSettingsTab() {
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Guardando...' : 'Guardar cambios'}

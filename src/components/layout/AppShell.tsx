@@ -24,15 +24,15 @@ export function AppShell() {
       <div className="lg:pl-64 flex flex-col min-h-screen">
 
         {/* Topbar — solo visible en móvil y tablet */}
-        <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between shrink-0">
+        <header className="lg:hidden sticky top-0 z-30 bg-card border-b border-border px-4 h-14 flex items-center justify-between shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 -ml-2 text-slate-600 hover:text-slate-900 transition-colors"
+            className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Abrir menú"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="text-sm font-semibold text-slate-900">DetectiveOS</span>
+          <span className="text-sm font-semibold text-foreground">DetectiveOS</span>
           <div className="w-9" />
         </header>
 

@@ -33,7 +33,7 @@ import { CollaboratorsPage } from '@/features/collaborators/CollaboratorsPage'
 import { CollaboratorDetailPage } from '@/features/collaborators/CollaboratorDetailPage'
 
 const Placeholder = ({ name }: { name: string }) => (
-  <div className="text-slate-500 text-sm">{name} — en construcción</div>
+  <div className="text-muted-foreground text-sm">{name} — en construcción</div>
 )
 
 export function AppRouter() {

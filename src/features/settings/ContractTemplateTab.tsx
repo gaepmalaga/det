@@ -37,10 +37,10 @@ export function ContractTemplateTab() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-1">
+        <h3 className="text-sm font-semibold text-foreground mb-1">
           Plantilla de contrato
         </h3>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Se usa para generar el contrato de cada cliente particular. Los placeholders se
           rellenan automáticamente con los datos del cliente y del expediente al crear el
           contrato; revísalo y ajústalo antes de enviarlo.
@@ -48,19 +48,19 @@ export function ContractTemplateTab() {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+        <label className="block text-xs font-medium text-foreground mb-1.5">
           Nombre de la plantilla
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           placeholder="Ej: Contrato de prestación de servicios"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+        <label className="block text-xs font-medium text-foreground mb-1.5">
           Placeholders disponibles — pulsa para insertar
         </label>
         <div className="flex flex-wrap gap-1.5">
@@ -69,7 +69,7 @@ export function ContractTemplateTab() {
               key={p.key}
               type="button"
               onClick={() => insertPlaceholder(p.key)}
-              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors"
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-muted text-muted-foreground border border-border hover:bg-muted transition-colors"
               title={p.label}
             >
               {`{{${p.key}}}`}
@@ -79,14 +79,14 @@ export function ContractTemplateTab() {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+        <label className="block text-xs font-medium text-foreground mb-1.5">
           Texto del contrato
         </label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={16}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y focus:border-primary font-mono"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y focus:border-primary font-mono"
           placeholder={`Entre {{despacho_nombre}} (RNSP {{despacho_rnsp}}) y {{cliente_nombre}} (DNI/NIF {{cliente_dni}}), con domicilio en {{cliente_domicilio}}, se acuerda la prestación del siguiente servicio de investigación privada:\n\nObjeto: {{objeto}}\n\nImporte acordado: {{importe}}\n\nFecha: {{fecha}}`}
         />
       </div>
@@ -95,7 +95,7 @@ export function ContractTemplateTab() {
         <button
           onClick={handleSave}
           disabled={saving || !body.trim()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Guardando...' : 'Guardar plantilla'}

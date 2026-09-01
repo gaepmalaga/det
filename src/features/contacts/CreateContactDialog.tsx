@@ -57,15 +57,15 @@ export function CreateContactDialog({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-card rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-semibold text-slate-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">
             Nuevo contacto
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -75,14 +75,14 @@ export function CreateContactDialog({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Tipo de contacto */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Tipo de contacto
             </label>
             <select
               name="contactType"
               value={form.contactType}
               onChange={handleSelectChange}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="individual">Particular</option>
               <option value="corporate">Empresa / Corporativo</option>
@@ -91,7 +91,7 @@ export function CreateContactDialog({
 
           {/* Nombre */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Nombre del contacto <span className="text-red-500">*</span>
             </label>
             <input
@@ -99,7 +99,7 @@ export function CreateContactDialog({
               value={form.contactName}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Nombre y apellidos"
             />
           </div>
@@ -107,14 +107,14 @@ export function CreateContactDialog({
           {/* Empresa */}
           {form.contactType === 'corporate' && (
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Empresa
               </label>
               <input
                 name="companyName"
                 value={form.companyName}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre de la empresa"
               />
             </div>
@@ -123,7 +123,7 @@ export function CreateContactDialog({
           {/* Email y teléfono */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Email <span className="text-red-500">*</span>
               </label>
               <input
@@ -132,12 +132,12 @@ export function CreateContactDialog({
                 value={form.contactEmail}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="email@ejemplo.com"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Teléfono <span className="text-red-500">*</span>
               </label>
               <input
@@ -146,7 +146,7 @@ export function CreateContactDialog({
                 value={form.contactPhone}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="600 000 000"
               />
             </div>
@@ -154,9 +154,9 @@ export function CreateContactDialog({
 
           {/* Notas internas */}
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Notas internas{' '}
-              <span className="text-slate-400 font-normal">
+              <span className="text-muted-foreground font-normal">
                 (no visibles al cliente)
               </span>
             </label>
@@ -165,7 +165,7 @@ export function CreateContactDialog({
               value={form.notes}
               onChange={handleTextareaChange}
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
               placeholder="Notas para el equipo..."
             />
           </div>
@@ -175,14 +175,14 @@ export function CreateContactDialog({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {loading ? 'Creando...' : 'Crear contacto'}
             </button>

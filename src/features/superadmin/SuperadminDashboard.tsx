@@ -39,9 +39,9 @@ const STATUS_CONFIG = {
   },
   cancelled: {
     label: 'Cancelado',
-    bg: 'bg-slate-50',
-    border: 'border-slate-200',
-    text: 'text-slate-500',
+    bg: 'bg-muted',
+    border: 'border-border',
+    text: 'text-muted-foreground',
     icon: XCircle,
   },
 }
@@ -64,8 +64,8 @@ export function SuperadminDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-xl font-semibold text-slate-900">Panel de control</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">Panel de control</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
       </div>
@@ -74,27 +74,27 @@ export function SuperadminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div
           onClick={() => navigate('/superadmin/firms')}
-          className="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-slate-300 transition-colors"
+          className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-foreground/20 transition-colors"
         >
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Total despachos
             </p>
-            <Building2 className="w-4 h-4 text-slate-400" />
+            <Building2 className="w-4 h-4 text-muted-foreground" />
           </div>
-          <p className="text-3xl font-semibold text-slate-900">
+          <p className="text-3xl font-semibold text-foreground">
             {metrics.totalFirms}
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
+        <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Usuarios totales
             </p>
-            <Users className="w-4 h-4 text-slate-400" />
+            <Users className="w-4 h-4 text-muted-foreground" />
           </div>
-          <p className="text-3xl font-semibold text-slate-900">
+          <p className="text-3xl font-semibold text-foreground">
             {metrics.totalMembers}
           </p>
         </div>
@@ -102,20 +102,20 @@ export function SuperadminDashboard() {
         <div className={`rounded-xl p-5 border ${
           metrics.activeFirms > 0
             ? 'bg-green-50 border-green-200'
-            : 'bg-white border-slate-200'
+            : 'bg-card border-border'
         }`}>
           <div className="flex items-center justify-between mb-3">
             <p className={`text-xs font-medium uppercase tracking-wide ${
-              metrics.activeFirms > 0 ? 'text-green-600' : 'text-slate-500'
+              metrics.activeFirms > 0 ? 'text-green-600' : 'text-muted-foreground'
             }`}>
               Activos
             </p>
             <CheckCircle className={`w-4 h-4 ${
-              metrics.activeFirms > 0 ? 'text-green-500' : 'text-slate-400'
+              metrics.activeFirms > 0 ? 'text-green-500' : 'text-muted-foreground'
             }`} />
           </div>
           <p className={`text-3xl font-semibold ${
-            metrics.activeFirms > 0 ? 'text-green-700' : 'text-slate-900'
+            metrics.activeFirms > 0 ? 'text-green-700' : 'text-foreground'
           }`}>
             {metrics.activeFirms}
           </p>
@@ -124,20 +124,20 @@ export function SuperadminDashboard() {
         <div className={`rounded-xl p-5 border ${
           metrics.trialFirms > 0
             ? 'bg-amber-50 border-amber-200'
-            : 'bg-white border-slate-200'
+            : 'bg-card border-border'
         }`}>
           <div className="flex items-center justify-between mb-3">
             <p className={`text-xs font-medium uppercase tracking-wide ${
-              metrics.trialFirms > 0 ? 'text-amber-600' : 'text-slate-500'
+              metrics.trialFirms > 0 ? 'text-amber-600' : 'text-muted-foreground'
             }`}>
               En trial
             </p>
             <Clock className={`w-4 h-4 ${
-              metrics.trialFirms > 0 ? 'text-amber-500' : 'text-slate-400'
+              metrics.trialFirms > 0 ? 'text-amber-500' : 'text-muted-foreground'
             }`} />
           </div>
           <p className={`text-3xl font-semibold ${
-            metrics.trialFirms > 0 ? 'text-amber-700' : 'text-slate-900'
+            metrics.trialFirms > 0 ? 'text-amber-700' : 'text-foreground'
           }`}>
             {metrics.trialFirms}
           </p>
@@ -145,15 +145,15 @@ export function SuperadminDashboard() {
       </div>
 
       {/* Despachos recientes */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-slate-400" />
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
             Despachos recientes
           </h2>
           <button
             onClick={() => navigate('/superadmin/firms')}
-            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Ver todos
             <ArrowRight className="w-3 h-3" />
@@ -162,50 +162,50 @@ export function SuperadminDashboard() {
 
         {metrics.recentFirms.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               No hay despachos registrados en los últimos 30 días.
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <tr className="border-b border-border bg-muted">
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Despacho
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   RNSP
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Plan
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Estado
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Alta
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {metrics.recentFirms.map((firm) => {
                 const config = STATUS_CONFIG[firm.status] ?? STATUS_CONFIG.trial
                 return (
                   <tr
                     key={firm.id}
                     onClick={() => navigate('/superadmin/firms/' + firm.id)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="hover:bg-muted cursor-pointer transition-colors"
                   >
                     <td className="px-5 py-3">
-                      <p className="font-medium text-slate-900">{firm.legalName}</p>
+                      <p className="font-medium text-foreground">{firm.legalName}</p>
                       {firm.tradeName && (
-                        <p className="text-xs text-slate-500">{firm.tradeName}</p>
+                        <p className="text-xs text-muted-foreground">{firm.tradeName}</p>
                       )}
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs text-slate-500">
+                    <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
                       {firm.rnsp}
                     </td>
-                    <td className="px-5 py-3 text-xs text-slate-600 capitalize">
+                    <td className="px-5 py-3 text-xs text-muted-foreground capitalize">
                       {firm.planId}
                     </td>
                     <td className="px-5 py-3">
@@ -213,7 +213,7 @@ export function SuperadminDashboard() {
                         {config.label}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-xs text-slate-500">
+                    <td className="px-5 py-3 text-xs text-muted-foreground">
                       {format(firm.createdAt, 'dd MMM yyyy', { locale: es })}
                     </td>
                   </tr>

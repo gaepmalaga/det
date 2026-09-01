@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { LogOut } from 'lucide-react'
+import { LogOut, Fingerprint } from 'lucide-react'
 
 export function PortalLayout() {
   const { user, logout } = useAuth()
@@ -12,16 +12,16 @@ export function PortalLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-6 py-4">
+    <div className="min-h-screen bg-muted">
+      <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">D</span>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <Fingerprint className="w-4 h-4 text-primary-foreground" strokeWidth={2.25} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Portal cliente</p>
-              <p className="text-xs text-slate-500">DetectiveOS</p>
+              <p className="text-sm font-semibold text-foreground">Portal cliente</p>
+              <p className="text-xs text-muted-foreground">DetectiveOS</p>
             </div>
           </div>
 
@@ -29,16 +29,16 @@ export function PortalLayout() {
             {user?.photoURL ? (
               <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-600">
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
                 {user?.displayName?.[0] ?? '?'}
               </div>
             )}
-            <p className="text-sm text-slate-700 hidden sm:block">
+            <p className="text-sm text-foreground hidden sm:block">
               {user?.displayName ?? user?.email}
             </p>
             <button
               onClick={handleLogout}
-              className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
               title="Cerrar sesión"
             >
               <LogOut className="w-4 h-4" />

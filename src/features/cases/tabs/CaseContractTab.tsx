@@ -22,7 +22,7 @@ const CONTRACT_STATUS_LABELS = {
 }
 
 const CONTRACT_STATUS_COLORS = {
-  borrador: 'bg-slate-50 text-slate-700 border-slate-200',
+  borrador: 'bg-muted text-foreground border-border',
   enviado: 'bg-blue-50 text-blue-700 border-blue-200',
   firmado: 'bg-green-50 text-green-700 border-green-200',
   rescindido: 'bg-red-50 text-red-700 border-red-200',
@@ -137,15 +137,15 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">Contratos</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-foreground">Contratos</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Al firmar el contrato el expediente pasará automáticamente a activo.
           </p>
         </div>
         {!isClosed && (
           <button
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Nuevo contrato
@@ -155,17 +155,17 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
 
       {contracts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-            <FileText className="w-5 h-5 text-slate-400" />
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-3">
+            <FileText className="w-5 h-5 text-muted-foreground" />
           </div>
-          <p className="text-sm font-medium text-slate-900 mb-1">Sin contratos</p>
-          <p className="text-xs text-slate-500 mb-4">
+          <p className="text-sm font-medium text-foreground mb-1">Sin contratos</p>
+          <p className="text-xs text-muted-foreground mb-4">
             Crea el contrato de prestación de servicios para este expediente.
           </p>
           {!isClosed && (
             <button
               onClick={() => setShowCreate(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Crear contrato
@@ -175,23 +175,23 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
       ) : (
         <div className="space-y-3">
           {contracts.map((contract) => (
-            <div key={contract.id} className="bg-white border border-slate-200 rounded-xl p-5">
+            <div key={contract.id} className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {contract.contractNumber}
                     </span>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${CONTRACT_STATUS_COLORS[contract.status]}`}>
                       {CONTRACT_STATUS_LABELS[contract.status]}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-slate-900">{contract.clientName}</p>
+                  <p className="text-sm font-medium text-foreground">{contract.clientName}</p>
                 </div>
 
                 <div className="flex gap-2">
                   {contract.scannedDocumentUrl && (
-                    <a href={contract.scannedDocumentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
+                    <a href={contract.scannedDocumentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors">
                       <ExternalLink className="w-3 h-3" />
                       Ver documento
                     </a>
@@ -200,14 +200,14 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                     <>
                       <button
                         onClick={() => copySignLink(contract.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors"
                       >
                         <LinkIcon className="w-3 h-3" />
                         {copiedId === contract.id ? 'Copiado' : 'Copiar enlace de firma'}
                       </button>
                       <button
                         onClick={() => setSelectedContract(contract)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
                       >
                         <CheckCircle className="w-3 h-3" />
                         Registrar firma manual
@@ -217,7 +217,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                   {contract.status === 'firmado' && (
                     <button
                       onClick={() => setSelectedContract(contract)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors"
                     >
                       Ver firma
                     </button>
@@ -225,59 +225,59 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 mb-3">{contract.serviceDescription}</p>
+              <p className="text-xs text-muted-foreground mb-3">{contract.serviceDescription}</p>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 {contract.agreedPrice && (
                   <div>
-                    <p className="text-slate-500">Precio acordado</p>
-                    <p className="text-slate-900 font-medium">{contract.agreedPrice}</p>
+                    <p className="text-muted-foreground">Precio acordado</p>
+                    <p className="text-foreground font-medium">{contract.agreedPrice}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-slate-500">Emisión</p>
-                  <p className="text-slate-900">
+                  <p className="text-muted-foreground">Emisión</p>
+                  <p className="text-foreground">
                     {format(contract.issuedAt, 'dd MMM yyyy', { locale: es })}
                   </p>
                 </div>
                 {contract.signedAt && (
                   <div>
-                    <p className="text-slate-500">Fecha de firma</p>
-                    <p className="text-slate-900">
+                    <p className="text-muted-foreground">Fecha de firma</p>
+                    <p className="text-foreground">
                       {format(contract.signedAt, 'dd MMM yyyy', { locale: es })}
                     </p>
                   </div>
                 )}
                 {contract.signedByName && (
                   <div>
-                    <p className="text-slate-500">Firmado por</p>
-                    <p className="text-slate-900">{contract.signedByName}</p>
+                    <p className="text-muted-foreground">Firmado por</p>
+                    <p className="text-foreground">{contract.signedByName}</p>
                   </div>
                 )}
                 {contract.signedIp && (
                   <div>
-                    <p className="text-slate-500">IP de firma</p>
-                    <p className="text-slate-900 font-mono">{contract.signedIp}</p>
+                    <p className="text-muted-foreground">IP de firma</p>
+                    <p className="text-foreground font-mono">{contract.signedIp}</p>
                   </div>
                 )}
               </div>
 
               {contract.specificConditions && (
-                <div className="mt-3 pt-3 border-t border-slate-100">
-                  <p className="text-xs text-slate-500 mb-1">Condiciones específicas</p>
-                  <p className="text-xs text-slate-700 whitespace-pre-wrap">
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Condiciones específicas</p>
+                  <p className="text-xs text-foreground whitespace-pre-wrap">
                     {contract.specificConditions}
                   </p>
                 </div>
               )}
 
               {contract.bodyText && (
-                <div className="mt-3 pt-3 border-t border-slate-100">
+                <div className="mt-3 pt-3 border-t border-border">
                   <button
                     onClick={() =>
                       setExpandedBodyId(expandedBodyId === contract.id ? null : contract.id)
                     }
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-foreground transition-colors"
                   >
                     {expandedBodyId === contract.id ? (
                       <ChevronUp className="w-3.5 h-3.5" />
@@ -287,7 +287,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                     Ver texto del contrato
                   </button>
                   {expandedBodyId === contract.id && (
-                    <p className="text-xs text-slate-700 whitespace-pre-wrap mt-2 p-3 bg-slate-50 rounded-lg font-mono">
+                    <p className="text-xs text-foreground whitespace-pre-wrap mt-2 p-3 bg-muted rounded-lg font-mono">
                       {contract.bodyText}
                     </p>
                   )}

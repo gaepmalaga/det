@@ -27,14 +27,16 @@ export function SuperadminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-muted flex">
 
       {/* Sidebar */}
-      <aside className="w-56 bg-slate-900 flex flex-col shrink-0 fixed inset-y-0 left-0">
-        <div className="h-16 flex items-center px-5 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span className="text-white font-semibold text-sm">
+      <aside className="w-56 bg-sidebar flex flex-col shrink-0 fixed inset-y-0 left-0">
+        <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center w-6 h-6 rounded-md bg-brand-gold text-brand-gold-foreground shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2.25} />
+            </div>
+            <span className="text-sidebar-foreground font-semibold text-sm">
               Superadmin
             </span>
           </div>
@@ -49,40 +51,47 @@ export function SuperadminLayout() {
                   end={item.to === '/superadmin'}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                      'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
                       isActive
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
                     )
                   }
                 >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-brand-gold" />
+                      )}
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
 
-        <div className="border-t border-slate-800 p-3">
+        <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-2 px-3 py-2 mb-0.5">
             {user?.photoURL ? (
-              <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full shrink-0" />
+              <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full shrink-0 ring-1 ring-sidebar-border" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-xs text-white font-medium shrink-0">
+              <div className="w-6 h-6 rounded-full bg-brand-gold flex items-center justify-center text-xs text-brand-gold-foreground font-medium shrink-0">
                 {user?.displayName?.[0] ?? 'S'}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-white truncate">
+              <p className="text-xs text-sidebar-foreground/90 truncate">
                 {user?.displayName ?? user?.email ?? '—'}
               </p>
-              <p className="text-xs text-amber-400">Superadmin</p>
+              <p className="text-xs text-brand-gold">Superadmin</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Cerrar sesión

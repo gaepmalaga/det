@@ -11,9 +11,9 @@ import {
   Building2,
   Settings,
   LogOut,
-  ChevronRight,
   Inbox,
   X,
+  Fingerprint,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ROUTES } from '@/constants/routes'
@@ -55,20 +55,25 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col',
+        'fixed inset-y-0 left-0 z-50 w-64 bg-sidebar flex flex-col',
         'transition-transform duration-200 ease-in-out',
         'lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
       )}
     >
       {/* Logo + botón cerrar en móvil */}
-      <div className="h-14 lg:h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
-        <span className="text-white font-semibold text-sm tracking-wide">
-          DetectiveOS
-        </span>
+      <div className="h-14 lg:h-16 flex items-center justify-between px-5 border-b border-sidebar-border shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-6 h-6 rounded-md bg-brand-gold text-brand-gold-foreground shrink-0">
+            <Fingerprint className="w-3.5 h-3.5" strokeWidth={2.25} />
+          </div>
+          <span className="text-sidebar-foreground font-semibold text-sm tracking-wide">
+            DetectiveOS
+          </span>
+        </div>
         <button
           onClick={onClose}
-          className="lg:hidden p-1.5 text-slate-400 hover:text-white transition-colors"
+          className="lg:hidden p-1.5 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
           aria-label="Cerrar menú"
         >
           <X className="w-4 h-4" />
@@ -85,16 +90,22 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
                 onClick={handleNavClick}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
+                    'relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
                     isActive
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
                   )
                 }
               >
-                <item.icon className="w-4 h-4 shrink-0" />
-                <span className="flex-1">{item.label}</span>
-                <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100" />
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-brand-gold" />
+                    )}
+                    <item.icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1">{item.label}</span>
+                  </>
+                )}
               </NavLink>
             </li>
           ))}
@@ -102,7 +113,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-slate-800 p-3 space-y-0.5 shrink-0">
+      <div className="border-t border-sidebar-border p-3 space-y-0.5 shrink-0">
         <NavLink
           to={ROUTES.SETTINGS}
           onClick={handleNavClick}
@@ -110,8 +121,8 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
             cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
               isActive
-                ? 'bg-slate-800 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
             )
           }
         >
@@ -119,26 +130,26 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
           <span>Configuración</span>
         </NavLink>
 
-        <div className="flex items-center gap-3 px-3 py-2">
+        <div className="flex items-center gap-3 px-3 py-2 mt-1">
           {user?.photoURL ? (
             <img
               src={user.photoURL}
               alt={user.displayName ?? ''}
-              className="w-6 h-6 rounded-full shrink-0"
+              className="w-6 h-6 rounded-full shrink-0 ring-1 ring-sidebar-border"
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white shrink-0">
+            <div className="w-6 h-6 rounded-full bg-sidebar-accent flex items-center justify-center text-xs text-sidebar-accent-foreground shrink-0">
               {user?.displayName?.[0] ?? '?'}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-white truncate">
+            <p className="text-xs text-sidebar-foreground/80 truncate">
               {user?.displayName ?? user?.email ?? '—'}
             </p>
           </div>
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-slate-300 transition-colors shrink-0"
+            className="text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-colors shrink-0"
             title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />

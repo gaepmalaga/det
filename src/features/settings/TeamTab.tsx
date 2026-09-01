@@ -64,14 +64,14 @@ export function TeamTab() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">Equipo</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-foreground">Equipo</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {activeMembers.length} miembro{activeMembers.length !== 1 ? 's' : ''} activo{activeMembers.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Añadir miembro
@@ -79,17 +79,17 @@ export function TeamTab() {
       </div>
 
       {showForm && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+        <div className="bg-muted border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-semibold text-slate-900">Nuevo miembro</h4>
-            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
+            <h4 className="text-sm font-semibold text-foreground">Nuevo miembro</h4>
+            <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
               <X className="w-4 h-4" />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Nombre completo <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -97,12 +97,12 @@ export function TeamTab() {
                   value={form.displayName}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="Nombre y apellidos"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -111,7 +111,7 @@ export function TeamTab() {
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="email@ejemplo.com"
                 />
               </div>
@@ -119,14 +119,14 @@ export function TeamTab() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Rol <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="role"
                   value={form.role}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
                 >
                   {Object.entries(ROLE_LABELS)
                     .filter(([key]) => key !== 'firm_owner')
@@ -137,7 +137,7 @@ export function TeamTab() {
               </div>
               {requiresTip && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Número de TIP <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -145,7 +145,7 @@ export function TeamTab() {
                     value={form.tipNumber}
                     onChange={handleChange}
                     required={requiresTip}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
                     placeholder="D-XXXX"
                   />
                 </div>
@@ -156,14 +156,14 @@ export function TeamTab() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Añadiendo...' : 'Añadir miembro'}
               </button>
@@ -172,26 +172,26 @@ export function TeamTab() {
         </div>
       )}
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50">
-              <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <tr className="border-b border-border bg-muted">
+              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Miembro
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Rol
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 TIP
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Estado
               </th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {members.map((member) => (
               <tr key={member.id} className={member.isActive ? '' : 'opacity-50'}>
                 <td className="px-4 py-3">
@@ -199,23 +199,23 @@ export function TeamTab() {
                     {member.photoURL ? (
                       <img src={member.photoURL} alt="" className="w-7 h-7 rounded-full" />
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
+                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                         {member.displayName[0]}
                       </div>
                     )}
                     <div>
-                      <p className="font-medium text-slate-900">{member.displayName}</p>
-                      <p className="text-xs text-slate-500">{member.email}</p>
+                      <p className="font-medium text-foreground">{member.displayName}</p>
+                      <p className="text-xs text-muted-foreground">{member.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-slate-600 text-xs">
+                <td className="px-4 py-3 text-muted-foreground text-xs">
                   {ROLE_LABELS[member.role]}
                 </td>
                 <td className="px-4 py-3">
                   {member.tipNumber ? (
                     <div>
-                      <p className="text-xs font-mono text-slate-900">{member.tipNumber}</p>
+                      <p className="text-xs font-mono text-foreground">{member.tipNumber}</p>
                       {member.tipStatus && (
                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border mt-0.5 ${TIP_STATUS_COLORS[member.tipStatus]}`}>
                           {TIP_STATUS_LABELS[member.tipStatus]}
@@ -223,14 +223,14 @@ export function TeamTab() {
                       )}
                     </div>
                   ) : (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
                     member.isActive
                       ? 'bg-green-50 text-green-700 border-green-200'
-                      : 'bg-slate-50 text-slate-500 border-slate-200'
+                      : 'bg-muted text-muted-foreground border-border'
                   }`}>
                     {member.isActive ? 'Activo' : 'Inactivo'}
                   </span>
@@ -239,7 +239,7 @@ export function TeamTab() {
                   {member.role !== 'firm_owner' && (
                     <button
                       onClick={() => handleToggleActive(member.id, member.isActive)}
-                      className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                       title={member.isActive ? 'Desactivar' : 'Activar'}
                     >
                       {member.isActive

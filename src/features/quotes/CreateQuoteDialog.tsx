@@ -63,14 +63,14 @@ export function CreateQuoteDialog({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="relative bg-card rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">
             Nuevo presupuesto
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -78,14 +78,14 @@ export function CreateQuoteDialog({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Contacto <span className="text-red-500">*</span>
             </label>
             {lockedContact ? (
-              <div className="px-3 py-2 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg">
+              <div className="px-3 py-2 text-sm text-foreground bg-muted border border-border rounded-lg">
                 {lockedContact.contactName}
                 {lockedContact.companyName && (
-                  <span className="text-slate-400"> — {lockedContact.companyName}</span>
+                  <span className="text-muted-foreground"> — {lockedContact.companyName}</span>
                 )}
               </div>
             ) : (
@@ -94,7 +94,7 @@ export function CreateQuoteDialog({
                 value={form.contactId}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
                 <option value="">Seleccionar contacto...</option>
                 {contacts.map((c) => (
@@ -108,7 +108,7 @@ export function CreateQuoteDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Tipo de investigación <span className="text-red-500">*</span>
             </label>
             <select
@@ -116,7 +116,7 @@ export function CreateQuoteDialog({
               value={form.investigationType}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="">Seleccionar tipo...</option>
               {SYSTEM_INVESTIGATION_TYPES.map((type) => (
@@ -128,21 +128,21 @@ export function CreateQuoteDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Detalle adicional{' '}
-              <span className="text-slate-400 font-normal">(opcional)</span>
+              <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             <input
               name="investigationTypeCustom"
               value={form.investigationTypeCustom}
               onChange={handleChange}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Especifica si es necesario..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Descripción del encargo <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -151,13 +151,13 @@ export function CreateQuoteDialog({
               onChange={handleChange}
               required
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
               placeholder="Describe brevemente qué necesita investigar el cliente..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Importe (€) <span className="text-red-500">*</span>
             </label>
             <input
@@ -168,7 +168,7 @@ export function CreateQuoteDialog({
               value={form.amount}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="0,00"
             />
           </div>
@@ -177,14 +177,14 @@ export function CreateQuoteDialog({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {loading ? 'Enviando...' : 'Enviar presupuesto'}
             </button>

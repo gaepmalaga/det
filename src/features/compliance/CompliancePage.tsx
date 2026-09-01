@@ -64,18 +64,18 @@ export function CompliancePage() {
           className={`rounded-xl p-4 border ${
             red.length > 0
               ? 'bg-red-50 border-red-200'
-              : 'bg-white border-slate-200'
+              : 'bg-card border-border'
           }`}
         >
           <div className="flex items-center gap-2 mb-2">
             <ShieldAlert
               className={`w-4 h-4 ${
-                red.length > 0 ? 'text-red-500' : 'text-slate-400'
+                red.length > 0 ? 'text-red-500' : 'text-muted-foreground'
               }`}
             />
             <p
               className={`text-xs font-medium uppercase tracking-wide ${
-                red.length > 0 ? 'text-red-600' : 'text-slate-500'
+                red.length > 0 ? 'text-red-600' : 'text-muted-foreground'
               }`}
             >
               Acción requerida
@@ -83,7 +83,7 @@ export function CompliancePage() {
           </div>
           <p
             className={`text-3xl font-semibold ${
-              red.length > 0 ? 'text-red-700' : 'text-slate-900'
+              red.length > 0 ? 'text-red-700' : 'text-foreground'
             }`}
           >
             {red.length}
@@ -94,18 +94,18 @@ export function CompliancePage() {
           className={`rounded-xl p-4 border ${
             amber.length > 0
               ? 'bg-amber-50 border-amber-200'
-              : 'bg-white border-slate-200'
+              : 'bg-card border-border'
           }`}
         >
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck
               className={`w-4 h-4 ${
-                amber.length > 0 ? 'text-amber-500' : 'text-slate-400'
+                amber.length > 0 ? 'text-amber-500' : 'text-muted-foreground'
               }`}
             />
             <p
               className={`text-xs font-medium uppercase tracking-wide ${
-                amber.length > 0 ? 'text-amber-600' : 'text-slate-500'
+                amber.length > 0 ? 'text-amber-600' : 'text-muted-foreground'
               }`}
             >
               En revisión
@@ -113,21 +113,21 @@ export function CompliancePage() {
           </div>
           <p
             className={`text-3xl font-semibold ${
-              amber.length > 0 ? 'text-amber-700' : 'text-slate-900'
+              amber.length > 0 ? 'text-amber-700' : 'text-foreground'
             }`}
           >
             {amber.length}
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
+        <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <ShieldCheck className="w-4 h-4 text-slate-400" />
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Total con alertas
             </p>
           </div>
-          <p className="text-3xl font-semibold text-slate-900">{total}</p>
+          <p className="text-3xl font-semibold text-foreground">{total}</p>
         </div>
       </div>
 
@@ -136,10 +136,10 @@ export function CompliancePage() {
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
             <ShieldCheck className="w-6 h-6 text-green-600" />
           </div>
-          <h3 className="text-sm font-semibold text-slate-900 mb-1">
+          <h3 className="text-sm font-semibold text-foreground mb-1">
             Todo en orden
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             No hay alertas de cumplimiento en los expedientes activos.
           </p>
         </div>
@@ -160,14 +160,14 @@ export function CompliancePage() {
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-mono text-xs text-slate-500">
+                        <span className="font-mono text-xs text-muted-foreground">
                           {alert.caseNumber}
                         </span>
                         <span className={`text-xs font-medium ${config.text}`}>
                           {config.label}
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-foreground">
                         {alert.investigationType}
                       </p>
                       {alert.issues.length > 0 && (
@@ -184,7 +184,7 @@ export function CompliancePage() {
                       )}
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                 </div>
               </div>
             )

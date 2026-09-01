@@ -55,12 +55,12 @@ export function SignContractDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="relative bg-card rounded-xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">
             {isSigned ? 'Contrato firmado' : 'Firmar contrato'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -78,23 +78,23 @@ export function SignContractDialog({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-xs font-medium text-slate-700 mb-1">Contrato</p>
-                <p className="text-sm text-slate-900">{contract.contractNumber}</p>
-                <p className="text-xs text-slate-500 mt-1">{contract.serviceDescription}</p>
+              <div className="p-4 bg-muted border border-border rounded-lg">
+                <p className="text-xs font-medium text-foreground mb-1">Contrato</p>
+                <p className="text-sm text-foreground">{contract.contractNumber}</p>
+                <p className="text-xs text-muted-foreground mt-1">{contract.serviceDescription}</p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Nombre del firmante <span className="text-red-500">*</span>
                 </label>
                 <input
                   value={signedByName}
                   onChange={(e) => setSignedByName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="Nombre completo del firmante"
                 />
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Nombre de la persona que firma el contrato en representación del cliente.
                 </p>
               </div>
@@ -102,17 +102,17 @@ export function SignContractDialog({
           )}
 
           <div>
-            <p className="text-xs font-medium text-slate-700 mb-2">
+            <p className="text-xs font-medium text-foreground mb-2">
               Documento firmado{' '}
-              <span className="text-slate-400 font-normal">(PDF escaneado)</span>
+              <span className="text-muted-foreground font-normal">(PDF escaneado)</span>
             </p>
             {uploadedFile ? (
-              <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-muted border border-border rounded-lg">
                 <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
-                <span className="text-sm text-slate-700 truncate">{uploadedFile}</span>
+                <span className="text-sm text-foreground truncate">{uploadedFile}</span>
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="ml-auto text-xs text-slate-500 hover:text-slate-700 shrink-0"
+                  className="ml-auto text-xs text-muted-foreground hover:text-foreground shrink-0"
                 >
                   Cambiar
                 </button>
@@ -121,7 +121,7 @@ export function SignContractDialog({
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 hover:border-slate-400 hover:text-slate-700 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-border rounded-lg text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors disabled:opacity-50"
               >
                 <Upload className="w-4 h-4" />
                 {uploading ? 'Subiendo...' : 'Subir documento firmado'}
@@ -140,14 +140,14 @@ export function SignContractDialog({
             <div className="flex gap-3 pt-2">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSign}
                 disabled={signing || !signedByName.trim()}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 {signing ? 'Firmando...' : 'Confirmar firma'}
               </button>

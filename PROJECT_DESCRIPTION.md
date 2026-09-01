@@ -488,13 +488,73 @@ ligada a uno de los puntos fuertes de la izquierda) y un resplandor de
 degradado sutil detrás de la tarjeta en toda la anchura (antes solo en
 móvil).
 
-Capturas de escritorio y móvil enviadas al usuario para validar esta
-tercera iteración antes de aplicarla al resto de la app (~30 pantallas)
-— **no se ha hecho el rollout completo todavía**, solo login + los
-tokens globales (que ya afectan a cualquier componente que use
-`bg-primary` etc., aunque la mayoría de pantallas siguen con clases
-`slate-*` fijas que no se enteran del cambio de tema hasta que se les
-toque).
+Reacción del usuario a la v4: "mucho mejor, aplícalo al resto de la
+app" — aprobación de la dirección, pide el rollout completo.
+
+**Rollout al resto de la app (2026-09-01)**: 44 archivos usaban
+clases `slate-*`/`white` fijas por Tailwind en vez de los tokens de
+`src/index.css`, por lo que ninguna pantalla salvo login reflejaba la
+paleta navy/dorado. Se hizo una pasada mecánica (script Python
+desechable, `.reskin.py`, borrado tras usarlo) que sustituye cada
+clase literal por su token semántico equivalente — mapeo completo por
+cadena exacta, de más larga a más corta para no pisar sub-cadenas
+(p. ej. `hover:bg-slate-800/60` antes que `bg-slate-800`):
+
+- `text-slate-900/800/700` → `text-foreground`
+- `text-slate-600/500/400` → `text-muted-foreground`
+- `bg-slate-50/100/200/300` → `bg-muted`
+- `bg-white` → `bg-card`, `text-white` → `text-primary-foreground`
+- `bg-slate-900` → `bg-primary`, `hover:bg-slate-800` → `hover:bg-primary/90`
+- `border-slate-100/200/300` → `border-border`
+- `border-slate-900` → `border-primary` (subrayado de pestaña activa)
+- `divide-slate-100` → `divide-border`
+
+Después de la pasada mecánica se revisó a mano cada archivo con más
+cambios y dos casos que el script no podía resolver bien solo:
+
+- `LoginPage.tsx` tenía dos usos de `bg-white`/`text-white` como
+  overlay translúcido fijo sobre el degradado navy (no como color de
+  superficie del tema) — el script los convirtió a `bg-card`/
+  `text-primary-foreground`, visualmente casi idénticos en claro pero
+  semánticamente incorrectos; se revirtieron a `white` literal a mano.
+- `SuperadminLayout.tsx` (sidebar oscuro del superadmin, antes
+  `bg-slate-900` a mano) quedó con una mezcla inconsistente de
+  `bg-primary`/`text-muted-foreground` sobre fondo oscuro (mal
+  contraste). Se rehizo con los mismos tokens `sidebar-*` que
+  `AppSidebar.tsx` (`bg-sidebar`, `sidebar-accent`, `sidebar-border`)
+  y se cambiaron los acentos ámbar sueltos (`text-amber-400`,
+  `bg-amber-500`) por `brand-gold`, con la misma barra dorada de
+  ítem activo que en el sidebar principal.
+- Los tres logos "D" en círculo (`PortalLoginPage.tsx`,
+  `PortalLayout.tsx`, `OnboardingPage.tsx`) se cambiaron por el icono
+  `Fingerprint` para que coincidan con la marca usada en login y en
+  ambos sidebars, en vez de una letra que no aparece en ningún otro
+  sitio de la app.
+
+**No se rediseñó cada pantalla a nivel de layout** (tarjetas
+elevadas, jerarquía tipográfica, espaciado) como en login — eso
+habría sido un rediseño completo de ~30 pantallas en una sola pasada,
+demasiado para revisar de golpe. Lo que se hizo es que **toda la app
+adopta ya la identidad de color navy/dorado** de forma consistente
+(fondos, texto, bordes, botones primarios, pestañas activas, ambos
+sidebars) — el problema concreto que motivó la queja del usuario
+("todo sigue igual") queda resuelto. Elevar el layout pantalla por
+pantalla al nivel de login queda como trabajo futuro, a demanda.
+
+Verificado: `npm run build` y `npm run lint` limpios tras la pasada
+mecánica y tras los ajustes manuales (los mismos 17 errores/avisos
+preexistentes de siempre, cero nuevos). Verificación visual limitada
+a las pantallas públicas sin autenticación (`/login`, `/portal`,
+`/sign/:firmId/:contractId`) vía `vite preview` + Playwright headless
+— **las ~30 pantallas que requieren sesión de Firebase
+(Dashboard, Expedientes, Presupuestos, Configuración, Superadmin...)
+no se pudieron ver renderizadas en este entorno** porque el proxy de
+red del sandbox no permite autenticar contra Firebase; su corrección
+se apoya en la revisión de código (grep de cada combinación
+`bg-*`/`text-*` para verificar contraste correcto) y en que build/lint
+no señalan nada roto, no en una comprobación visual real. Pendiente
+que el usuario confirme en producción que las pantallas autenticadas
+se ven bien.
 
 Verificado en cada iteración: build/lint limpios, sin errores nuevos.
 Capturas de escritorio y móvil generadas localmente (`vite preview` +

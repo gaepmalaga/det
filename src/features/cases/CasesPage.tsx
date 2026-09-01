@@ -77,20 +77,20 @@ export function CasesPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 border-b border-slate-200 overflow-x-auto">
+      <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
             className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.value
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
             {counts[tab.value] ? (
-              <span className="ml-1.5 text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                 {counts[tab.value]}
               </span>
             ) : null}
@@ -100,13 +100,13 @@ export function CasesPage() {
 
       {/* Buscador */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Buscar por número, tipo o descripción..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+          className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
         />
       </div>
 
@@ -124,15 +124,15 @@ export function CasesPage() {
               <div
                 key={c.id}
                 onClick={() => navigate('/app/cases/' + c.id)}
-                className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors active:bg-slate-50"
+                className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors active:bg-muted"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-900 truncate">
+                    <p className="font-medium text-foreground truncate">
                       {c.investigationType}
                     </p>
                     {c.investigationTypeCustom && (
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {c.investigationTypeCustom}
                       </p>
                     )}
@@ -151,12 +151,12 @@ export function CasesPage() {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {c.caseNumber}
                     </span>
                     <CaseStatusBadge status={c.status} />
                   </div>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-muted-foreground">
                     {format(c.createdAt, 'dd MMM yyyy', { locale: es })}
                   </span>
                 </div>
@@ -165,43 +165,43 @@ export function CasesPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <tr className="border-b border-border bg-muted">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Nº expediente
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Tipo de investigación
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Estado
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Cumplimiento
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden lg:table-cell">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
                     Apertura
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filtered.map((c) => (
                   <tr
                     key={c.id}
                     onClick={() => navigate('/app/cases/' + c.id)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="hover:bg-muted cursor-pointer transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                       {c.caseNumber}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900">
+                      <div className="font-medium text-foreground">
                         {c.investigationType}
                       </div>
                       {c.investigationTypeCustom && (
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-muted-foreground">
                           {c.investigationTypeCustom}
                         </div>
                       )}
@@ -220,7 +220,7 @@ export function CasesPage() {
                         }`}
                       />
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs hidden lg:table-cell">
+                    <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell">
                       {format(c.createdAt, 'dd MMM yyyy', { locale: es })}
                     </td>
                   </tr>

@@ -58,11 +58,11 @@ export function TariffsTab() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-1 flex items-center gap-2">
-          <Euro className="w-4 h-4 text-slate-400" />
+        <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+          <Euro className="w-4 h-4 text-muted-foreground" />
           Tarifas por hora
         </h3>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-muted-foreground mb-4">
           Estas tarifas se usarán como referencia para la generación de presupuestos.
         </p>
 
@@ -74,7 +74,7 @@ export function TariffsTab() {
             { name: 'festivo', label: 'Tarifa festivos', hint: 'Días festivos nacionales y locales' },
           ].map((field) => (
             <div key={field.name}>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 {field.label}
               </label>
               <div className="relative">
@@ -85,24 +85,24 @@ export function TariffsTab() {
                   onChange={handleChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 pr-8 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 pr-8 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="0.00"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   €/h
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">{field.hint}</p>
+              <p className="text-xs text-muted-foreground mt-1">{field.hint}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Gastos adicionales</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">Gastos adicionales</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Tarifa por kilómetro
             </label>
             <div className="relative">
@@ -113,16 +113,16 @@ export function TariffsTab() {
                 onChange={handleChange}
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 pr-10 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 pr-10 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                 €/km
               </span>
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Dietas por día
             </label>
             <div className="relative">
@@ -133,10 +133,10 @@ export function TariffsTab() {
                 onChange={handleChange}
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 pr-8 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 pr-8 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                 €/día
               </span>
             </div>
@@ -148,7 +148,7 @@ export function TariffsTab() {
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Guardando...' : 'Guardar tarifas'}

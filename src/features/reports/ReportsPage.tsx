@@ -33,11 +33,11 @@ const STATUS_LABELS: Record<ReportStatus, string> = {
 }
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
-  borrador: 'bg-slate-50 text-slate-700 border-slate-200',
+  borrador: 'bg-muted text-foreground border-border',
   en_revision: 'bg-amber-50 text-amber-700 border-amber-200',
   aprobado: 'bg-blue-50 text-blue-700 border-blue-200',
   entregado: 'bg-green-50 text-green-700 border-green-200',
-  archivado: 'bg-slate-50 text-slate-500 border-slate-200',
+  archivado: 'bg-muted text-muted-foreground border-border',
 }
 
 const STATUS_TABS: { label: string; value: ReportStatus | 'todos' }[] = [
@@ -150,20 +150,20 @@ export function ReportsPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 border-b border-slate-200 overflow-x-auto">
+      <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
             className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.value
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
             {tab.value !== 'todos' && counts[tab.value] ? (
-              <span className="ml-1.5 text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                 {counts[tab.value]}
               </span>
             ) : null}
@@ -173,13 +173,13 @@ export function ReportsPage() {
 
       {/* Buscador */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Buscar por cliente, expediente o número de registro..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+          className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
         />
       </div>
 
@@ -197,14 +197,14 @@ export function ReportsPage() {
               <div
                 key={report.id}
                 onClick={() => navigate('/app/cases/' + report.caseId + '?tab=informe')}
-                className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 transition-colors active:bg-slate-50"
+                className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors active:bg-muted"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-900 truncate">
+                    <p className="font-medium text-foreground truncate">
                       {report.clientName}
                     </p>
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {report.caseNumber}
                     </span>
                   </div>
@@ -213,7 +213,7 @@ export function ReportsPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {format(report.createdAt, 'dd MMM yyyy', { locale: es })}
                   </p>
                   {report.deliveredAt && (
@@ -227,58 +227,58 @@ export function ReportsPage() {
           </div>
 
           {/* Tabla en desktop */}
-          <div className="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <tr className="border-b border-border bg-muted">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Expediente
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Cliente
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Estado
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden lg:table-cell">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
                     Creado
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden lg:table-cell">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
                     Entregado a
                   </th>
                   <th className="px-4 py-3 w-10" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filtered.map((report) => (
                   <tr
                     key={report.id}
                     onClick={() => navigate('/app/cases/' + report.caseId + '?tab=informe')}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="hover:bg-muted cursor-pointer transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                       {report.caseNumber}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-900">{report.clientName}</p>
+                      <p className="font-medium text-foreground">{report.clientName}</p>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${STATUS_COLORS[report.status]}`}>
                         {STATUS_LABELS[report.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">
                       {format(report.createdAt, 'dd MMM yyyy', { locale: es })}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">
                       {report.deliveredTo ? (
                         <span className="text-green-700">{report.deliveredTo}</span>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
                     </td>
                   </tr>
                 ))}

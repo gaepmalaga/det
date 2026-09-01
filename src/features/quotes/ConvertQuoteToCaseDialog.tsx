@@ -92,12 +92,12 @@ export function ConvertQuoteToCaseDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="relative bg-card rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">
             Aceptar presupuesto y crear expediente
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -112,7 +112,7 @@ export function ConvertQuoteToCaseDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Tipo de investigación <span className="text-red-500">*</span>
             </label>
             <select
@@ -120,7 +120,7 @@ export function ConvertQuoteToCaseDialog({
               value={form.investigationType}
               onChange={handleSelectChange}
               required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="">Seleccionar...</option>
               {SYSTEM_INVESTIGATION_TYPES.map((t) => (
@@ -130,7 +130,7 @@ export function ConvertQuoteToCaseDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Objeto y alcance del encargo <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -139,13 +139,13 @@ export function ConvertQuoteToCaseDialog({
               onChange={handleTextareaChange}
               required
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Define con precisión el objeto de la investigación y su alcance..."
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Interés legítimo <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -154,17 +154,17 @@ export function ConvertQuoteToCaseDialog({
               onChange={handleTextareaChange}
               required
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Documenta el interés legítimo que justifica la investigación..."
             />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Requisito legal. Debe quedar acreditado antes de iniciar la investigación.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Investigado <span className="text-red-500">*</span>
               </label>
               <input
@@ -172,12 +172,12 @@ export function ConvertQuoteToCaseDialog({
                 value={form.investigatedName}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre y apellidos o razón social"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground mb-1.5">
                 Domicilio/localidad <span className="text-red-500">*</span>
               </label>
               <input
@@ -185,17 +185,17 @@ export function ConvertQuoteToCaseDialog({
                 value={form.investigatedAddress}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Del investigado"
               />
             </div>
-            <p className="sm:col-span-2 text-xs text-slate-400 -mt-1">
+            <p className="sm:col-span-2 text-xs text-muted-foreground -mt-1">
               Requisito legal para el libro-registro (Anexo VII).
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground mb-1.5">
               Descripción
             </label>
             <textarea
@@ -203,7 +203,7 @@ export function ConvertQuoteToCaseDialog({
               value={form.description}
               onChange={handleTextareaChange}
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
             />
           </div>
 
@@ -211,14 +211,14 @@ export function ConvertQuoteToCaseDialog({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {loading ? 'Creando...' : 'Crear expediente'}
             </button>

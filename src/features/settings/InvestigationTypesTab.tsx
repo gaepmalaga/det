@@ -50,17 +50,17 @@ export function InvestigationTypesTab() {
   return (
     <div className="space-y-8 max-w-2xl">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-1">
+        <h3 className="text-sm font-semibold text-foreground mb-1">
           Tipos predefinidos del sistema
         </h3>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-muted-foreground mb-4">
           Estos tipos están disponibles para todos los despachos y no pueden modificarse.
         </p>
         <div className="flex flex-wrap gap-2">
           {SYSTEM_INVESTIGATION_TYPES.map((type) => (
             <span
               key={type}
-              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200"
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border"
             >
               {type}
             </span>
@@ -69,10 +69,10 @@ export function InvestigationTypesTab() {
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-1">
+        <h3 className="text-sm font-semibold text-foreground mb-1">
           Tipos personalizados del despacho
         </h3>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-muted-foreground mb-4">
           Añade tipos específicos de tu despacho. Aparecerán junto a los predefinidos
           al crear solicitudes y expedientes.
         </p>
@@ -83,14 +83,14 @@ export function InvestigationTypesTab() {
             value={newType}
             onChange={(e) => setNewType(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             placeholder="Nuevo tipo de investigación..."
           />
           <button
             type="button"
             onClick={handleAdd}
             disabled={!newType.trim()}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
             Añadir
@@ -98,7 +98,7 @@ export function InvestigationTypesTab() {
         </div>
 
         {customTypes.length === 0 ? (
-          <p className="text-sm text-slate-400 py-4 text-center border border-dashed border-slate-200 rounded-lg">
+          <p className="text-sm text-muted-foreground py-4 text-center border border-dashed border-border rounded-lg">
             No hay tipos personalizados. Añade el primero.
           </p>
         ) : (
@@ -124,7 +124,7 @@ export function InvestigationTypesTab() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Guardando...' : 'Guardar tipos'}

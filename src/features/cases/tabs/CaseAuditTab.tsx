@@ -100,8 +100,8 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
 
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">Auditoría del expediente</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-foreground">Auditoría del expediente</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Registro completo de todas las operaciones realizadas.
           </p>
         </div>
@@ -110,8 +110,8 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
             onClick={() => setShowFilter(!showFilter)}
             className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
               filter !== 'todos'
-                ? 'bg-slate-900 text-white border-slate-900'
-                : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'text-muted-foreground bg-card border-border hover:bg-muted'
             }`}
           >
             <Filter className="w-3.5 h-3.5" />
@@ -122,15 +122,15 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
 
       {/* Panel de filtros */}
       {showFilter && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-slate-700 mb-3">Filtrar por tipo de evento</p>
+        <div className="bg-muted border border-border rounded-xl p-4">
+          <p className="text-xs font-medium text-foreground mb-3">Filtrar por tipo de evento</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => { setFilter('todos'); setShowFilter(false) }}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                 filter === 'todos'
-                  ? 'bg-slate-900 text-white border-slate-900'
-                  : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'text-muted-foreground bg-card border-border hover:bg-muted'
               }`}
             >
               Todos
@@ -142,8 +142,8 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
                   onClick={() => { setFilter(type); setShowFilter(false) }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                     filter === type
-                      ? 'bg-slate-900 text-white border-slate-900'
-                      : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'text-muted-foreground bg-card border-border hover:bg-muted'
                   }`}
                 >
                   {getEventLabel(type)}
@@ -155,9 +155,9 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
       )}
 
       {/* Historial de estados del expediente */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted">
+          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Historial de estados
           </h4>
         </div>
@@ -166,28 +166,28 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
         <div className="hidden md:block">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <tr className="border-b border-border">
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Estado
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Fecha y hora
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Motivo
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {statusEntries.map((entry) => (
                 <tr key={entry.id}>
-                  <td className="px-4 py-3 font-medium text-slate-900 text-sm">
+                  <td className="px-4 py-3 font-medium text-foreground text-sm">
                     {entry.label}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">
+                  <td className="px-4 py-3 text-muted-foreground text-xs">
                     {format(entry.date, "dd MMM yyyy 'a las' HH:mm", { locale: es })}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">
+                  <td className="px-4 py-3 text-muted-foreground text-xs">
                     {entry.detail ?? '—'}
                   </td>
                 </tr>
@@ -197,17 +197,17 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
         </div>
 
         {/* Cards en móvil */}
-        <div className="md:hidden divide-y divide-slate-100">
+        <div className="md:hidden divide-y divide-border">
           {statusEntries.map((entry) => (
             <div key={entry.id} className="px-4 py-3">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium text-slate-900">{entry.label}</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm font-medium text-foreground">{entry.label}</p>
+                <p className="text-xs text-muted-foreground">
                   {format(entry.date, 'dd MMM HH:mm', { locale: es })}
                 </p>
               </div>
               {entry.detail && (
-                <p className="text-xs text-slate-500">{entry.detail}</p>
+                <p className="text-xs text-muted-foreground">{entry.detail}</p>
               )}
             </div>
           ))}
@@ -215,20 +215,20 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
       </div>
 
       {/* Logs de Firestore */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
+          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-2">
             <ScrollText className="w-3.5 h-3.5" />
             Log de operaciones
           </h4>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-muted-foreground">
             {filtered.length} evento{filtered.length !== 1 ? 's' : ''}
           </span>
         </div>
 
         {filtered.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               {logs.length === 0
                 ? 'Los eventos se registrarán aquí a medida que se realicen operaciones.'
                 : 'No hay eventos con el filtro seleccionado.'}
@@ -237,9 +237,9 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
         ) : (
           <div className="relative">
             {/* Línea de timeline */}
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-slate-100" />
+            <div className="absolute left-8 top-0 bottom-0 w-px bg-muted" />
 
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-border">
               {filtered.map((log) => (
                 <div key={log.id} className="flex items-start gap-4 px-4 py-4">
                   {/* Dot del timeline */}
@@ -251,10 +251,10 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-sm font-medium text-foreground">
                           {getEventLabel(log.eventType)}
                         </p>
-                        <p className="text-xs text-slate-600 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {log.description}
                         </p>
                         {log.metadata && Object.keys(log.metadata).length > 0 && (
@@ -262,7 +262,7 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
                             {Object.entries(log.metadata).map(([key, value]) => (
                               <span
                                 key={key}
-                                className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-xs text-slate-600"
+                                className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-xs text-muted-foreground"
                               >
                                 {key}: {value}
                               </span>
@@ -271,10 +271,10 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
                         )}
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="text-xs text-slate-400 whitespace-nowrap">
+                        <p className="text-xs text-muted-foreground whitespace-nowrap">
                           {format(log.createdAt, 'dd MMM HH:mm', { locale: es })}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate max-w-24">
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-24">
                           {log.userName}
                         </p>
                       </div>

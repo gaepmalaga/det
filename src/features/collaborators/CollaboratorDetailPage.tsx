@@ -111,7 +111,7 @@ export function CollaboratorDetailPage() {
     <div>
       <button
         onClick={() => navigate('/app/collaborators')}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a colaboradores
@@ -120,26 +120,26 @@ export function CollaboratorDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-            <Handshake className="w-6 h-6 text-slate-500" />
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
+            <Handshake className="w-6 h-6 text-muted-foreground" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <h1 className="text-xl font-semibold text-slate-900 truncate">
+              <h1 className="text-xl font-semibold text-foreground truncate">
                 {collaborator.legalName}
               </h1>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border shrink-0 ${
                 collaborator.status === 'activo'
                   ? 'bg-green-50 text-green-700 border-green-200'
-                  : 'bg-slate-50 text-slate-500 border-slate-200'
+                  : 'bg-muted text-muted-foreground border-border'
               }`}>
                 {collaborator.status === 'activo' ? 'Activo' : 'Inactivo'}
               </span>
             </div>
             {collaborator.tradeName && (
-              <p className="text-sm text-slate-500">{collaborator.tradeName}</p>
+              <p className="text-sm text-muted-foreground">{collaborator.tradeName}</p>
             )}
-            <p className="text-xs text-slate-400 font-mono mt-1">
+            <p className="text-xs text-muted-foreground font-mono mt-1">
               RNSP: {collaborator.rnsp}
             </p>
           </div>
@@ -149,7 +149,7 @@ export function CollaboratorDetailPage() {
           {!editing && (
             <button
               onClick={startEditing}
-              className="px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="px-3 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Editar
             </button>
@@ -176,14 +176,14 @@ export function CollaboratorDetailPage() {
         {/* Columna principal */}
         <div className="lg:col-span-2">
           {editing ? (
-            <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">
+            <form onSubmit={handleSave} className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground mb-2">
                 Editar colaborador
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Nombre / Razón social <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -191,25 +191,25 @@ export function CollaboratorDetailPage() {
                     value={form.legalName}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Nombre comercial
                   </label>
                   <input
                     name="tradeName"
                     value={form.tradeName}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     RNSP <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -217,36 +217,36 @@ export function CollaboratorDetailPage() {
                     value={form.rnsp}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     NIF / CIF
                   </label>
                   <input
                     name="taxId"
                     value={form.taxId}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     TIP
                   </label>
                   <input
                     name="tipNumber"
                     value={form.tipNumber}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Contacto <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -254,11 +254,11 @@ export function CollaboratorDetailPage() {
                     value={form.contactName}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Email <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -267,11 +267,11 @@ export function CollaboratorDetailPage() {
                     value={form.contactEmail}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
                     Teléfono <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -279,25 +279,25 @@ export function CollaboratorDetailPage() {
                     value={form.contactPhone}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Dirección
                 </label>
                 <input
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground mb-1.5">
                   Notas internas
                 </label>
                 <textarea
@@ -305,7 +305,7 @@ export function CollaboratorDetailPage() {
                   value={form.notes}
                   onChange={handleChange}
                   rows={2}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
                 />
               </div>
 
@@ -313,14 +313,14 @@ export function CollaboratorDetailPage() {
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Guardando...' : 'Guardar cambios'}
@@ -328,28 +328,28 @@ export function CollaboratorDetailPage() {
               </div>
             </form>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100">
+            <div className="bg-card border border-border rounded-xl divide-y divide-border">
               <div className="p-5">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Identificación
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-xs text-slate-500">RNSP</p>
-                    <p className="text-sm font-mono text-slate-900">{collaborator.rnsp}</p>
+                    <p className="text-xs text-muted-foreground">RNSP</p>
+                    <p className="text-sm font-mono text-foreground">{collaborator.rnsp}</p>
                   </div>
                   {collaborator.taxId && (
                     <div>
-                      <p className="text-xs text-slate-500">NIF / CIF</p>
-                      <p className="text-sm font-mono text-slate-900 uppercase">
+                      <p className="text-xs text-muted-foreground">NIF / CIF</p>
+                      <p className="text-sm font-mono text-foreground uppercase">
                         {collaborator.taxId}
                       </p>
                     </div>
                   )}
                   {collaborator.tipNumber && (
                     <div>
-                      <p className="text-xs text-slate-500">TIP</p>
-                      <p className="text-sm font-mono text-slate-900">
+                      <p className="text-xs text-muted-foreground">TIP</p>
+                      <p className="text-sm font-mono text-foreground">
                         {collaborator.tipNumber}
                       </p>
                     </div>
@@ -358,29 +358,29 @@ export function CollaboratorDetailPage() {
               </div>
 
               <div className="p-5">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Contacto
                 </p>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-medium text-foreground">
                     {collaborator.contactName}
                   </p>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <a href={'mailto:' + collaborator.contactEmail} className="text-sm text-primary hover:underline truncate">
                       {collaborator.contactEmail}
                     </a>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <a href={'tel:' + collaborator.contactPhone} className="text-sm text-slate-700">
+                    <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <a href={'tel:' + collaborator.contactPhone} className="text-sm text-foreground">
                       {collaborator.contactPhone}
                     </a>
                   </div>
                   {collaborator.address && (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <p className="text-sm text-slate-700">{collaborator.address}</p>
+                      <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <p className="text-sm text-foreground">{collaborator.address}</p>
                     </div>
                   )}
                 </div>
@@ -388,10 +388,10 @@ export function CollaboratorDetailPage() {
 
               {collaborator.notes && (
                 <div className="p-5">
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                     Notas internas
                   </p>
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
                     {collaborator.notes}
                   </p>
                 </div>
@@ -408,34 +408,34 @@ export function CollaboratorDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-slate-400" />
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-muted-foreground" />
               Información
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-slate-500">Alta</p>
-                <p className="text-sm text-slate-700">
+                <p className="text-xs text-muted-foreground">Alta</p>
+                <p className="text-sm text-foreground">
                   {format(collaborator.createdAt, "dd 'de' MMMM 'de' yyyy", {
                     locale: es,
                   })}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Última actualización</p>
-                <p className="text-sm text-slate-700">
+                <p className="text-xs text-muted-foreground">Última actualización</p>
+                <p className="text-sm text-foreground">
                   {format(collaborator.updatedAt, "dd 'de' MMMM 'de' yyyy", {
                     locale: es,
                   })}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Estado</p>
+                <p className="text-xs text-muted-foreground">Estado</p>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
                   collaborator.status === 'activo'
                     ? 'bg-green-50 text-green-700 border-green-200'
-                    : 'bg-slate-50 text-slate-500 border-slate-200'
+                    : 'bg-muted text-muted-foreground border-border'
                 }`}>
                   {collaborator.status === 'activo' ? 'Activo' : 'Inactivo'}
                 </span>

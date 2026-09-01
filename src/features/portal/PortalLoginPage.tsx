@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Fingerprint } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getClientPortalData } from '@/services/portal'
 
@@ -35,21 +36,21 @@ export function PortalLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-muted flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 mb-6">
-            <span className="text-white text-lg font-bold">D</span>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-6">
+            <Fingerprint className="w-6 h-6 text-primary-foreground" strokeWidth={2} />
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
             Portal cliente
           </h1>
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             Accede para consultar el estado de tu investigación.
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
           {noAccess ? (
             <div className="space-y-4">
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -61,7 +62,7 @@ export function PortalLoginPage() {
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                className="w-full px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >
                 Intentar con otra cuenta
               </button>
@@ -69,10 +70,10 @@ export function PortalLoginPage() {
           ) : (
             <div className="space-y-4">
               <div>
-                <h2 className="text-base font-semibold text-slate-900 mb-1">
+                <h2 className="text-base font-semibold text-foreground mb-1">
                   Acceder
                 </h2>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   Usa el mismo Gmail con el que el despacho te dio acceso.
                 </p>
               </div>
@@ -80,7 +81,7 @@ export function PortalLoginPage() {
               <button
                 onClick={signInWithGoogle}
                 disabled={loading || checking}
-                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-muted transition-colors disabled:opacity-50"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

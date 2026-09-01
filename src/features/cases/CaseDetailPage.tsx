@@ -56,7 +56,7 @@ const handleCaseUpdated = useCallback(() => {
     <div>
       <button
         onClick={() => navigate(ROUTES.CASES)}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a expedientes
@@ -67,7 +67,7 @@ const handleCaseUpdated = useCallback(() => {
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-mono text-xs text-slate-400">
+              <span className="font-mono text-xs text-muted-foreground">
                 {caseData.caseNumber}
               </span>
               <CaseStatusBadge status={caseData.status} />
@@ -84,11 +84,11 @@ const handleCaseUpdated = useCallback(() => {
                 {COMPLIANCE_LABELS[caseData.complianceStatus]}
               </span>
             </div>
-            <h1 className="text-xl font-semibold text-slate-900">
+            <h1 className="text-xl font-semibold text-foreground">
               {caseData.investigationType}
             </h1>
             {caseData.investigationTypeCustom && (
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {caseData.investigationTypeCustom}
               </p>
             )}
@@ -107,8 +107,8 @@ const handleCaseUpdated = useCallback(() => {
                   s === 'rechazado'
                     ? 'text-red-600 border-red-200 hover:bg-red-50'
                     : s === 'cerrado'
-                    ? 'text-white bg-slate-900 border-slate-900 hover:bg-slate-800'
-                    : 'text-slate-700 border-slate-200 bg-white hover:bg-slate-50'
+                    ? 'text-primary-foreground bg-primary border-primary hover:bg-primary/90'
+                    : 'text-foreground border-border bg-card hover:bg-muted'
                 }`}
               >
                 {CASE_STATUS_LABELS[s]}
@@ -119,15 +119,15 @@ const handleCaseUpdated = useCallback(() => {
       </div>
 
       {/* Tabs — scroll horizontal en móvil */}
-      <div className="flex gap-1 border-b border-slate-200 mb-5 overflow-x-auto">
+      <div className="flex gap-1 border-b border-border mb-5 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -159,55 +159,55 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             )}
 
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Encargo</h3>
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Encargo</h3>
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Objeto y alcance</p>
-                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                  <p className="text-xs text-muted-foreground mb-1">Objeto y alcance</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
                     {caseData.objectScope || (
-                      <span className="text-slate-400 italic">Sin definir</span>
+                      <span className="text-muted-foreground italic">Sin definir</span>
                     )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">
+                  <p className="text-xs text-muted-foreground mb-1">
                     Interés legítimo
                     {caseData.legitimateInterestValidated && (
                       <span className="text-green-600 text-xs ml-2">✓ Validado</span>
                     )}
                   </p>
-                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
                     {caseData.legitimateInterest || (
-                      <span className="text-slate-400 italic">Sin documentar</span>
+                      <span className="text-muted-foreground italic">Sin documentar</span>
                     )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Descripción</p>
-                  <p className="text-sm text-slate-900 whitespace-pre-wrap">
+                  <p className="text-xs text-muted-foreground mb-1">Descripción</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">
                     {caseData.description}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 Historial de estados
               </h3>
               <div className="space-y-3">
                 {[...caseData.statusHistory].reverse().map((entry, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-slate-300 mt-1.5 shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-muted mt-1.5 shrink-0" />
                     <div>
-                      <p className="text-sm text-slate-900">
+                      <p className="text-sm text-foreground">
                         {CASE_STATUS_LABELS[entry.status]}
                       </p>
                       {entry.reason && (
-                        <p className="text-xs text-slate-500">{entry.reason}</p>
+                        <p className="text-xs text-muted-foreground">{entry.reason}</p>
                       )}
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground">
                         {format(entry.changedAt, "dd MMM yyyy 'a las' HH:mm", {
                           locale: es,
                         })}
@@ -221,14 +221,14 @@ const handleCaseUpdated = useCallback(() => {
 
           {/* Columna lateral */}
           <div className="space-y-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
                 Información
               </h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-slate-500">Apertura</p>
-                  <p className="text-sm text-slate-700">
+                  <p className="text-xs text-muted-foreground">Apertura</p>
+                  <p className="text-sm text-foreground">
                     {format(caseData.createdAt, "dd 'de' MMMM 'de' yyyy", {
                       locale: es,
                     })}
@@ -236,8 +236,8 @@ const handleCaseUpdated = useCallback(() => {
                 </div>
                 {caseData.conservationDeadline && (
                   <div>
-                    <p className="text-xs text-slate-500">Conservación hasta</p>
-                    <p className="text-sm text-slate-700">
+                    <p className="text-xs text-muted-foreground">Conservación hasta</p>
+                    <p className="text-sm text-foreground">
                       {format(
                         caseData.conservationDeadline,
                         "dd 'de' MMMM 'de' yyyy",
@@ -248,8 +248,8 @@ const handleCaseUpdated = useCallback(() => {
                 )}
                 {caseData.registryEntryNumber && (
                   <div>
-                    <p className="text-xs text-slate-500">Nº libro-registro</p>
-                    <p className="text-sm font-mono text-slate-700">
+                    <p className="text-xs text-muted-foreground">Nº libro-registro</p>
+                    <p className="text-sm font-mono text-foreground">
                       {caseData.registryEntryNumber}
                     </p>
                   </div>
