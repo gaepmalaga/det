@@ -25,60 +25,81 @@ export function LoginPage() {
   }, [user, loading, navigate])
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+    <div className="min-h-screen grid lg:grid-cols-[1.1fr_1fr] bg-background">
       {/* Panel de marca — solo en pantallas grandes */}
-      <div className="hidden lg:flex relative flex-col justify-between overflow-hidden bg-primary px-12 py-12 text-primary-foreground">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 1.5px 1.5px, currentColor 1.5px, transparent 0)',
-            backgroundSize: '28px 28px',
-          }}
+      <div
+        className="hidden lg:flex relative flex-col justify-between overflow-hidden px-14 py-12 text-primary-foreground"
+        style={{
+          background:
+            'radial-gradient(120% 100% at 15% 0%, oklch(0.4 0.09 259) 0%, oklch(0.26 0.07 260) 55%, oklch(0.19 0.05 261) 100%)',
+        }}
+      >
+        <Fingerprint
+          className="pointer-events-none absolute -right-24 -bottom-24 w-[30rem] h-[30rem] text-white/[0.05]"
+          strokeWidth={0.6}
         />
-        <div className="relative flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-gold text-brand-gold-foreground">
-            <Fingerprint className="w-5 h-5" />
+
+        <div className="relative flex items-center gap-3">
+          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-brand-gold text-brand-gold-foreground">
+            <Fingerprint className="w-4 h-4" strokeWidth={2.25} />
           </div>
-          <span className="text-sm font-semibold tracking-wide">DetectiveOS</span>
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-primary-foreground/70">
+            DetectiveOS
+          </span>
         </div>
 
         <div className="relative max-w-md">
-          <p className="text-3xl font-semibold leading-tight tracking-tight text-balance">
-            La operativa de tu despacho de investigación, en un solo sitio.
+          <div className="w-9 h-px bg-brand-gold mb-7" />
+          <p className="text-4xl font-semibold leading-[1.15] tracking-tight text-balance">
+            La operativa de tu despacho, en un solo sitio.
           </p>
-          <ul className="mt-10 space-y-4">
+          <p className="mt-4 text-sm text-primary-foreground/60 leading-relaxed max-w-sm">
+            Contactos, presupuestos, expedientes y libro-registro — pensado para
+            despachos de investigación privada, no adaptado de otra cosa.
+          </p>
+
+          <ul className="mt-11 space-y-5">
             {HIGHLIGHTS.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-start gap-3 text-sm text-primary-foreground/80">
-                <Icon className="w-4 h-4 mt-0.5 shrink-0 text-brand-gold" />
+              <li key={text} className="flex items-center gap-3.5 text-sm text-primary-foreground/85">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.06] ring-1 ring-white/10 shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-brand-gold" strokeWidth={2} />
+                </span>
                 <span>{text}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-xs text-primary-foreground/50">
+        <p className="relative text-[11px] tracking-wide text-primary-foreground/40">
           Plataforma de gestión para despachos de detectives privados
         </p>
       </div>
 
       {/* Formulario */}
-      <div className="flex items-center justify-center p-4 py-16">
-        <div className="w-full max-w-sm">
-          <div className="flex lg:hidden items-center justify-center gap-2.5 mb-8">
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
-              <Fingerprint className="w-5 h-5" />
+      <div className="relative flex items-center justify-center p-4 py-16 overflow-hidden">
+        <div
+          className="lg:hidden pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(80% 60% at 50% 0%, oklch(0.32 0.085 259 / 0.08) 0%, transparent 100%)',
+          }}
+        />
+
+        <div className="relative w-full max-w-sm">
+          <div className="flex lg:hidden items-center justify-center gap-2.5 mb-10">
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
+              <Fingerprint className="w-4 h-4" strokeWidth={2.25} />
             </div>
-            <span className="text-base font-semibold tracking-tight text-foreground">
+            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-foreground/70">
               DetectiveOS
             </span>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <div className="mb-9">
+            <h1 className="text-[1.7rem] font-semibold tracking-tight text-foreground leading-tight">
               Acceder a tu despacho
             </h1>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-sm text-muted-foreground mt-2.5">
               Inicia sesión con tu cuenta de Google para continuar.
             </p>
           </div>
@@ -88,7 +109,7 @@ export function LoginPage() {
             disabled={loading}
             size="lg"
             variant="outline"
-            className="w-full justify-center gap-3 py-5 text-sm"
+            className="w-full justify-center gap-3 py-5 text-sm shadow-sm hover:shadow transition-shadow"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path

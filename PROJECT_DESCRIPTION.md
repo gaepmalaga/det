@@ -450,20 +450,38 @@ sellos/placas, encaja con "investigación privada" sin caer en cliché
 noir ni en el azul/morado genérico de SaaS). Fondo con un punto cálido
 (no blanco puro). Se limpió el bloque `@theme{}` muerto.
 
-**Piloto**: `LoginPage.tsx` rehecho por completo — panel de marca en
+**Piloto v2**: `LoginPage.tsx` rehecho por completo — panel de marca en
 escritorio (navy con textura de puntos, mensaje + 3 puntos fuertes del
 producto, icono de huella dactilar en vez de una letra "D" genérica),
 formulario a la derecha con el `Button` real de shadcn. En móvil colapsa
-a una sola columna. Capturas enviadas al usuario para validar la
-dirección antes de aplicarla al resto de la app (~30 pantallas) — **no
-se ha hecho el rollout completo todavía**, solo login + los tokens
-globales (que ya afectan a cualquier componente que use `bg-primary`
-etc., aunque la mayoría de pantallas siguen con clases `slate-*` fijas
-que no se enteran del cambio de tema hasta que se les toque).
+a una sola columna. Capturas enviadas al usuario: reacción — "algo
+mejor, pero aún pienso que puedes dar mucho mas nivel".
 
-Verificado: build/lint limpios. Capturas de escritorio y móvil
-generadas localmente (`vite preview` + navegador headless) y revisadas
-antes de enviarlas.
+**Piloto v3**: se reconoció que la propia textura de puntos (dot-grid)
+es en sí misma un cliché genérico de plantilla, así que se sustituyó
+por: degradado radial de profundidad en el panel de marca
+(`radial-gradient` de tres paradas en navy, en vez de un color plano),
+una marca de agua grande de huella dactilar recortada fuera de encuadre
+(`Fingerprint` al 5% de opacidad, `-right-24 -bottom-24`, trazo fino
+`strokeWidth={0.6}`) en vez de un icono pequeño y literal, wordmark en
+mayúsculas con tracking amplio, una regla dorada fina como separador
+antes del titular, tipografía más grande y ajustada
+(`text-4xl font-semibold tracking-tight`), y los 3 puntos fuertes con
+insignias circulares translúcidas en vez de una lista plana. En móvil
+se añadió un resplandor de degradado radial sutil detrás del formulario
+en vez de dejar el fondo plano. Sigue usando el `Button` real de shadcn.
+
+Capturas de escritorio y móvil enviadas al usuario para validar esta
+segunda iteración antes de aplicarla al resto de la app (~30 pantallas)
+— **no se ha hecho el rollout completo todavía**, solo login + los
+tokens globales (que ya afectan a cualquier componente que use
+`bg-primary` etc., aunque la mayoría de pantallas siguen con clases
+`slate-*` fijas que no se enteran del cambio de tema hasta que se les
+toque).
+
+Verificado en cada iteración: build/lint limpios, sin errores nuevos.
+Capturas de escritorio y móvil generadas localmente (`vite preview` +
+Playwright headless) y revisadas antes de enviarlas.
 
 ## Incidente — producción caída (2026-09-01)
 
