@@ -54,10 +54,16 @@ export interface Firm {
     tipExpiry?: Date
   }
   customInvestigationTypes: string[]
+  contractTemplate?: ContractTemplate
   status: FirmStatus
   planId: string
   createdAt: Date
   updatedAt: Date
+}
+
+export interface ContractTemplate {
+  name: string
+  body: string
 }
 
 // ─── MEMBER ──────────────────────────────────────────────────────────────────

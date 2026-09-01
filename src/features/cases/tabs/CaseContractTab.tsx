@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileText, CheckCircle, ExternalLink } from 'lucide-react'
+import { Plus, FileText, CheckCircle, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
 import { useCaseContracts } from '@/hooks/useContracts'
 import { createRegistryEntry } from '@/services/registry'
 import { createAuditLog } from '@/services/auditLog'
@@ -38,6 +38,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
   const { contracts, loading, create, sign, uploadDocument } = useCaseContracts(caseData.id)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
+  const [expandedBodyId, setExpandedBodyId] = useState<string | null>(null)
 
   const handleCreate = async (data: CreateContractData) => {
     await create(data)
@@ -239,6 +240,29 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                   <p className="text-xs text-slate-700 whitespace-pre-wrap">
                     {contract.specificConditions}
                   </p>
+                </div>
+              )}
+
+              {contract.bodyText && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() =>
+                      setExpandedBodyId(expandedBodyId === contract.id ? null : contract.id)
+                    }
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 transition-colors"
+                  >
+                    {expandedBodyId === contract.id ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                    Ver texto del contrato
+                  </button>
+                  {expandedBodyId === contract.id && (
+                    <p className="text-xs text-slate-700 whitespace-pre-wrap mt-2 p-3 bg-slate-50 rounded-lg font-mono">
+                      {contract.bodyText}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

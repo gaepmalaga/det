@@ -45,6 +45,7 @@ export interface Contract {
   serviceDescription: string
   agreedPrice?: string
   specificConditions?: string
+  bodyText?: string
   scannedDocumentUrl?: string
   scannedDocumentName?: string
   createdAt: Date
@@ -83,6 +84,7 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     serviceDescription: data.serviceDescription as string,
     agreedPrice: data.agreedPrice as string | undefined,
     specificConditions: data.specificConditions as string | undefined,
+    bodyText: data.bodyText as string | undefined,
     scannedDocumentUrl: data.scannedDocumentUrl as string | undefined,
     scannedDocumentName: data.scannedDocumentName as string | undefined,
     createdAt: toDate(data.createdAt),
@@ -120,6 +122,7 @@ export interface CreateContractData {
   serviceDescription: string
   agreedPrice?: string
   specificConditions?: string
+  bodyText?: string
 }
 
 export async function createContract(
@@ -150,6 +153,7 @@ export async function createContract(
   if (data.clientId) cleanData.clientId = data.clientId
   if (data.agreedPrice) cleanData.agreedPrice = data.agreedPrice
   if (data.specificConditions) cleanData.specificConditions = data.specificConditions
+  if (data.bodyText) cleanData.bodyText = data.bodyText
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id

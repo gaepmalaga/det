@@ -4,12 +4,14 @@ import { FirmSettingsTab } from './FirmSettingsTab'
 import { TeamTab } from './TeamTab'
 import { TariffsTab } from './TariffsTab'
 import { InvestigationTypesTab } from './InvestigationTypesTab'
+import { ContractTemplateTab } from './ContractTemplateTab'
 
 const TABS = [
   { id: 'firm', label: 'Despacho' },
   { id: 'team', label: 'Equipo' },
   { id: 'tariffs', label: 'Tarifas' },
   { id: 'types', label: 'Tipos de investigación' },
+  { id: 'contract', label: 'Plantilla de contrato' },
 ]
 
 export function SettingsPage() {
@@ -43,6 +45,7 @@ export function SettingsPage() {
       {activeTab === 'team' && <TeamTab />}
       {activeTab === 'tariffs' && <TariffsTab />}
       {activeTab === 'types' && <InvestigationTypesTab />}
+      {activeTab === 'contract' && <ContractTemplateTab />}
     </div>
   )
 }

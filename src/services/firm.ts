@@ -53,6 +53,7 @@ function mapFirm(id: string, data: Record<string, unknown>): Firm {
       tipExpiry: toDateOrUndefined(titular?.tipExpiry),
     },
     customInvestigationTypes: (data.customInvestigationTypes as string[]) ?? [],
+    contractTemplate: data.contractTemplate as Firm['contractTemplate'],
     status: data.status as Firm['status'],
     planId: data.planId as string,
     createdAt: toDate(data.createdAt),
@@ -146,6 +147,17 @@ export interface FirmTariffs {
   finde?: number
   kmRate?: number
   dailyAllowance?: number
+}
+
+export async function updateContractTemplate(
+  firmId: string,
+  template: { name: string; body: string }
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId)
+  await updateDoc(ref, {
+    contractTemplate: template,
+    updatedAt: serverTimestamp(),
+  })
 }
 
 export async function updateFirmTariffs(firmId: string, tariffs: FirmTariffs): Promise<void> {

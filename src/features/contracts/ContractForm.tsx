@@ -1,5 +1,12 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { X, Sparkles } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { getFirm } from '@/services/firm'
+import { getClient } from '@/services/clients'
+import { renderContractTemplate } from '@/lib/contractTemplate'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import type { Client, Firm } from '@/types'
 import type { CreateContractData, ContractType } from '@/services/contracts'
 
 interface ContractFormProps {
@@ -27,38 +34,92 @@ export function ContractForm({
   caseId,
   clientId,
 }: ContractFormProps) {
-  const [loading, setLoading] = useState(false)
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [firm, setFirm] = useState<Firm | null>(null)
+  const [client, setClient] = useState<Client | null>(null)
   const [form, setForm] = useState({
     type: 'servicio_cliente' as ContractType,
     clientName: defaultClientName,
     serviceDescription: defaultServiceDescription,
     agreedPrice: '',
     specificConditions: '',
+    bodyText: '',
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const buildVars = useCallback(
+    (agreedPrice: string) => ({
+      cliente_nombre: client?.legalName ?? form.clientName,
+      cliente_dni: client?.taxId ?? '',
+      cliente_domicilio: client?.address
+        ? [client.address.street, client.address.city].filter(Boolean).join(', ')
+        : '',
+      objeto: form.serviceDescription,
+      importe: agreedPrice,
+      fecha: format(new Date(), 'dd/MM/yyyy', { locale: es }),
+      despacho_nombre: firm?.legalName ?? '',
+      despacho_rnsp: firm?.rnsp ?? '',
+    }),
+    [client, firm, form.clientName, form.serviceDescription]
+  )
+
+  useEffect(() => {
+    if (!open || !user?.firmId) return
+    setLoading(true)
+    Promise.all([
+      getFirm(user.firmId),
+      clientId ? getClient(user.firmId, clientId) : Promise.resolve(null),
+    ])
+      .then(([firmData, clientData]) => {
+        setFirm(firmData)
+        setClient(clientData)
+      })
+      .finally(() => setLoading(false))
+  }, [open, user?.firmId, clientId])
+
+  const template = firm?.contractTemplate
+  const hasTemplate = Boolean(template?.body)
+
+  useEffect(() => {
+    if (!hasTemplate || loading) return
+    setForm((prev) => ({
+      ...prev,
+      bodyText: renderContractTemplate(template!.body, buildVars(prev.agreedPrice)),
+    }))
+    // Solo al cargar los datos — no se re-sincroniza automáticamente al escribir
+    // para no pisar ediciones manuales del texto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasTemplate, loading])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  const regenerate = () => {
+    if (!template) return
+    setForm((prev) => ({
+      ...prev,
+      bodyText: renderContractTemplate(template.body, buildVars(prev.agreedPrice)),
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSubmitting(true)
     try {
       await onCreate({
         type: form.type,
-        clientName: form.clientName,
+        clientName: client?.legalName || form.clientName,
         serviceDescription: form.serviceDescription,
         agreedPrice: form.agreedPrice || undefined,
         specificConditions: form.specificConditions || undefined,
+        bodyText: hasTemplate ? form.bodyText : undefined,
         caseId,
         clientId,
       })
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -67,7 +128,7 @@ export function ContractForm({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-900">Nuevo contrato</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -92,19 +153,21 @@ export function ContractForm({
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Cliente <span className="text-red-500">*</span>
-            </label>
-            <input
-              name="clientName"
-              value={form.clientName}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              placeholder="Nombre del cliente o empresa"
-            />
-          </div>
+          {!client && (
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Cliente <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="clientName"
+                value={form.clientName}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Nombre del cliente o empresa"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
@@ -113,9 +176,9 @@ export function ContractForm({
             <textarea
               name="serviceDescription"
               value={form.serviceDescription}
-              onChange={handleTextareaChange}
+              onChange={handleChange}
               required
-              rows={3}
+              rows={2}
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe el servicio contratado..."
             />
@@ -131,24 +194,63 @@ export function ContractForm({
               value={form.agreedPrice}
               onChange={handleChange}
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              placeholder="Ej: 1.200€ — Vigilancia 3 días"
+              placeholder="Ej: 1.200€"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Condiciones específicas{' '}
-              <span className="text-slate-400 font-normal">(opcional)</span>
-            </label>
-            <textarea
-              name="specificConditions"
-              value={form.specificConditions}
-              onChange={handleTextareaChange}
-              rows={3}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
-              placeholder="Condiciones particulares del contrato..."
-            />
-          </div>
+          {loading ? (
+            <p className="text-xs text-slate-400">Cargando plantilla del despacho...</p>
+          ) : hasTemplate ? (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-medium text-slate-700">
+                  Texto del contrato — generado desde la plantilla del despacho
+                </label>
+                <button
+                  type="button"
+                  onClick={regenerate}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Regenerar desde plantilla
+                </button>
+              </div>
+              <textarea
+                name="bodyText"
+                value={form.bodyText}
+                onChange={handleChange}
+                rows={12}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y focus:border-primary font-mono"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Revisa el texto antes de enviarlo al cliente para su firma.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs text-amber-800">
+                  Tu despacho no tiene una plantilla de contrato configurada — este contrato se
+                  creará solo con estos datos. Ve a Ajustes → Plantilla de contrato para crear
+                  una y generar el texto completo automáticamente la próxima vez.
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  Condiciones específicas{' '}
+                  <span className="text-slate-400 font-normal">(opcional)</span>
+                </label>
+                <textarea
+                  name="specificConditions"
+                  value={form.specificConditions}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
+                  placeholder="Condiciones particulares del contrato..."
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button
@@ -160,10 +262,10 @@ export function ContractForm({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting || loading}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
             >
-              {loading ? 'Creando...' : 'Crear contrato'}
+              {submitting ? 'Creando...' : 'Crear contrato'}
             </button>
           </div>
         </form>

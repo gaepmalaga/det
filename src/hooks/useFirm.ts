@@ -6,13 +6,14 @@ import {
   updateFirm,
   updateCustomInvestigationTypes,
   updateFirmTariffs,
+  updateContractTemplate,
   addMember,
   updateMember,
   type UpdateFirmData,
   type FirmTariffs,
   type InviteMemberData,
 } from '@/services/firm'
-import type { Firm, Member, TipStatus } from '@/types'
+import type { Firm, Member, TipStatus, ContractTemplate } from '@/types'
 
 export function useFirm() {
   const { user } = useAuth()
@@ -74,7 +75,27 @@ export function useFirm() {
     }
   }
 
-  return { firm, loading, error, update, updateInvestigationTypes, updateTariffs, reload: load }
+  const updateTemplate = async (template: ContractTemplate) => {
+    if (!firmId) return
+    try {
+      await updateContractTemplate(firmId, template)
+      await load()
+    } catch (err) {
+      console.error(err)
+      setError('Error al actualizar la plantilla de contrato.')
+    }
+  }
+
+  return {
+    firm,
+    loading,
+    error,
+    update,
+    updateInvestigationTypes,
+    updateTariffs,
+    updateTemplate,
+    reload: load,
+  }
 }
 
 export function useFirmMembers() {
