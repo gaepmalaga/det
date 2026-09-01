@@ -4,7 +4,6 @@ import {
   addDoc,
   updateDoc,
   getDocs,
-  getDoc,
   query,
   where,
   serverTimestamp,
@@ -24,26 +23,6 @@ export interface PortalAccess {
   createdAt: Date
   createdBy: string
   lastAccessAt?: Date
-}
-
-export interface PortalMessage {
-  id: string
-  firmId: string
-  caseId: string
-  content: string
-  fromClient: boolean
-  senderName: string
-  createdAt: Date
-  readAt?: Date
-}
-
-export interface PortalDocument {
-  id: string
-  name: string
-  url: string
-  type: 'contract' | 'report' | 'other'
-  releasedAt: Date
-  releasedBy: string
 }
 
 function toDate(val: unknown): Date {
@@ -73,19 +52,6 @@ function mapAccess(id: string, data: Record<string, unknown>): PortalAccess {
     createdAt: toDate(data.createdAt),
     createdBy: data.createdBy as string,
     lastAccessAt: toDateOrUndefined(data.lastAccessAt),
-  }
-}
-
-function mapMessage(id: string, data: Record<string, unknown>): PortalMessage {
-  return {
-    id,
-    firmId: data.firmId as string,
-    caseId: data.caseId as string,
-    content: data.content as string,
-    fromClient: data.fromClient as boolean,
-    senderName: data.senderName as string,
-    createdAt: toDate(data.createdAt),
-    readAt: toDateOrUndefined(data.readAt),
   }
 }
 
@@ -183,70 +149,4 @@ export async function updatePortalClientUserId(
   const snap = await getDocs(q)
   if (snap.empty) return
   await updateDoc(snap.docs[0].ref, { userId, lastAccessAt: serverTimestamp() })
-}
-
-// ─── DOCUMENTOS LIBERADOS ─────────────────────────────────────────────────────
-
-export async function getCasePortalDocuments(
-  firmId: string,
-  caseId: string
-): Promise<PortalDocument[]> {
-  const ref = collection(db, 'firms', firmId, 'cases', caseId, 'portalDocuments')
-  const snap = await getDocs(ref)
-  return snap.docs.map((d) => {
-    const data = d.data()
-    return {
-      id: d.id,
-      name: data.name as string,
-      url: data.url as string,
-      type: data.type as PortalDocument['type'],
-      releasedAt: toDate(data.releasedAt),
-      releasedBy: data.releasedBy as string,
-    }
-  })
-}
-
-export async function releaseDocument(
-  firmId: string,
-  caseId: string,
-  userId: string,
-  document: { name: string; url: string; type: PortalDocument['type'] }
-): Promise<void> {
-  const ref = collection(db, 'firms', firmId, 'cases', caseId, 'portalDocuments')
-  await addDoc(ref, {
-    ...document,
-    releasedBy: userId,
-    releasedAt: serverTimestamp(),
-  })
-}
-
-// ─── MENSAJES ─────────────────────────────────────────────────────────────────
-
-export async function getCaseMessages(
-  firmId: string,
-  caseId: string
-): Promise<PortalMessage[]> {
-  const ref = collection(db, 'firms', firmId, 'cases', caseId, 'portalMessages')
-  const snap = await getDocs(ref)
-  return snap.docs
-    .map((d) => mapMessage(d.id, d.data() as Record<string, unknown>))
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-}
-
-export async function sendMessage(
-  firmId: string,
-  caseId: string,
-  content: string,
-  fromClient: boolean,
-  senderName: string
-): Promise<void> {
-  const ref = collection(db, 'firms', firmId, 'cases', caseId, 'portalMessages')
-  await addDoc(ref, {
-    firmId,
-    caseId,
-    content: content.trim(),
-    fromClient,
-    senderName,
-    createdAt: serverTimestamp(),
-  })
 }

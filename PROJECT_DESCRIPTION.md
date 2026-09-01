@@ -352,9 +352,47 @@ seguimiento de implementación (§8).
   cada push a `main` — al trabajar sin PRs, cada commit a `main` se
   despliega directo. Se verifica build/lint localmente antes de cada push
   para no romper producción.
-- El siguiente paso natural es seguir con la implementación por fases
-  (ver propuesta de fases en la conversación): modelo de datos completo
-  (`contacts`/`quotes`/`caseActions`/`contractTemplates`), luego ir
-  retirando evidencias/compliance/portal-mensajería y construyendo el
-  flujo nuevo — o cerrar antes los 3 puntos abiertos de §7 si se prefiere
-  rematar el alcance primero.
+- **Fase 4 — plantilla de contrato + portal simplificado**:
+  - Cada despacho configura **una** plantilla de contrato en Ajustes →
+    Plantilla de contrato (`Firm.contractTemplate: { name, body }`, mismo
+    patrón que tarifas/tipos de investigación — campo en el propio
+    documento del despacho, no una colección nueva). El texto usa
+    placeholders (`{{cliente_nombre}}`, `{{cliente_dni}}`,
+    `{{cliente_domicilio}}`, `{{objeto}}`, `{{importe}}`, `{{fecha}}`,
+    `{{despacho_nombre}}`, `{{despacho_rnsp}}`) — ver
+    `src/lib/contractTemplate.ts`. Al crear un contrato desde un
+    expediente, `ContractForm` rellena esos placeholders con los datos
+    del cliente/caso/despacho, permite ajustar el texto a mano
+    ("Regenerar desde plantilla" para volver a sincronizar sin perder
+    ediciones sin querer), y guarda el resultado como `Contract.bodyText`
+    — una foto fija en el momento de creación, para que editar la
+    plantilla más adelante no cambie contratos ya emitidos. Si el
+    despacho no ha configurado plantilla todavía, cae al formulario libre
+    de antes (degradación elegante, no bloquea).
+  - **Pendiente, no intentado a medias**: la firma real por parte del
+    cliente vía link (clic + IP + timestamp) que describe §4.3 sigue sin
+    existir — `SignContractDialog` sigue siendo una herramienta interna
+    donde el propio despacho registra que alguien firmó (nombre + PDF
+    escaneado opcional), no una vista pública para que el cliente
+    revise y firme él mismo. Eso requiere una ruta pública nueva y
+    reglas de Firestore más permisivas para un firmante no autenticado
+    como miembro del despacho — se deja como siguiente pieza en vez de
+    construirla a medias.
+  - **Portal simplificado** exactamente como fija §4.4: la lista de
+    "Mis expedientes" ahora muestra el importe del presupuesto
+    (`Quote.amount`, vía `Case.quoteId` → `getQuote`) y un estado
+    reducido a Abierto/Cerrado — no el pipeline interno completo de
+    `CaseStatus`. Se eliminó toda la mensajería y los documentos
+    liberados: `PortalMessage`/`PortalDocument` y sus funciones en
+    `services/portal.ts`, las reglas `portalMessages`/`portalDocuments`
+    y sus índices compuestos. La pestaña interna del expediente
+    (`CasePortalTab`) se redujo a dar/revocar acceso — nada de "liberar
+    documento" ni chat. El mecanismo de resolución de acceso
+    multi-despacho por email (`portalClients`, ya existente) se mantuvo
+    intacto porque ya hacía exactamente lo que hacía falta.
+  - `npm run build` y `npm run lint` verificados sin errores nuevos en
+    ambas partes de la fase (y de paso se limpiaron 3 errores de lint
+    preexistentes al simplificar `usePortal.ts`/`services/portal.ts`).
+- El siguiente paso natural: cerrar la firma-por-link pendiente de esta
+  fase, o seguir con la Fase 5 (colaboradores híbridos, contrato marco
+  del cliente habitual, estadísticas).

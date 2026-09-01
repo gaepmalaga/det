@@ -197,22 +197,6 @@
       ]
     },
     {
-      "collectionGroup": "portalMessages",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "caseId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "portalDocuments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "caseId", "order": "ASCENDING" },
-        { "fieldPath": "releasedAt", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "firms",
       "queryScope": "COLLECTION",
       "fields": [

@@ -4,24 +4,17 @@ import {
   getCasePortalAccess,
   createPortalAccess,
   revokePortalAccess,
-  getCasePortalDocuments,
-  releaseDocument,
-  getCaseMessages,
-  sendMessage,
   getClientPortalData,
   updatePortalClientUserId,
   type PortalAccess,
-  type PortalDocument,
-  type PortalMessage,
 } from '@/services/portal'
 import { getCase } from '@/services/cases'
-import type { Case } from '@/types'
+import { getQuote } from '@/services/quotes'
+import type { Case, Quote } from '@/types'
 
 export function useCasePortal(caseId: string) {
   const { user } = useAuth()
   const [accesses, setAccesses] = useState<PortalAccess[]>([])
-  const [documents, setDocuments] = useState<PortalDocument[]>([])
-  const [messages, setMessages] = useState<PortalMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,14 +25,8 @@ export function useCasePortal(caseId: string) {
     setLoading(true)
     setError(null)
     try {
-      const [acc, docs, msgs] = await Promise.all([
-        getCasePortalAccess(firmId, caseId),
-        getCasePortalDocuments(firmId, caseId),
-        getCaseMessages(firmId, caseId),
-      ])
+      const acc = await getCasePortalAccess(firmId, caseId)
       setAccesses(acc)
-      setDocuments(docs)
-      setMessages(msgs)
     } catch (err) {
       console.error(err)
       setError('Error al cargar el portal.')
@@ -78,45 +65,17 @@ export function useCasePortal(caseId: string) {
     }
   }
 
-  const release = async (doc: { name: string; url: string; type: PortalDocument['type'] }) => {
-    if (!firmId || !user) return
-    try {
-      await releaseDocument(firmId, caseId, user.uid, doc)
-      await load()
-    } catch (err) {
-      console.error(err)
-      setError('Error al liberar el documento.')
-    }
-  }
+  return { accesses, loading, error, grantAccess, revokeAccess, reload: load }
+}
 
-  const send = async (content: string, fromClient: boolean, senderName: string) => {
-    if (!firmId) return
-    try {
-      await sendMessage(firmId, caseId, content, fromClient, senderName)
-      await load()
-    } catch (err) {
-      console.error(err)
-      setError('Error al enviar el mensaje.')
-    }
-  }
-
-  return {
-    accesses,
-    documents,
-    messages,
-    loading,
-    error,
-    grantAccess,
-    revokeAccess,
-    release,
-    send,
-    reload: load,
-  }
+export interface PortalCaseSummary {
+  case: Case
+  quote: Quote | null
 }
 
 export function useClientPortal() {
-  const { user, firebaseUser } = useAuth()
-  const [cases, setCases] = useState<Case[]>([])
+  const { firebaseUser } = useAuth()
+  const [items, setItems] = useState<PortalCaseSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasAccess, setHasAccess] = useState(false)
@@ -143,13 +102,16 @@ export function useClientPortal() {
         const casePromises = portalData.caseIds.map(async (caseId) => {
           for (const firmId of portalData.firmIds) {
             const c = await getCase(firmId, caseId)
-            if (c) return c
+            if (c) {
+              const quote = c.quoteId ? await getQuote(firmId, c.quoteId) : null
+              return { case: c, quote }
+            }
           }
           return null
         })
 
         const results = await Promise.all(casePromises)
-        setCases(results.filter(Boolean) as Case[])
+        setItems(results.filter(Boolean) as PortalCaseSummary[])
       } catch (err) {
         console.error(err)
         setError('Error al cargar tus expedientes.')
@@ -161,5 +123,5 @@ export function useClientPortal() {
     load()
   }, [firebaseUser])
 
-  return { cases, loading, error, hasAccess }
+  return { items, loading, error, hasAccess }
 }
