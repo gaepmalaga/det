@@ -27,10 +27,10 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP }}'
           channelId: live
           projectId: detectivesprivadosesp
-      - name: Deploy Firestore rules, indexes and Storage rules
+      - name: Deploy Firestore rules and indexes
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DETECTIVESPRIVADOSESP }}' > "$GOOGLE_APPLICATION_CREDENTIALS"
-          npx firebase-tools deploy --only firestore:rules,firestore:indexes,storage --project detectivesprivadosesp --non-interactive
+          npx firebase-tools deploy --only firestore:rules,firestore:indexes --project detectivesprivadosesp --non-interactive
           rm -f "$GOOGLE_APPLICATION_CREDENTIALS"

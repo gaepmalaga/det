@@ -719,3 +719,21 @@ de CI que lo despliegue es un cambio que no existe en producción,
 por mucho que esté commiteado y el build pase — build/lint no
 detectan esto porque las reglas de seguridad no se ejecutan en el
 build local, solo en el servidor de Firestore real.
+
+**Corrección**: el primer intento (con `storage` incluido en el
+`--only`) falló en CI — logs del job:
+`Error: Request to https://serviceusage.googleapis.com/.../services/
+firebasestorage.googleapis.com had HTTP Error: 403, Permission denied
+to get service`. El service account que ya existía (creado solo para
+desplegar Hosting) no tiene permiso IAM sobre la API de Storage, y
+firebase-tools comprueba las APIs de *todos* los targets pedidos antes
+de desplegar ninguno — así que ni siquiera llegó a intentar Firestore.
+Se quitó `storage` del comando (queda `--only
+firestore:rules,firestore:indexes`, solo lo que hacía falta para el
+bug de contactos/presupuestos) y se re-desplegó. Las reglas de
+`storage.rules` (usadas por contratos escaneados y, más adelante,
+logos de despacho) **siguen sin desplegarse** — pendiente de que el
+usuario amplíe el rol del service account en la consola de Google
+Cloud (IAM) si quiere que ese target también se automatice; mientras
+tanto habría que desplegarlas a mano una vez desde una máquina con
+`firebase login`.
