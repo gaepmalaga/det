@@ -556,6 +556,38 @@ no señalan nada roto, no en una comprobación visual real. Pendiente
 que el usuario confirme en producción que las pantallas autenticadas
 se ven bien.
 
+**Segunda pasada — Dashboard y Expedientes (2026-09-01)**: usuario
+aprobó el rollout de color ("mucho mejor, aplícalo al resto de la
+app") y pidió continuar. Se eligieron las dos pantallas de más uso
+para llevarlas, ahora sí, al nivel de layout de login (no solo color):
+
+- `DashboardPage.tsx`: saludo con el nombre de pila del usuario en vez
+  de un `<h1>Dashboard</h1>` genérico; las 4 tarjetas de métricas
+  pasan de icono suelto a insignia cuadrada (`bg-muted`, o `bg-primary/10`
+  al hover) como las insignias circulares de login, con `shadow-sm` +
+  `hover:shadow-md` en vez de solo cambiar el borde; los números
+  principales usan `text-[1.75rem]` con `leading-none` para más
+  presencia. Las cabeceras de las tarjetas "Expedientes activos" y
+  "Presupuestos" y los botones de "Acceso rápido" ganan la misma
+  insignia de icono en `bg-primary/10`/`bg-muted`.
+- `CasesPage.tsx`: buscador, tarjetas móviles y tabla de escritorio
+  ganan `shadow-sm` (y `hover:shadow-md` en filas/tarjetas
+  interactivas) en vez de quedarse planos con solo un borde; cabecera
+  de tabla con `bg-muted/60` en vez de `bg-muted` sólido.
+
+No se tocó la lógica de datos ni el comportamiento en ninguna de las
+dos, solo clases. Verificado build/lint limpios (16 problemas
+preexistentes, uno menos que antes porque `DashboardPage.tsx` ya no
+figura en la lista — se resolvió solo, no fue intencional). **Tampoco
+se pudo verificar visualmente** por la misma limitación de red del
+sandbox (ambas pantallas requieren sesión autenticada) — pendiente de
+confirmación del usuario en producción.
+
+Pantallas de más uso que quedan sin esta segunda pasada de layout:
+Configuración, Contactos/Presupuestos, y el panel de Superadmin — a la
+espera de que el usuario confirme que esta dirección también le
+convence antes de seguir.
+
 Verificado en cada iteración: build/lint limpios, sin errores nuevos.
 Capturas de escritorio y móvil generadas localmente (`vite preview` +
 Playwright headless) y revisadas antes de enviarlas.

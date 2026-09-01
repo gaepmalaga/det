@@ -35,11 +35,15 @@ export function DashboardPage() {
   const amberCases = cases.filter((c) => c.complianceStatus === 'amber')
   const recentCases = [...activeCases].slice(0, 5)
 
+  const firstName = user?.displayName?.split(' ')[0]
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+      <div className="mb-7">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {firstName ? `Hola, ${firstName}` : 'Dashboard'}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1.5 capitalize">
           {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
         </p>
       </div>
@@ -48,69 +52,79 @@ export function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div
           onClick={() => navigate(ROUTES.CASES)}
-          className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors"
+          className="group bg-card border border-border rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md hover:border-primary/25 transition-all"
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">
               Expedientes activos
             </p>
-            <FolderOpen className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors shrink-0">
+              <FolderOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </span>
           </div>
-          <p className="text-3xl font-semibold text-foreground">{activeCases.length}</p>
+          <p className="text-[1.75rem] leading-none font-semibold text-foreground">{activeCases.length}</p>
         </div>
 
         <div
           onClick={() => navigate(ROUTES.QUOTES)}
-          className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-foreground/20 transition-colors"
+          className="group bg-card border border-border rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md hover:border-primary/25 transition-all"
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">
               Presupuestos pendientes
             </p>
-            <Receipt className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors shrink-0">
+              <Receipt className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </span>
           </div>
-          <p className="text-3xl font-semibold text-foreground">{pendingQuotes.length}</p>
+          <p className="text-[1.75rem] leading-none font-semibold text-foreground">{pendingQuotes.length}</p>
         </div>
 
         <div
           onClick={() => navigate(ROUTES.COMPLIANCE)}
-          className={`border rounded-xl p-4 cursor-pointer transition-colors ${
+          className={`border rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all ${
             redCases.length > 0
               ? 'bg-red-50 border-red-200 hover:border-red-300'
-              : 'bg-card border-border hover:border-foreground/20'
+              : 'bg-card border-border hover:border-primary/25'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${
               redCases.length > 0 ? 'text-red-600' : 'text-muted-foreground'
             }`}>
               Alertas críticas
             </p>
-            <ShieldAlert className={`w-4 h-4 shrink-0 ${
-              redCases.length > 0 ? 'text-red-500' : 'text-muted-foreground'
-            }`} />
+            <span className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${
+              redCases.length > 0 ? 'bg-red-100' : 'bg-muted'
+            }`}>
+              <ShieldAlert className={`w-4 h-4 ${
+                redCases.length > 0 ? 'text-red-500' : 'text-muted-foreground'
+              }`} />
+            </span>
           </div>
-          <p className={`text-3xl font-semibold ${
+          <p className={`text-[1.75rem] leading-none font-semibold ${
             redCases.length > 0 ? 'text-red-700' : 'text-foreground'
           }`}>
             {redCases.length}
           </p>
           {amberCases.length > 0 && (
-            <p className="text-xs text-amber-600 mt-1">
+            <p className="text-xs text-amber-600 mt-2">
               {amberCases.length} en revisión
             </p>
           )}
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">
               Total expedientes
             </p>
-            <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted shrink-0">
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+            </span>
           </div>
-          <p className="text-3xl font-semibold text-foreground">{cases.length}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[1.75rem] leading-none font-semibold text-foreground">{cases.length}</p>
+          <p className="text-xs text-muted-foreground mt-2">
             {cases.filter((c) => c.status === 'cerrado').length} cerrados
           </p>
         </div>
@@ -121,10 +135,12 @@ export function DashboardPage() {
 
         {/* Expedientes activos recientes — ocupa 2 cols en desktop */}
         <div className="lg:col-span-2">
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <FolderOpen className="w-4 h-4 text-muted-foreground" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2.5">
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/10 shrink-0">
+                  <FolderOpen className="w-3.5 h-3.5 text-primary" />
+                </span>
                 Expedientes activos
               </h2>
               <button
@@ -187,10 +203,12 @@ export function DashboardPage() {
         <div className="space-y-4">
 
           {/* Presupuestos pendientes */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-muted-foreground" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2.5">
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/10 shrink-0">
+                  <Receipt className="w-3.5 h-3.5 text-primary" />
+                </span>
                 Presupuestos
               </h2>
               <button
@@ -221,28 +239,34 @@ export function DashboardPage() {
           </div>
 
           {/* Acceso rápido */}
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
             <h2 className="text-sm font-semibold text-foreground mb-3">Acceso rápido</h2>
             <div className="space-y-1">
               <button
                 onClick={() => navigate(ROUTES.CONTACTS)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
               >
-                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-muted shrink-0">
+                  <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                </span>
                 Nuevo contacto
               </button>
               <button
                 onClick={() => navigate(ROUTES.CASES)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
               >
-                <FolderOpen className="w-4 h-4 text-muted-foreground" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-muted shrink-0">
+                  <FolderOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                </span>
                 Ver expedientes
               </button>
               <button
                 onClick={() => navigate(ROUTES.REGISTRY_BOOK)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-foreground rounded-lg hover:bg-muted transition-colors text-left"
               >
-                <FileText className="w-4 h-4 text-muted-foreground" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-md bg-muted shrink-0">
+                  <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                </span>
                 Libro-registro
               </button>
             </div>
