@@ -147,13 +147,11 @@ marco una vez (cubre todos sus casos futuros, sin fricción) o si sigue
 firmando contrato en cada expediente igual que un particular, y lo único que
 cambia es que tiene portal.
 
-Derivado de esto, la pregunta que quedó sin resolver: si hay contrato marco
-activo, ¿el expediente se abre directamente sin pasar por presupuesto (las
-condiciones económicas ya están pactadas en el marco), o aunque tenga marco se
-sigue registrando alguna cifra por asunto para control interno de
-facturación? **Esto enlaza con la idea nueva de un posible módulo de
-contabilidad/estadísticas** (ver §7) — no se ha decidido si ese control
-económico por asunto vive dentro de "quotes" o en un módulo aparte.
+**Decidido**: si hay contrato marco activo, el expediente se abre directamente
+sin pasar por `quotes` (las condiciones económicas ya están pactadas en el
+marco), pero sí se registra una cifra por asunto para control interno —
+como campos directos en `cases` (`agreedAmount`, `billingMode: 'quote' |
+'framework'`), no como una colección de contabilidad aparte. Detalle en §7.
 
 ## 5. Modelo de datos (borrador, ~8 colecciones)
 
@@ -161,8 +159,12 @@ económico por asunto vive dentro de "quotes" o en un módulo aparte.
 - `contacts` — antes "leads", privados por despacho.
 - `quotes` — presupuestos: importe, estado enviado/aceptado/rechazado,
   vinculado a un `contact`.
-- `cases` — expediente simplificado: se crea solo al aceptar un `quote`; sin
-  evidencias/portal-mensajes/compliance.
+- `cases` — expediente simplificado: se crea al aceptar un `quote`, o
+  directamente (sin `quote`) si el contacto tiene contrato marco activo; sin
+  evidencias/portal-mensajes/compliance. Lleva `agreedAmount: number` y
+  `billingMode: 'quote' | 'framework'` para el control económico por asunto,
+  también en el caso del marco (ver §7 — sin colección de contabilidad
+  aparte).
 - `caseActions` — actuaciones: fecha/hora/ubicación auto + nota.
 - `contractTemplates` — por despacho, con placeholders.
 - `contracts` — instancia generada desde plantilla + estado firma.
@@ -230,19 +232,33 @@ puedan investigarlos ellos mismos). Hay que añadirlos al modelo nuevo de
 Coincide con el número de DNI del detective — no es un código aparte que haya
 que generar, solo capturarlo. Es personal e intransferible.
 
-## 7. Abierto / sin decidir todavía
+## 7. Decisiones recientes y abierto / sin decidir todavía
 
-1. **Cliente con contrato marco** (§4.6) — si el expediente se abre sin
-   presupuesto o si se sigue registrando una cifra por asunto.
-2. **Módulo de contabilidad/estadísticas** — idea nueva, sin desarrollar:
-   casos por asunto, por meses... Podría ser la pieza que resuelva el punto 1
-   (llevar el control económico fuera de `quotes` cuando hay marco activo).
-   Sin alcance definido todavía.
-3. **Invitación de colaborador con plataforma** — mecanismo exacto (email con
+### Estadísticas vs. contabilidad (decidido)
+
+No se construye un módulo de "contabilidad" (facturación, IVA, cobros) —
+eso ya lo cubren herramientas externas (Holded, A3, Contasimple...) que la
+mayoría de despachos ya usan, y meterse ahí vuelve a inflar el alcance que
+llevamos dos conversaciones recortando. En su lugar:
+
+- El control económico por asunto (incluido el caso del cliente con marco,
+  que no pasa por `quotes`) vive como campos directos en `cases`
+  (`agreedAmount`, `billingMode`, ver §5) — no como colección aparte.
+- Se añade una pantalla de **Estadísticas** de solo lectura, sin colección
+  propia: agrega datos ya existentes en `quotes`/`cases` (presupuestos
+  enviados/aceptados por mes, tasa de conversión, casos abiertos vs.
+  cerrados, importe agregado por mes/despacho/tipo de investigación).
+- Si en el futuro se pide facturación real (emitir y numerar facturas), se
+  plantea como integración con el software de facturación del despacho, no
+  como módulo propio.
+
+### Sin decidir todavía
+
+1. **Invitación de colaborador con plataforma** — mecanismo exacto (email con
    link de auto-registro vs. alta manual por el titular).
-4. **Exportación del informe** — formatos, plantilla con logo del despacho,
+2. **Exportación del informe** — formatos, plantilla con logo del despacho,
    qué tan editable es la maquetación final.
-5. **Contrato marco de cliente habitual** — quién lo redacta (parece que en
+3. **Contrato marco de cliente habitual** — quién lo redacta (parece que en
    algunos casos lo aportan los propios abogados del cliente, no el despacho),
    y cómo se sube/adjunta frente a generarse desde plantilla.
 
@@ -261,7 +277,10 @@ que generar, solo capturarlo. Es personal e intransferible.
 - **Pendiente para el usuario**: rotar las credenciales de Firebase en la
   consola, ya que quedaron expuestas en el historial de git aunque ya no estén
   trackeadas hacia adelante.
+- El PR #1 se fusionó a `main`. A partir de ahora el trabajo se hace
+  directamente sobre `main`, sin ramas ni PRs intermedios (petición explícita
+  del usuario).
 - Nada de lo descrito en este documento (§1-§7) está implementado todavía —
   es una fase de definición de alcance. El siguiente paso natural es cerrar
-  los puntos de §7 y planificar la implementación (probablemente empezando por
-  el modelo de datos de §5 con las correcciones de §6).
+  los puntos abiertos de §7 y planificar la implementación (probablemente
+  empezando por el modelo de datos de §5 con las correcciones de §6).
