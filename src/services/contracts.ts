@@ -42,6 +42,7 @@ export interface Contract {
   issuedAt: Date
   signedAt?: Date
   signedByName?: string
+  signedIp?: string
   serviceDescription: string
   agreedPrice?: string
   specificConditions?: string
@@ -81,6 +82,7 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     issuedAt: toDate(data.issuedAt),
     signedAt: toDateOrUndefined(data.signedAt),
     signedByName: data.signedByName as string | undefined,
+    signedIp: data.signedIp as string | undefined,
     serviceDescription: data.serviceDescription as string,
     agreedPrice: data.agreedPrice as string | undefined,
     specificConditions: data.specificConditions as string | undefined,
@@ -157,6 +159,34 @@ export async function createContract(
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id
+}
+
+// ─── FIRMA POR LINK (cliente, sin autenticar) ─────────────────────────────────
+
+export async function getContractForSigning(
+  firmId: string,
+  contractId: string
+): Promise<Contract | null> {
+  const ref = doc(db, 'firms', firmId, 'contracts', contractId)
+  const snap = await getDoc(ref)
+  if (!snap.exists()) return null
+  return mapContract(snap.id, snap.data() as Record<string, unknown>)
+}
+
+export async function signContractPublicly(
+  firmId: string,
+  contractId: string,
+  signedByName: string,
+  signedIp: string | null
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'contracts', contractId)
+  const updateData: Record<string, unknown> = {
+    status: 'firmado' as ContractStatus,
+    signedAt: serverTimestamp(),
+    signedByName,
+  }
+  if (signedIp) updateData.signedIp = signedIp
+  await updateDoc(ref, updateData)
 }
 
 export async function markContractAsSigned(

@@ -7,6 +7,9 @@ export const ROUTES = {
   // Onboarding
   ONBOARDING: '/onboarding',
 
+  // Firma pública de contrato (sin autenticar)
+  SIGN_CONTRACT: '/sign/:firmId/:contractId',
+
   // App — Despacho
   DASHBOARD: '/app/dashboard',
   CONTACTS: '/app/contacts',

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileText, CheckCircle, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, FileText, CheckCircle, ExternalLink, ChevronDown, ChevronUp, Link as LinkIcon } from 'lucide-react'
 import { useCaseContracts } from '@/hooks/useContracts'
 import { createRegistryEntry } from '@/services/registry'
 import { createAuditLog } from '@/services/auditLog'
@@ -39,6 +39,19 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
   const [showCreate, setShowCreate] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [expandedBodyId, setExpandedBodyId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const copySignLink = async (contractId: string) => {
+    if (!user?.firmId) return
+    const url = `${window.location.origin}/sign/${user.firmId}/${contractId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedId(contractId)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const handleCreate = async (data: CreateContractData) => {
     await create(data)
@@ -184,13 +197,22 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                     </a>
                   )}
                   {contract.status !== 'firmado' && contract.status !== 'rescindido' && !isClosed && (
-                    <button
-                      onClick={() => setSelectedContract(contract)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <CheckCircle className="w-3 h-3" />
-                      Firmar
-                    </button>
+                    <>
+                      <button
+                        onClick={() => copySignLink(contract.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                        {copiedId === contract.id ? 'Copiado' : 'Copiar enlace de firma'}
+                      </button>
+                      <button
+                        onClick={() => setSelectedContract(contract)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        Registrar firma manual
+                      </button>
+                    </>
                   )}
                   {contract.status === 'firmado' && (
                     <button
@@ -230,6 +252,12 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                   <div>
                     <p className="text-slate-500">Firmado por</p>
                     <p className="text-slate-900">{contract.signedByName}</p>
+                  </div>
+                )}
+                {contract.signedIp && (
+                  <div>
+                    <p className="text-slate-500">IP de firma</p>
+                    <p className="text-slate-900 font-mono">{contract.signedIp}</p>
                   </div>
                 )}
               </div>

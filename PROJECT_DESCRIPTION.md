@@ -393,9 +393,38 @@ seguimiento de implementación (§8).
   - `npm run build` y `npm run lint` verificados sin errores nuevos en
     ambas partes de la fase (y de paso se limpiaron 3 errores de lint
     preexistentes al simplificar `usePortal.ts`/`services/portal.ts`).
-- El siguiente paso natural: cerrar la firma-por-link pendiente de esta
-  fase, o seguir con la Fase 5 (colaboradores híbridos, contrato marco
-  del cliente habitual, estadísticas).
+  - **Fase 4 — parte 3, firma pública del contrato (clic + IP +
+    timestamp)**: nueva ruta pública `/sign/:firmId/:contractId`
+    (`SignContractPage`, fuera del `RouteGuard`, sin login) que muestra
+    el `bodyText` del contrato (o los campos sueltos si no hay
+    plantilla), pide nombre completo + una casilla de aceptación, y al
+    firmar llama a `signContractPublicly` — guarda `status: 'firmado'`,
+    `signedAt` (hora del servidor) y `signedByName`, más `signedIp` si
+    se pudo resolver (fetch a `api.ipify.org` desde el navegador, sin
+    backend propio). El enlace se genera y copia desde
+    `CaseContractTab` ("Copiar enlace de firma"); el botón antiguo se
+    renombró a "Registrar firma manual" para dejar claro que ahora
+    son dos caminos distintos (firma real del cliente vs. que el
+    despacho registre a mano una firma en papel).
+    - **Seguridad sin Cloud Functions**: como no hay backend propio
+      desplegado, la regla de Firestore se apoya en que el ID de
+      Firestore del contrato ya es un identificador aleatorio no
+      listable (se añadió `allow get: if true` pero `allow list` se
+      mantiene restringido al despacho, así que no se puede enumerar
+      contratos, solo acceder al que ya tienes por enlace) — es el
+      mismo modelo de seguridad que "cualquiera con el enlace" de
+      Google Docs o los enlaces de pago de Stripe. El `update` público
+      solo puede pasar de no-firmado a `firmado`, solo puede tocar
+      `status`/`signedAt`/`signedByName`/`signedIp`, y `signedAt` tiene
+      que coincidir exactamente con la hora del servidor en el momento
+      de la escritura (no se puede falsear la fecha de firma).
+    - Verificado: build/lint limpios; probé la página en local contra
+      un contrato inexistente (no pude probar el camino feliz porque
+      este entorno no tiene acceso a Firestore real) — no crashea,
+      muestra el mensaje de enlace no válido correctamente.
+- El siguiente paso natural: Fase 5 (colaboradores híbridos, contrato
+  marco del cliente habitual, estadísticas) — con esto la Fase 4 queda
+  completa.
 
 ## Incidente — producción caída (2026-09-01)
 

@@ -209,9 +209,24 @@ service cloud.firestore {
       // ── CONTRACTS ────────────────────────────────────────────────────────
 
       match /contracts/{contractId} {
-        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        // Lectura individual pública: el link de firma solo funciona para
+        // quien conoce el ID del contrato (aleatorio, no listable, no
+        // adivinable) — no se permite listar/consultar sin autenticación.
+        allow get: if true;
+        allow list: if isSuperAdmin() || isActiveMember(firmId);
         allow create: if isActiveMember(firmId);
-        allow update: if isActiveMember(firmId);
+        // Firma pública por link: solo puede pasar de no firmado a firmado,
+        // solo tocando los campos de la firma, y signedAt debe ser el
+        // instante real del servidor (no se puede falsear la fecha).
+        allow update: if isActiveMember(firmId) || (
+          resource.data.status != 'firmado' &&
+          request.resource.data.status == 'firmado' &&
+          request.resource.data.signedAt == request.time &&
+          request.resource.data.signedByName is string &&
+          request.resource.data.signedByName.size() > 0 &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'signedAt', 'signedByName', 'signedIp'])
+        );
         allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
       }
 

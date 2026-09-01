@@ -4,6 +4,7 @@ import { RouteGuard } from '@/components/shared/RouteGuard'
 import { AppShell } from '@/components/layout/AppShell'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
+import { SignContractPage } from '@/features/sign/SignContractPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { ContactsPage } from '@/features/contacts/ContactsPage'
 import { ContactDetailPage } from '@/features/contacts/ContactDetailPage'
@@ -41,6 +42,7 @@ export function AppRouter() {
       <Routes>
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+        <Route path={ROUTES.SIGN_CONTRACT} element={<SignContractPage />} />
         <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
         <Route
