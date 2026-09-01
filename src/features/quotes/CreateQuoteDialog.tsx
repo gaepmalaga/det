@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { X, Upload, CheckCircle } from 'lucide-react'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
 import type { Contact } from '@/types'
 import type { CreateQuoteData } from '@/services/quotes'
@@ -9,7 +9,7 @@ interface CreateQuoteDialogProps {
   contacts: Contact[]
   lockedContactId?: string
   onClose: () => void
-  onCreate: (data: CreateQuoteData) => Promise<void>
+  onCreate: (data: CreateQuoteData, file: File | null) => Promise<void>
 }
 
 export function CreateQuoteDialog({
@@ -20,6 +20,8 @@ export function CreateQuoteDialog({
   onCreate,
 }: CreateQuoteDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     contactId: lockedContactId ?? '',
     investigationType: '',
@@ -43,13 +45,16 @@ export function CreateQuoteDialog({
     if (!form.contactId) return
     setLoading(true)
     try {
-      await onCreate({
-        contactId: form.contactId,
-        investigationType: form.investigationType,
-        investigationTypeCustom: form.investigationTypeCustom || undefined,
-        description: form.description,
-        amount: Number(form.amount),
-      })
+      await onCreate(
+        {
+          contactId: form.contactId,
+          investigationType: form.investigationType,
+          investigationTypeCustom: form.investigationTypeCustom || undefined,
+          description: form.description,
+          amount: Number(form.amount),
+        },
+        file
+      )
     } finally {
       setLoading(false)
     }
@@ -170,6 +175,44 @@ export function CreateQuoteDialog({
               required
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="0,00"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1.5">
+              PDF del presupuesto{' '}
+              <span className="text-muted-foreground font-normal">
+                (opcional, si lo has generado fuera de la plataforma)
+              </span>
+            </label>
+            {file ? (
+              <div className="flex items-center gap-2 p-3 bg-muted border border-border rounded-lg">
+                <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                <span className="text-sm text-foreground truncate">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="ml-auto text-xs text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  Cambiar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-border rounded-lg text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Adjuntar PDF
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="hidden"
             />
           </div>
 

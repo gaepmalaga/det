@@ -1187,3 +1187,53 @@ problemas preexistentes, cero nuevos).
 **Sin verificar en producción** — misma limitación de siempre; el
 usuario deberá probar el ciclo completo (presupuesto → contrato → firma
 → expediente → libro-registro) en real.
+
+## Refinamientos al flujo Presupuesto → Contrato → Expediente (2026-09-01)
+
+Tras explicar el flujo real (cliente llama, se pide datos, se presupuesta,
+si se acepta toca contrato, si se firma se abre expediente, y un mismo
+cliente puede repetir el ciclo para una nueva investigación), el usuario
+pidió tres ajustes concretos:
+
+1. **Bug de cliente duplicado (arreglado)** — `AcceptQuoteDialog` creaba
+   una ficha de cliente nueva en `createClient()` cada vez que se
+   aceptaba un presupuesto, sin comprobar si el contacto ya tenía una.
+   Un mismo cliente con una segunda investigación se habría duplicado.
+   Arreglado con `getClientByContactId(firmId, contactId)` (nuevo, en
+   `services/clients.ts`, busca por `convertedFromContactId`): si ya
+   existe cliente para ese contacto, se reutiliza su `id` en vez de
+   crear uno nuevo.
+
+2. **Subir el presupuesto en PDF (añadido, opcional)** — `Quote` gana
+   `documentUrl`/`documentName`. Nuevo `uploadQuoteDocument()` en
+   `services/quotes.ts` (mismo patrón que los documentos de contrato:
+   `firms/{firmId}/quotes/{quoteId}/{nombre}` en Storage, ya cubierto
+   por las reglas existentes de `firms/{firmId}/**`). `CreateQuoteDialog`
+   tiene ahora un campo de subida opcional; el importe se sigue
+   guardando siempre en el formulario (para el futuro módulo de
+   contabilidad), el PDF es solo un adjunto de apoyo. Se ve como enlace
+   "Ver PDF del presupuesto" en `QuoteCard`.
+
+3. **Contrato: plantilla Y subida de PDF, ambas disponibles (añadido)**
+   — el usuario quería las dos opciones, no una u otra. `Contract` gana
+   `sourceDocumentUrl`/`sourceDocumentName` (documento *base* subido por
+   el detective, distinto de `scannedDocumentUrl` que es el documento
+   *ya firmado* que se archiva después). `ContractForm` sigue generando
+   el texto desde la plantilla del despacho como hasta ahora, y además
+   tiene una sección independiente para subir un PDF ya redactado fuera.
+   Si se sube ese PDF, es lo que ve y firma el cliente en el enlace
+   público (`SignContractPage` prioriza `sourceDocumentUrl` — lo muestra
+   en un `<iframe>` con enlace para abrirlo en pestaña nueva — por
+   encima del texto generado). Nuevo `uploadContractSourceDocument()` en
+   `services/contracts.ts`; se sube justo después de crear el contrato,
+   desde los dos sitios donde se crean contratos
+   (`AcceptQuoteDialog.handleCreateContract` y
+   `CaseContractTab.handleCreate`), antes de cerrar el diálogo o navegar
+   — así no hay carrera entre la subida y que el componente se
+   desmonte. Enlaces "Ver PDF subido" añadidos en `ContractsPage` y
+   `CaseContractTab`.
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos).
+
+**Sin verificar en producción** — misma limitación de siempre.

@@ -136,6 +136,26 @@ export function ContractsPage() {
                 </div>
 
                 <div className="flex gap-2 shrink-0 flex-wrap">
+                  {c.sourceDocumentUrl && (
+                    <a
+                      href={c.sourceDocumentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors"
+                    >
+                      Ver PDF subido
+                    </a>
+                  )}
+                  {c.scannedDocumentUrl && (
+                    <a
+                      href={c.scannedDocumentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors"
+                    >
+                      Ver documento
+                    </a>
+                  )}
                   {c.caseId ? (
                     <button
                       onClick={() => navigate(ROUTES.CASE_DETAIL.replace(':caseId', c.caseId as string))}

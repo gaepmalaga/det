@@ -172,6 +172,11 @@ export interface Quote {
   contractId?: string
   caseId?: string
 
+  // PDF del presupuesto, subido opcionalmente si se generó fuera de la
+  // plataforma (p. ej. con otra herramienta de facturación).
+  documentUrl?: string
+  documentName?: string
+
   // Datos legales del expediente, capturados al aceptar el presupuesto
   // (antes de que exista el expediente — ver §3 del documento de
   // producto: el orden real es presupuesto → contrato → expediente).

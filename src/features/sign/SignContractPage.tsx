@@ -113,36 +113,54 @@ export function SignContractPage() {
           </div>
         ) : (
           <>
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm mb-4 max-h-96 overflow-y-auto">
-              {contract.bodyText ? (
-                <p className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                  {contract.bodyText}
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Servicio</p>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">
-                      {contract.serviceDescription}
-                    </p>
-                  </div>
-                  {contract.agreedPrice && (
+            {contract.sourceDocumentUrl ? (
+              <div className="bg-card border border-border rounded-xl p-4 shadow-sm mb-4">
+                <iframe
+                  src={contract.sourceDocumentUrl}
+                  title="Contrato"
+                  className="w-full h-96 rounded-lg border border-border"
+                />
+                <a
+                  href={contract.sourceDocumentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline mt-2"
+                >
+                  Abrir el PDF en una pestaña nueva
+                </a>
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-xl p-6 shadow-sm mb-4 max-h-96 overflow-y-auto">
+                {contract.bodyText ? (
+                  <p className="text-sm text-foreground whitespace-pre-wrap font-mono">
+                    {contract.bodyText}
+                  </p>
+                ) : (
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Precio acordado</p>
-                      <p className="text-sm text-foreground">{contract.agreedPrice}</p>
-                    </div>
-                  )}
-                  {contract.specificConditions && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Condiciones específicas</p>
+                      <p className="text-xs text-muted-foreground mb-1">Servicio</p>
                       <p className="text-sm text-foreground whitespace-pre-wrap">
-                        {contract.specificConditions}
+                        {contract.serviceDescription}
                       </p>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
+                    {contract.agreedPrice && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Precio acordado</p>
+                        <p className="text-sm text-foreground">{contract.agreedPrice}</p>
+                      </div>
+                    )}
+                    {contract.specificConditions && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Condiciones específicas</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">
+                          {contract.specificConditions}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <form onSubmit={handleSign} className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
               <div>

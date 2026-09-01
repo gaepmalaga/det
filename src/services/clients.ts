@@ -7,6 +7,7 @@ import {
   getDoc,
   query,
   orderBy,
+  where,
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore'
@@ -74,6 +75,20 @@ export async function getClient(firmId: string, clientId: string): Promise<Clien
   const snap = await getDoc(ref)
   if (!snap.exists()) return null
   return mapClient(snap.id, snap.data() as Record<string, unknown>)
+}
+
+// Un mismo contacto puede aceptar varios presupuestos a lo largo del
+// tiempo (nuevas investigaciones) — hay que reutilizar la ficha de
+// cliente que ya se creó la primera vez, no duplicarla en cada aceptación.
+export async function getClientByContactId(
+  firmId: string,
+  contactId: string
+): Promise<Client | null> {
+  const ref = collection(db, 'firms', firmId, 'clients')
+  const q = query(ref, where('convertedFromContactId', '==', contactId))
+  const snap = await getDocs(q)
+  if (snap.empty) return null
+  return mapClient(snap.docs[0].id, snap.docs[0].data() as Record<string, unknown>)
 }
 
 export async function createClient(

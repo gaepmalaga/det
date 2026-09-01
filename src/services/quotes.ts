@@ -11,7 +11,8 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '@/lib/firebase'
 import type { Quote, QuoteStatus } from '@/types'
 
 function toDate(val: unknown): Date {
@@ -38,6 +39,8 @@ function mapQuote(id: string, data: Record<string, unknown>): Quote {
     clientId: data.clientId as string | undefined,
     contractId: data.contractId as string | undefined,
     caseId: data.caseId as string | undefined,
+    documentUrl: data.documentUrl as string | undefined,
+    documentName: data.documentName as string | undefined,
     objectScope: data.objectScope as string | undefined,
     legitimateInterest: data.legitimateInterest as string | undefined,
     investigatedName: data.investigatedName as string | undefined,
@@ -105,6 +108,25 @@ export async function createQuote(
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id
+}
+
+export async function uploadQuoteDocument(
+  firmId: string,
+  quoteId: string,
+  file: File
+): Promise<string> {
+  const storageRef = ref(storage, `firms/${firmId}/quotes/${quoteId}/${file.name}`)
+  await uploadBytes(storageRef, file)
+  const url = await getDownloadURL(storageRef)
+
+  const docRef = doc(db, 'firms', firmId, 'quotes', quoteId)
+  await updateDoc(docRef, {
+    documentUrl: url,
+    documentName: file.name,
+    updatedAt: serverTimestamp(),
+  })
+
+  return url
 }
 
 export async function rejectQuote(

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { X, AlertTriangle } from 'lucide-react'
 import { useQuotes } from '@/hooks/useQuotes'
 import { useAuth } from '@/contexts/AuthContext'
-import { createClient } from '@/services/clients'
+import { createClient, getClientByContactId } from '@/services/clients'
 import { setQuoteContract } from '@/services/quotes'
-import { createContract } from '@/services/contracts'
+import { createContract, uploadContractSourceDocument } from '@/services/contracts'
 import { ContractForm } from '@/features/contracts/ContractForm'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
 import type { CreateContractData } from '@/services/contracts'
@@ -52,18 +52,23 @@ export function AcceptQuoteDialog({
     if (loading || !user?.firmId) return
     setLoading(true)
     try {
-      const newClientId = await createClient(user.firmId, user.uid, {
-        clientType: contact.contactType,
-        legalName: contact.contactType === 'corporate' && contact.companyName
-          ? contact.companyName
-          : contact.contactName,
-        tradeName: contact.contactType === 'corporate' && contact.companyName
-          ? contact.contactName
-          : undefined,
-        email: contact.contactEmail,
-        phone: contact.contactPhone,
-        convertedFromContactId: contact.id,
-      })
+      // Si este contacto ya tiene cliente (de una investigación anterior),
+      // se reutiliza — no se crea una ficha duplicada en cada presupuesto.
+      const existingClient = await getClientByContactId(user.firmId, contact.id)
+      const newClientId = existingClient
+        ? existingClient.id
+        : await createClient(user.firmId, user.uid, {
+            clientType: contact.contactType,
+            legalName: contact.contactType === 'corporate' && contact.companyName
+              ? contact.companyName
+              : contact.contactName,
+            tradeName: contact.contactType === 'corporate' && contact.companyName
+              ? contact.contactName
+              : undefined,
+            email: contact.contactEmail,
+            phone: contact.contactPhone,
+            convertedFromContactId: contact.id,
+          })
 
       await accept(quote.id, {
         clientId: newClientId,
@@ -82,10 +87,13 @@ export function AcceptQuoteDialog({
     }
   }
 
-  const handleCreateContract = async (data: CreateContractData) => {
+  const handleCreateContract = async (data: CreateContractData, sourceFile: File | null) => {
     if (!user?.firmId) return
     const contractId = await createContract(user.firmId, user.uid, data)
     await setQuoteContract(user.firmId, quote.id, contractId)
+    if (sourceFile) {
+      await uploadContractSourceDocument(user.firmId, contractId, sourceFile)
+    }
     onDone(contractId)
   }
 

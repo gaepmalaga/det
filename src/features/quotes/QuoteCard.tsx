@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, FileText } from 'lucide-react'
 import { QuoteStatusBadge } from '@/components/shared/StatusBadge'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -63,6 +63,18 @@ export function QuoteCard({ quote, contactName, onContactClick, onAccept, onReje
 
       {quote.description && (
         <p className="text-xs text-muted-foreground whitespace-pre-wrap mb-3">{quote.description}</p>
+      )}
+
+      {quote.documentUrl && (
+        <a
+          href={quote.documentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline mb-3"
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Ver PDF del presupuesto
+        </a>
       )}
 
       {quote.status === 'rechazado' && quote.rejectionReason && (

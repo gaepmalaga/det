@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { X, Sparkles } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { X, Sparkles, Upload, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getFirm } from '@/services/firm'
 import { getClient } from '@/services/clients'
@@ -12,7 +12,7 @@ import type { CreateContractData, ContractType } from '@/services/contracts'
 interface ContractFormProps {
   open: boolean
   onClose: () => void
-  onCreate: (data: CreateContractData) => Promise<void>
+  onCreate: (data: CreateContractData, sourceFile: File | null) => Promise<void>
   defaultClientName?: string
   defaultServiceDescription?: string
   defaultAgreedPrice?: string
@@ -43,6 +43,8 @@ export function ContractForm({
   const [submitting, setSubmitting] = useState(false)
   const [firm, setFirm] = useState<Firm | null>(null)
   const [client, setClient] = useState<Client | null>(null)
+  const [sourceFile, setSourceFile] = useState<File | null>(null)
+  const sourceFileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     type: 'servicio_cliente' as ContractType,
     clientName: defaultClientName,
@@ -112,17 +114,20 @@ export function ContractForm({
     e.preventDefault()
     setSubmitting(true)
     try {
-      await onCreate({
-        type: form.type,
-        clientName: client?.legalName || form.clientName,
-        serviceDescription: form.serviceDescription,
-        agreedPrice: form.agreedPrice || undefined,
-        specificConditions: form.specificConditions || undefined,
-        bodyText: hasTemplate ? form.bodyText : undefined,
-        caseId,
-        clientId,
-        quoteId,
-      })
+      await onCreate(
+        {
+          type: form.type,
+          clientName: client?.legalName || form.clientName,
+          serviceDescription: form.serviceDescription,
+          agreedPrice: form.agreedPrice || undefined,
+          specificConditions: form.specificConditions || undefined,
+          bodyText: hasTemplate ? form.bodyText : undefined,
+          caseId,
+          clientId,
+          quoteId,
+        },
+        sourceFile
+      )
     } finally {
       setSubmitting(false)
     }
@@ -256,6 +261,46 @@ export function ContractForm({
               </div>
             </>
           )}
+
+          <div>
+            <label className="block text-xs font-medium text-foreground mb-1.5">
+              Contrato ya redactado (PDF){' '}
+              <span className="text-muted-foreground font-normal">(opcional)</span>
+            </label>
+            {sourceFile ? (
+              <div className="flex items-center gap-2 p-3 bg-muted border border-border rounded-lg">
+                <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                <span className="text-sm text-foreground truncate">{sourceFile.name}</span>
+                <button
+                  type="button"
+                  onClick={() => sourceFileRef.current?.click()}
+                  className="ml-auto text-xs text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  Cambiar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => sourceFileRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-border rounded-lg text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Subir PDF ya redactado
+              </button>
+            )}
+            <input
+              ref={sourceFileRef}
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setSourceFile(e.target.files?.[0] ?? null)}
+              className="hidden"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Si subes un PDF, será eso lo que vea y firme el cliente en el
+              enlace de firma, en vez del texto de arriba.
+            </p>
+          </div>
 
           <div className="flex gap-3 pt-2">
             <button

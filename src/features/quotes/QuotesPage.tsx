@@ -20,7 +20,7 @@ const STATUS_TABS: { label: string; value: QuoteStatus | 'todos' }[] = [
 ]
 
 export function QuotesPage() {
-  const { quotes, loading, error, create, reject } = useQuotes()
+  const { quotes, loading, error, create, reject, uploadDocument } = useQuotes()
   const { contacts, loading: contactsLoading } = useContacts()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<QuoteStatus | 'todos'>('todos')
@@ -150,9 +150,12 @@ export function QuotesPage() {
         open={showCreate}
         contacts={contacts}
         onClose={() => setShowCreate(false)}
-        onCreate={async (data) => {
+        onCreate={async (data, file) => {
           const id = await create(data)
-          if (id) setShowCreate(false)
+          if (id) {
+            if (file) await uploadDocument(id, file)
+            setShowCreate(false)
+          }
         }}
       />
 

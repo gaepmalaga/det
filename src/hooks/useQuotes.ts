@@ -6,6 +6,7 @@ import {
   createQuote,
   rejectQuote,
   acceptQuote,
+  uploadQuoteDocument,
   type CreateQuoteData,
   type AcceptQuoteData,
 } from '@/services/quotes'
@@ -73,7 +74,20 @@ export function useQuotes() {
     }
   }
 
-  return { quotes, loading, error, create, reject, accept, reload: load }
+  const uploadDocument = async (quoteId: string, file: File): Promise<string | null> => {
+    if (!firmId) return null
+    try {
+      const url = await uploadQuoteDocument(firmId, quoteId, file)
+      await load()
+      return url
+    } catch (err) {
+      console.error(err)
+      setError('Error al subir el documento.')
+      return null
+    }
+  }
+
+  return { quotes, loading, error, create, reject, accept, uploadDocument, reload: load }
 }
 
 export function useContactQuotes(contactId: string) {
@@ -138,5 +152,18 @@ export function useContactQuotes(contactId: string) {
     }
   }
 
-  return { quotes, loading, error, create, reject, accept, reload: load }
+  const uploadDocument = async (quoteId: string, file: File): Promise<string | null> => {
+    if (!firmId) return null
+    try {
+      const url = await uploadQuoteDocument(firmId, quoteId, file)
+      await load()
+      return url
+    } catch (err) {
+      console.error(err)
+      setError('Error al subir el documento.')
+      return null
+    }
+  }
+
+  return { quotes, loading, error, create, reject, accept, uploadDocument, reload: load }
 }

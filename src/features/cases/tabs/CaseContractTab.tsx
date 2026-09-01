@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, FileText, CheckCircle, ExternalLink, ChevronDown, ChevronUp, Link as LinkIcon } from 'lucide-react'
 import { useCaseContracts } from '@/hooks/useContracts'
+import { uploadContractSourceDocument } from '@/services/contracts'
 import { createRegistryEntry } from '@/services/registry'
 import { createAuditLog } from '@/services/auditLog'
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
@@ -35,7 +36,7 @@ interface CaseContractTabProps {
 
 export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProps) {
   const { user } = useAuth()
-  const { contracts, loading, create, sign, uploadDocument } = useCaseContracts(caseData.id)
+  const { contracts, loading, create, sign, uploadDocument, reload } = useCaseContracts(caseData.id)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [expandedBodyId, setExpandedBodyId] = useState<string | null>(null)
@@ -53,8 +54,12 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
     }
   }
 
-  const handleCreate = async (data: CreateContractData) => {
-    await create(data)
+  const handleCreate = async (data: CreateContractData, sourceFile: File | null) => {
+    const contractId = await create(data)
+    if (contractId && sourceFile && user?.firmId) {
+      await uploadContractSourceDocument(user.firmId, contractId, sourceFile)
+      await reload()
+    }
     setShowCreate(false)
   }
 
@@ -190,6 +195,12 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                 </div>
 
                 <div className="flex gap-2">
+                  {contract.sourceDocumentUrl && (
+                    <a href={contract.sourceDocumentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors">
+                      <ExternalLink className="w-3 h-3" />
+                      Ver PDF subido
+                    </a>
+                  )}
                   {contract.scannedDocumentUrl && (
                     <a href={contract.scannedDocumentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-muted rounded-lg hover:bg-muted transition-colors">
                       <ExternalLink className="w-3 h-3" />

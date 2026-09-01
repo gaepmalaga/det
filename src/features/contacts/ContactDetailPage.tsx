@@ -17,7 +17,7 @@ export function ContactDetailPage() {
   const { contactId } = useParams<{ contactId: string }>()
   const navigate = useNavigate()
   const { contact, loading, error } = useContactDetail(contactId ?? '')
-  const { quotes, loading: quotesLoading, create, reject } = useContactQuotes(contactId ?? '')
+  const { quotes, loading: quotesLoading, create, reject, uploadDocument } = useContactQuotes(contactId ?? '')
   const [showCreateQuote, setShowCreateQuote] = useState(false)
   const [acceptingQuote, setAcceptingQuote] = useState<Quote | null>(null)
 
@@ -139,9 +139,12 @@ export function ContactDetailPage() {
         contacts={[contact]}
         lockedContactId={contact.id}
         onClose={() => setShowCreateQuote(false)}
-        onCreate={async (data) => {
+        onCreate={async (data, file) => {
           const id = await create(data)
-          if (id) setShowCreateQuote(false)
+          if (id) {
+            if (file) await uploadDocument(id, file)
+            setShowCreateQuote(false)
+          }
         }}
       />
 

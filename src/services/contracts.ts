@@ -48,6 +48,11 @@ export interface Contract {
   agreedPrice?: string
   specificConditions?: string
   bodyText?: string
+  // PDF redactado fuera de la plataforma y subido como base del contrato
+  // que verá y firmará el cliente, en vez del texto generado desde la
+  // plantilla del despacho.
+  sourceDocumentUrl?: string
+  sourceDocumentName?: string
   scannedDocumentUrl?: string
   scannedDocumentName?: string
   createdAt: Date
@@ -89,6 +94,8 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     agreedPrice: data.agreedPrice as string | undefined,
     specificConditions: data.specificConditions as string | undefined,
     bodyText: data.bodyText as string | undefined,
+    sourceDocumentUrl: data.sourceDocumentUrl as string | undefined,
+    sourceDocumentName: data.sourceDocumentName as string | undefined,
     scannedDocumentUrl: data.scannedDocumentUrl as string | undefined,
     scannedDocumentName: data.scannedDocumentName as string | undefined,
     createdAt: toDate(data.createdAt),
@@ -226,6 +233,28 @@ export async function updateContractStatus(
     status,
     updatedAt: serverTimestamp(),
   })
+}
+
+export async function uploadContractSourceDocument(
+  firmId: string,
+  contractId: string,
+  file: File
+): Promise<string> {
+  const storageRef = ref(
+    storage,
+    `firms/${firmId}/contracts/${contractId}/source-${file.name}`
+  )
+  await uploadBytes(storageRef, file)
+  const url = await getDownloadURL(storageRef)
+
+  const docRef = doc(db, 'firms', firmId, 'contracts', contractId)
+  await updateDoc(docRef, {
+    sourceDocumentUrl: url,
+    sourceDocumentName: file.name,
+    updatedAt: serverTimestamp(),
+  })
+
+  return url
 }
 
 export async function uploadContractDocument(
