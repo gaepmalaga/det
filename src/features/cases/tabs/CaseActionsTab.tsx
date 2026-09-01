@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Clock, MapPin, MapPinOff, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Clock, MapPin, Trash2 } from 'lucide-react'
 import { useCaseActions } from '@/hooks/useActions'
 import { useCollaborators } from '@/hooks/useCollaborators'
 import { useAuth } from '@/contexts/AuthContext'
 import { createAuditLog } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { LocationPicker } from '@/features/cases/LocationPicker'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Case } from '@/types'
@@ -12,12 +13,6 @@ import type { Case } from '@/types'
 interface CaseActionsTabProps {
   caseData: Case
 }
-
-type LocationState =
-  | { status: 'idle' }
-  | { status: 'locating' }
-  | { status: 'ok'; lat: number; lng: number }
-  | { status: 'denied' }
 
 export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
   const { user } = useAuth()
@@ -27,7 +22,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
   const [submitting, setSubmitting] = useState(false)
   const [description, setDescription] = useState('')
   const [reportedBy, setReportedBy] = useState(false)
-  const [location, setLocation] = useState<LocationState>({ status: 'idle' })
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const assignedCollaborator = collaborators.find((c) => c.id === caseData.collaboratingFirmId)
@@ -36,17 +31,6 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
   useEffect(() => {
     if (!showForm) return
     textareaRef.current?.focus()
-
-    if (!('geolocation' in navigator)) {
-      setLocation({ status: 'denied' })
-      return
-    }
-    setLocation({ status: 'locating' })
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ status: 'ok', lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setLocation({ status: 'denied' }),
-      { enableHighAccuracy: true, timeout: 8000 }
-    )
   }, [showForm])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,8 +40,8 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
     try {
       await create({
         description,
-        locationLat: location.status === 'ok' ? location.lat : undefined,
-        locationLng: location.status === 'ok' ? location.lng : undefined,
+        locationLat: location?.lat,
+        locationLng: location?.lng,
         detectiveId: user.uid,
         detectiveTip: '',
         reportedByCollaboratorId: reportedBy ? caseData.collaboratingFirmId : undefined,
@@ -75,7 +59,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
       setShowForm(false)
       setDescription('')
       setReportedBy(false)
-      setLocation({ status: 'idle' })
+      setLocation(null)
     } finally {
       setSubmitting(false)
     }
@@ -163,26 +147,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
               </label>
             )}
 
-            <div className="flex items-center gap-1.5 text-xs">
-              {location.status === 'locating' && (
-                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Obteniendo ubicación...
-                </span>
-              )}
-              {location.status === 'ok' && (
-                <span className="inline-flex items-center gap-1.5 text-green-700">
-                  <MapPin className="w-3.5 h-3.5" />
-                  Ubicación capturada
-                </span>
-              )}
-              {location.status === 'denied' && (
-                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <MapPinOff className="w-3.5 h-3.5" />
-                  Ubicación no disponible — puedes guardar sin ella
-                </span>
-              )}
-            </div>
+            <LocationPicker onChange={setLocation} />
 
             <div className="flex gap-3">
               <button
@@ -190,7 +155,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                 onClick={() => {
                   setShowForm(false)
                   setDescription('')
-                  setLocation({ status: 'idle' })
+                  setLocation(null)
                 }}
                 className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
               >

@@ -1237,3 +1237,58 @@ Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
 problemas preexistentes, cero nuevos).
 
 **Sin verificar en producción** — misma limitación de siempre.
+
+## Selector de ubicación en actuaciones — varios puntos + mapa (2026-09-01)
+
+El usuario señaló un problema real de la "captura rápida" de
+actuaciones: la ubicación se leía una sola vez (`getCurrentPosition`)
+en el momento de abrir el formulario. Si el detective va en movimiento
+(p. ej. en coche) mientras redacta lo que está viendo, esa lectura
+puede quedar varios km desfasada para cuando pulsa "Guardar".
+
+Se descartó la primera propuesta (seguir siempre la última posición en
+segundo plano, sin más) porque el propio usuario señaló que "la última
+no siempre es la mejor" — el detective puede seguir describiendo algo
+que vio hace un momento aunque ya se haya desplazado. Solución
+decidida por el usuario: **registrar varias posiciones mientras
+escribe y dejar elegir en un mapa**, no solo una.
+
+**`src/features/cases/LocationPicker.tsx` (nuevo)** — con Leaflet
+vanilla (no `react-leaflet`, para evitar fricción de peer-deps con
+React 19) + tiles de OpenStreetMap (gratis, sin API key, coherente con
+que este proyecto no tiene todavía presupuesto/gestión de claves para
+APIs de pago tipo Google Maps):
+
+- Mientras el formulario está abierto, `watchPosition` va registrando
+  posiciones — pero solo se guarda una nueva si está a más de 1 km de
+  la última guardada (`src/lib/geo.ts`, distancia Haversine), para no
+  acumular ruido si el detective está parado.
+- Todas las posiciones detectadas se muestran como puntos en el mapa;
+  la más reciente se resalta en verde y es la que se usa por defecto.
+- Tocar cualquier punto del mapa (uno de los detectados, o un lugar
+  cualquiera) fija esa posición como la elegida a mano (marcador azul);
+  un enlace permite volver a "seguir la última detectada
+  automáticamente".
+- Si no hay permiso de GPS o el navegador no lo soporta, el mapa se
+  sigue mostrando (centrado en España por defecto) para poder marcar la
+  ubicación a mano de todos modos.
+- El ciclo de vida (GPS + mapa) está atado al montaje/desmontaje del
+  propio componente — arranca cuando se abre el formulario, se limpia
+  solo al cerrarlo, sin necesidad de props de control adicionales.
+
+No ha hecho falta ningún cambio de esquema: `CaseAction` ya tenía
+`locationLat`/`locationLng` como par de números sueltos — solo cambia
+cómo se decide qué par se guarda.
+
+Nueva dependencia: `leaflet` + `@types/leaflet` (instalados con
+`--legacy-peer-deps` por un conflicto preexistente y no relacionado
+entre `vite-plugin-pwa` y Vite 8, ya presente en el proyecto antes de
+este cambio).
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos).
+
+**Sin verificar en producción/dispositivo real** — el mapa y el GPS no
+se pueden probar en este entorno sandbox; el usuario deberá probarlo en
+el móvil, idealmente en movimiento, para confirmar que el umbral de
+1 km es razonable.
