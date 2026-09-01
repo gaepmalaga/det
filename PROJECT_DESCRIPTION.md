@@ -804,3 +804,9 @@ en rojo/advertencia) — en cuanto se amplíe el rol, el mismo paso
 empezará a funcionar solo, sin tocar más código. **El bug de
 Contactos/Presupuestos sigue sin arreglarse en producción hasta que
 se complete este paso manual.**
+
+**Actualización**: el usuario añadió el rol "Administrador de
+Firebase" al service account desde IAM (manteniendo los tres roles que
+ya tenía: Firebase Authentication Admin, Admin SDK Service Agent y
+Service Account Token Creator) y lo guardó. Este commit es solo para
+disparar un despliegue nuevo y comprobar si el paso de reglas ya pasa.
