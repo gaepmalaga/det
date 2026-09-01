@@ -471,8 +471,25 @@ insignias circulares translúcidas en vez de una lista plana. En móvil
 se añadió un resplandor de degradado radial sutil detrás del formulario
 en vez de dejar el fondo plano. Sigue usando el `Button` real de shadcn.
 
+Reacción del usuario a la v3: "la parte izquierda me gusta, la otra la
+veo mejorable, aunque vas por buen camino" — el panel de marca ya
+convencía, pero el formulario a la derecha seguía flotando en un fondo
+plano sin contención, sin peso visual que hiciera pareja con el panel
+izquierdo.
+
+**Piloto v4**: el formulario pasa a vivir dentro de una tarjeta elevada
+(`rounded-2xl`, borde sutil, sombra de dos capas — una de contacto fina
+y otra difusa y amplia por debajo, en vez del `shadow-sm` plano
+genérico), con la misma regla dorada corta que el panel izquierdo justo
+encima del titular, para que ambos lados se lean como una sola pieza de
+diseño y no como dos mitades sin relación. Se añadió una línea de
+confianza bajo el botón de Google (aislamiento de datos por despacho,
+ligada a uno de los puntos fuertes de la izquierda) y un resplandor de
+degradado sutil detrás de la tarjeta en toda la anchura (antes solo en
+móvil).
+
 Capturas de escritorio y móvil enviadas al usuario para validar esta
-segunda iteración antes de aplicarla al resto de la app (~30 pantallas)
+tercera iteración antes de aplicarla al resto de la app (~30 pantallas)
 — **no se ha hecho el rollout completo todavía**, solo login + los
 tokens globales (que ya afectan a cualquier componente que use
 `bg-primary` etc., aunque la mayoría de pantallas siguen con clases
