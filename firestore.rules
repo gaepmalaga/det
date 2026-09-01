@@ -6,6 +6,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Con Google, el email del token siempre viene verificado por Google.
+    // Con email/contraseña ya no es así: cualquiera puede registrarse con
+    // el email de otra persona, así que en cualquier sitio donde se confía
+    // en request.auth.token.email para resolver una identidad (portal de
+    // clientes, colaboradores) hay que exigir también que esté verificado.
+    function isVerifiedEmail(email) {
+      return isAuth() && request.auth.token.email_verified == true &&
+        request.auth.token.email == email;
+    }
+
     function isSuperAdmin() {
       return isAuth() &&
         exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid));
@@ -103,8 +113,7 @@ service cloud.firestore {
           isActiveMember(request.resource.data.firmIds[request.resource.data.firmIds.size() - 1])
         )
         || (
-          isAuth() &&
-          resource.data.email == request.auth.token.email &&
+          isVerifiedEmail(resource.data.email) &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId', 'lastAccessAt'])
         );
       allow delete: if isSuperAdmin();
@@ -209,7 +218,7 @@ service cloud.firestore {
         // email verificado por Google (ver el bloque portalAccess más abajo,
         // donde el ID del documento pasó a ser el email en vez de aleatorio).
         allow read: if isSuperAdmin() || isActiveMember(firmId) || (
-          isAuth() &&
+          isAuth() && request.auth.token.email_verified == true &&
           exists(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)) &&
           get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)).data.isActive == true
         ) || (
@@ -258,8 +267,7 @@ service cloud.firestore {
         // del cliente (no un ID aleatorio) precisamente para poder hacer
         // esta comprobación exacta sin un "|| isAuth()" genérico.
         match /portalAccess/{accessId} {
-          allow read: if isSuperAdmin() || isActiveMember(firmId) ||
-            (isAuth() && accessId == request.auth.token.email);
+          allow read: if isSuperAdmin() || isActiveMember(firmId) || isVerifiedEmail(accessId);
           allow create: if isActiveMember(firmId);
           allow update: if isActiveMember(firmId);
           allow delete: if isOwnerOrDirector(firmId) || isSuperAdmin();
@@ -311,19 +319,19 @@ service cloud.firestore {
 
       match /collaboratingFirms/{collabId} {
         // La persona invitada (tienePlataforma) puede leer/aceptar SU
-        // PROPIA invitación comparando contra su email verificado por
-        // Google — nunca puede listar ni leer las de otros.
+        // PROPIA invitación comparando contra su email verificado
+        // (isVerifiedEmail — con Google siempre lo está; con email/
+        // contraseña, solo tras confirmar el enlace de verificación) —
+        // nunca puede listar ni leer las de otros.
         allow read: if isSuperAdmin() || isActiveMember(firmId) || (
-          isAuth() &&
           resource.data.tienePlataforma == true &&
-          resource.data.invitedEmail == request.auth.token.email
+          isVerifiedEmail(resource.data.invitedEmail)
         );
         allow create: if isOwnerOrDirector(firmId) || isSuperAdmin();
         allow update: if isOwnerOrDirector(firmId) || isSuperAdmin() || (
-          isAuth() &&
           resource.data.tienePlataforma == true &&
           resource.data.invitationStatus == 'pendiente' &&
-          resource.data.invitedEmail == request.auth.token.email &&
+          isVerifiedEmail(resource.data.invitedEmail) &&
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['invitationStatus', 'linkedUserId', 'linkedUserEmail']) &&
           request.resource.data.invitationStatus == 'aceptada' &&

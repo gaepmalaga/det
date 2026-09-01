@@ -1340,3 +1340,80 @@ problemas preexistentes, cero nuevos).
 **Sin verificar de extremo a extremo** — no se puede probar la llamada
 real a Gemini hasta que el usuario active AI Logic en la consola de
 Firebase (paso manual, no bloquea el resto de la app mientras tanto).
+
+**Actualización (2026-09-01, desde una sesión local)**: el usuario activó
+AI Logic en la consola de Firebase (Gemini Developer API, capa gratuita,
+AI Monitoring incluido) y habilitó el proveedor Email/contraseña en
+Authentication. El botón "Generar borrador con IA" ya debería funcionar
+en producción.
+
+## Login con email/contraseña (2026-09-01, sesión local)
+
+Hasta ahora el único método de acceso era Google. El usuario pidió añadir
+email/contraseña como alternativa, tanto para el staff del despacho
+(`LoginPage.tsx`) como para el portal del cliente (`PortalLoginPage.tsx`).
+
+**Riesgo de seguridad detectado antes de implementarlo**: todo el modelo
+de acceso por identidad (portal de clientes, colaboradores híbridos de la
+Fase 5) confía en `request.auth.token.email` asumiendo que viene
+verificado por Google — los comentarios de `firestore.rules` lo decían
+explícitamente. Con email/contraseña eso deja de ser cierto: cualquiera
+puede registrarse con el email de otra persona sin demostrar que le
+pertenece. Sin corregirlo, añadir email/contraseña habría abierto una vía
+para suplantar a un cliente del portal o a un colaborador invitado y leer
+sus expedientes.
+
+**Arreglado junto con el login, no como una fase separada**:
+- `firestore.rules`: nueva función `isVerifiedEmail(email)` que exige
+  `request.auth.token.email_verified == true` además de la coincidencia
+  de email. Aplicada en los 4 sitios que antes confiaban en
+  `request.auth.token.email` a secas: lectura de `cases` vía
+  `portalAccess`, lectura de `portalAccess/{accessId}`, la rama de
+  `portalClients` donde el propio cliente actualiza su registro, y las
+  dos ramas de `collaboratingFirms` (leer/aceptar invitación). Con Google
+  el email siempre viene verificado, así que esto no cambia nada para
+  las cuentas existentes — solo cierra el hueco para email/contraseña.
+- `src/contexts/AuthContext.tsx`: nuevas `signInWithEmail`,
+  `signUpWithEmail` (llama a `sendEmailVerification` tras crear la
+  cuenta) y `resendVerificationEmail`. `resolveUserType` solo resuelve la
+  identidad `portal_client` (búsqueda por email) si
+  `firebaseUser.emailVerified` es `true` — mismo criterio que las reglas,
+  por consistencia y para no depender solo del servidor para la UX.
+- `src/lib/authErrors.ts` (nuevo): traduce códigos de error de Firebase
+  Auth (`auth/email-already-in-use`, `auth/invalid-credential`, etc.) a
+  mensajes en español, compartido entre las dos pantallas.
+- `LoginPage.tsx` y `PortalLoginPage.tsx`: enlace "Usar email y
+  contraseña" que revela un formulario con toggle Iniciar sesión/Crear
+  cuenta, debajo del botón de Google (que sigue siendo la opción
+  principal). Tras registrarse, se muestra una pantalla de "Verifica tu
+  email" (con botón de reenvío) que bloquea el acceso hasta que el
+  usuario confirma el enlace — no se ejecuta ninguna resolución de
+  identidad ni la comprobación de acceso al portal mientras tanto.
+- Habilitado el proveedor "Correo electrónico/contraseña" en Firebase
+  Authentication (sin "vínculo de correo sin contraseña", que es un
+  método distinto y no hacía falta).
+
+**No se tocó** la invitación de colaboradores (`CollaborateInvitePage`)
+ni la firma pública de contratos (`SignContractPage`) — el usuario pidió
+específicamente login de staff y de portal, esas dos pantallas no tienen
+login propio (una pide iniciar sesión con el proveedor que sea, la otra
+no requiere sesión).
+
+**Hallazgo aparte, no arreglado (fuera de alcance de hoy)**: al revisar
+el flujo de alta de miembros para este cambio, se confirmó que
+"Añadir miembro" en `TeamTab.tsx` (Configuración → Equipo) crea un
+documento en `firms/{firmId}/members` pero nunca crea ni enlaza
+`userFirmIndex/{uid}` — ese índice solo se crea hoy en
+`OnboardingPage.tsx`, para quien crea el despacho. Un miembro añadido así
+que inicie sesión por primera vez (con cualquier proveedor) cae en
+`userType: 'unknown'` y termina en Onboarding creando su **propio**
+despacho nuevo, en vez de unirse al existente. Es un bug preexistente,
+anterior a esta sesión y no relacionado con el login por
+email/contraseña — pendiente de investigar aparte.
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos).
+
+**Sin verificar de extremo a extremo en producción** — pendiente probar
+el ciclo completo (crear cuenta con email, recibir el correo, verificar,
+volver a la app) contra Firebase Auth real.

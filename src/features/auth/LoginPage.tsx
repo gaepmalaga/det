@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Fingerprint, FileSearch, ShieldCheck, BookOpen } from 'lucide-react'
+import { Fingerprint, FileSearch, ShieldCheck, BookOpen, Mail } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
+import { authErrorMessage } from '@/lib/authErrors'
 
 const HIGHLIGHTS = [
   { icon: FileSearch, text: 'Del contacto al expediente, sin hojas de cálculo sueltas' },
@@ -12,18 +13,62 @@ const HIGHLIGHTS = [
 ]
 
 export function LoginPage() {
-  const { user, loading, signInWithGoogle } = useAuth()
+  const {
+    user,
+    firebaseUser,
+    loading,
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    resendVerificationEmail,
+    logout,
+  } = useAuth()
   const navigate = useNavigate()
 
+  const [showEmailForm, setShowEmailForm] = useState(false)
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resent, setResent] = useState(false)
+
+  const isUnverifiedPassword =
+    !!firebaseUser &&
+    firebaseUser.providerData.some((p) => p.providerId === 'password') &&
+    !firebaseUser.emailVerified
+
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !isUnverifiedPassword) {
       if (user.userType === 'superadmin') navigate(ROUTES.SUPERADMIN)
       else if (user.userType === 'firm_member') navigate(ROUTES.DASHBOARD)
       else if (user.userType === 'portal_client') navigate(ROUTES.PORTAL)
       else if (user.userType === 'collaborator') navigate(ROUTES.COLLABORATE)
       else navigate(ROUTES.ONBOARDING)
     }
-  }, [user, loading, navigate])
+  }, [user, loading, navigate, isUnverifiedPassword])
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSubmitting(true)
+    try {
+      if (mode === 'signup') {
+        await signUpWithEmail(email, password)
+      } else {
+        await signInWithEmail(email, password)
+      }
+    } catch (err) {
+      setError(authErrorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleResend = async () => {
+    await resendVerificationEmail()
+    setResent(true)
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_1fr] bg-background">
@@ -99,47 +144,153 @@ export function LoginPage() {
           <div className="rounded-2xl border border-border/70 bg-card p-8 sm:p-9 shadow-[0_1px_1px_rgba(15,23,42,0.03),0_16px_40px_-16px_rgba(15,23,42,0.16)]">
             <div className="w-8 h-1 rounded-full bg-brand-gold mb-6" />
 
-            <div className="mb-8">
-              <h1 className="text-[1.6rem] font-semibold tracking-tight text-foreground leading-tight">
-                Acceder a tu despacho
-              </h1>
-              <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed">
-                Inicia sesión con tu cuenta de Google para continuar.
-              </p>
-            </div>
+            {isUnverifiedPassword ? (
+              <>
+                <div className="mb-8">
+                  <h1 className="text-[1.6rem] font-semibold tracking-tight text-foreground leading-tight">
+                    Verifica tu email
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed">
+                    Te hemos enviado un enlace de verificación a{' '}
+                    <strong className="text-foreground">{firebaseUser?.email}</strong>.
+                    Ábrelo y vuelve aquí para continuar.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleResend}
+                  disabled={resent}
+                  size="lg"
+                  variant="outline"
+                  className="w-full justify-center gap-2 py-5 text-sm"
+                >
+                  {resent ? 'Enlace reenviado' : 'Reenviar email de verificación'}
+                </Button>
+                <button
+                  onClick={() => logout()}
+                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground mt-5 underline-offset-4 hover:underline"
+                >
+                  Usar otra cuenta
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-8">
+                  <h1 className="text-[1.6rem] font-semibold tracking-tight text-foreground leading-tight">
+                    Acceder a tu despacho
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed">
+                    {showEmailForm
+                      ? mode === 'signup'
+                        ? 'Crea tu cuenta con email y contraseña.'
+                        : 'Inicia sesión con tu email y contraseña.'
+                      : 'Inicia sesión con tu cuenta de Google para continuar.'}
+                  </p>
+                </div>
 
-            <Button
-              onClick={signInWithGoogle}
-              disabled={loading}
-              size="lg"
-              variant="outline"
-              className="w-full justify-center gap-3 py-5 text-sm shadow-sm hover:shadow hover:bg-accent/40 transition-all"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              Continuar con Google
-            </Button>
+                {showEmailForm ? (
+                  <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1.5">Email</label>
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="tu@despacho.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1.5">Contraseña</label>
+                      <input
+                        type="password"
+                        required
+                        minLength={6}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="••••••••"
+                      />
+                    </div>
 
-            <p className="text-center text-[11px] text-muted-foreground/80 mt-6 leading-relaxed">
-              Al continuar, aceptas que tu despacho gestione sus datos de
-              forma aislada e independiente en la plataforma.
-            </p>
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 text-xs text-red-700">
+                        {error}
+                      </div>
+                    )}
+
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                      size="lg"
+                      className="w-full justify-center py-5 text-sm"
+                    >
+                      {submitting
+                        ? 'Un momento...'
+                        : mode === 'signup'
+                          ? 'Crear cuenta'
+                          : 'Iniciar sesión'}
+                    </Button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode(mode === 'signup' ? 'signin' : 'signup')
+                        setError(null)
+                      }}
+                      className="w-full text-center text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                    >
+                      {mode === 'signup' ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Créala'}
+                    </button>
+                  </form>
+                ) : (
+                  <Button
+                    onClick={signInWithGoogle}
+                    disabled={loading}
+                    size="lg"
+                    variant="outline"
+                    className="w-full justify-center gap-3 py-5 text-sm shadow-sm hover:shadow hover:bg-accent/40 transition-all"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
+                    </svg>
+                    Continuar con Google
+                  </Button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEmailForm(!showEmailForm)
+                    setError(null)
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mt-4 underline-offset-4 hover:underline"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  {showEmailForm ? 'Usar Google en su lugar' : 'Usar email y contraseña'}
+                </button>
+
+                <p className="text-center text-[11px] text-muted-foreground/80 mt-6 leading-relaxed">
+                  Al continuar, aceptas que tu despacho gestione sus datos de
+                  forma aislada e independiente en la plataforma.
+                </p>
+              </>
+            )}
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-7">

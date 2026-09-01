@@ -9,6 +9,9 @@ import {
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   signOut,
   type User,
 } from 'firebase/auth'
@@ -21,6 +24,9 @@ interface AuthContextValue {
   firebaseUser: User | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string) => Promise<void>
+  resendVerificationEmail: () => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -67,23 +73,29 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
     // Sin índice, continuar
   }
 
-  // 3. ¿Es cliente de portal? — buscar por email
-  try {
-    const { collection, query, where, getDocs } = await import('firebase/firestore')
-    const portalRef = collection(db, 'portalClients')
-    const q = query(portalRef, where('email', '==', email.toLowerCase().trim()))
-    const snap = await getDocs(q)
-    if (!snap.empty) {
-      return {
-        uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
-        userType: 'portal_client' as AppUserType,
+  // 3. ¿Es cliente de portal? — buscar por email. Solo si el email está
+  // verificado: con Google siempre lo está, pero con email/contraseña
+  // cualquiera podría registrarse con el email de otra persona, así que
+  // sin verificar no se concede esta identidad (las reglas de Firestore
+  // exigen lo mismo del lado del servidor).
+  if (firebaseUser.emailVerified) {
+    try {
+      const { collection, query, where, getDocs } = await import('firebase/firestore')
+      const portalRef = collection(db, 'portalClients')
+      const q = query(portalRef, where('email', '==', email.toLowerCase().trim()))
+      const snap = await getDocs(q)
+      if (!snap.empty) {
+        return {
+          uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          userType: 'portal_client' as AppUserType,
+        }
       }
+    } catch {
+      // Sin acceso portal, continuar
     }
-  } catch {
-    // Sin acceso portal, continuar
   }
 
   // 4. ¿Es colaborador con acceso a la plataforma? — índice por uid,
@@ -143,6 +155,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithPopup(auth, googleProvider)
   }
 
+  const signInWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email.trim(), password)
+  }
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+    await sendEmailVerification(credential.user)
+  }
+
+  const resendVerificationEmail = async () => {
+    if (!auth.currentUser) return
+    await sendEmailVerification(auth.currentUser)
+  }
+
   const logout = async () => {
     await signOut(auth)
   }
@@ -154,6 +180,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firebaseUser,
         loading,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
+        resendVerificationEmail,
         logout,
         refreshUser,
       }}
