@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Plus, Clock, MapPin, MapPinOff, Trash2, Loader2 } from 'lucide-react'
 import { useCaseActions } from '@/hooks/useActions'
+import { useCollaborators } from '@/hooks/useCollaborators'
 import { useAuth } from '@/contexts/AuthContext'
 import { createAuditLog } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
@@ -21,11 +22,16 @@ type LocationState =
 export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
   const { user } = useAuth()
   const { actions, loading, create, remove } = useCaseActions(caseData.id)
+  const { collaborators } = useCollaborators()
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [description, setDescription] = useState('')
+  const [reportedBy, setReportedBy] = useState(false)
   const [location, setLocation] = useState<LocationState>({ status: 'idle' })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const assignedCollaborator = collaborators.find((c) => c.id === caseData.collaboratingFirmId)
+  const canTagCollaboratorReport = !!assignedCollaborator && !assignedCollaborator.tienePlataforma
 
   useEffect(() => {
     if (!showForm) return
@@ -54,6 +60,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
         locationLng: location.status === 'ok' ? location.lng : undefined,
         detectiveId: user.uid,
         detectiveTip: '',
+        reportedByCollaboratorId: reportedBy ? caseData.collaboratingFirmId : undefined,
       })
 
       await createAuditLog(
@@ -67,6 +74,7 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
 
       setShowForm(false)
       setDescription('')
+      setReportedBy(false)
       setLocation({ status: 'idle' })
     } finally {
       setSubmitting(false)
@@ -144,6 +152,17 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
               placeholder="¿Qué está ocurriendo ahora mismo?"
             />
 
+            {canTagCollaboratorReport && (
+              <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={reportedBy}
+                  onChange={(e) => setReportedBy(e.target.checked)}
+                />
+                Reportado por {assignedCollaborator?.legalName} (no lo escribiste tú)
+              </label>
+            )}
+
             <div className="flex items-center gap-1.5 text-xs">
               {location.status === 'locating' && (
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -214,6 +233,11 @@ export function CaseActionsTab({ caseData }: CaseActionsTabProps) {
                   <p className="text-sm text-foreground whitespace-pre-wrap">
                     {action.description}
                   </p>
+                  {action.reportedByCollaboratorId && (
+                    <p className="text-xs text-primary mt-1">
+                      Reportado por {collaborators.find((c) => c.id === action.reportedByCollaboratorId)?.legalName ?? 'colaborador'}
+                    </p>
+                  )}
                   {action.locationLat !== undefined && action.locationLng !== undefined && (
                     <a
                       href={`https://www.google.com/maps?q=${action.locationLat},${action.locationLng}`}

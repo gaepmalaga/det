@@ -20,6 +20,7 @@ export function LoginPage() {
       if (user.userType === 'superadmin') navigate(ROUTES.SUPERADMIN)
       else if (user.userType === 'firm_member') navigate(ROUTES.DASHBOARD)
       else if (user.userType === 'portal_client') navigate(ROUTES.PORTAL)
+      else if (user.userType === 'collaborator') navigate(ROUTES.COLLABORATE)
       else navigate(ROUTES.ONBOARDING)
     }
   }, [user, loading, navigate])

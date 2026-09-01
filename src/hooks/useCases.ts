@@ -65,7 +65,10 @@ export function useCases() {
     }
   }
 
-  const update = async (caseId: string, data: Partial<CreateCaseData>) => {
+  const update = async (
+    caseId: string,
+    data: Omit<Partial<CreateCaseData>, 'collaboratingFirmId'> & { collaboratingFirmId?: string | null }
+  ) => {
     if (!firmId) return
     try {
       await updateCase(firmId, caseId, data)

@@ -10,6 +10,9 @@ import {
   Save,
   UserCheck,
   UserX,
+  Link2,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { useCollaboratorDetail } from '@/hooks/useCollaborators'
 import { updateCollaborator } from '@/services/collaborators'
@@ -28,6 +31,19 @@ export function CollaboratorDetailPage() {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  const copyInviteLink = async () => {
+    if (!user?.firmId || !collaboratorId) return
+    const url = `${window.location.origin}/collab-invite/${user.firmId}/${collaboratorId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (err) {
+      console.error(err)
+    }
+  }
   const [form, setForm] = useState({
     legalName: '',
     tradeName: '',
@@ -408,6 +424,41 @@ export function CollaboratorDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
+          {collaborator.tienePlataforma && (
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-muted-foreground" />
+                Acceso a la plataforma
+              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                  collaborator.invitationStatus === 'aceptada'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                  {collaborator.invitationStatus === 'aceptada' ? 'Invitación aceptada' : 'Invitación pendiente'}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Invitado: <span className="text-foreground">{collaborator.invitedEmail}</span>
+              </p>
+              {collaborator.invitationStatus === 'aceptada' ? (
+                <p className="text-xs text-muted-foreground">
+                  Puede ver y añadir actuaciones en los expedientes donde le
+                  asignes como colaborador.
+                </p>
+              ) : (
+                <button
+                  onClick={copyInviteLink}
+                  className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-muted border border-border rounded-lg hover:bg-muted/70 transition-colors"
+                >
+                  {linkCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  {linkCopied ? 'Enlace copiado' : 'Copiar enlace de invitación'}
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-muted-foreground" />

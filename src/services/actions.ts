@@ -31,6 +31,7 @@ function mapAction(id: string, data: Record<string, unknown>): CaseAction {
     detectiveTip: data.detectiveTip as string,
     createdAt: toDate(data.createdAt),
     createdBy: data.createdBy as string,
+    reportedByCollaboratorId: data.reportedByCollaboratorId as string | undefined,
   }
 }
 
@@ -40,6 +41,7 @@ export interface CreateActionData {
   locationLng?: number
   detectiveId: string
   detectiveTip: string
+  reportedByCollaboratorId?: string
 }
 
 export async function getCaseActions(
@@ -71,6 +73,7 @@ export async function createAction(
 
   if (data.locationLat !== undefined) cleanData.locationLat = data.locationLat
   if (data.locationLng !== undefined) cleanData.locationLng = data.locationLng
+  if (data.reportedByCollaboratorId) cleanData.reportedByCollaboratorId = data.reportedByCollaboratorId
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id

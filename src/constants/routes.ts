@@ -10,6 +10,10 @@ export const ROUTES = {
   // Firma pública de contrato (sin autenticar)
   SIGN_CONTRACT: '/sign/:firmId/:contractId',
 
+  // Invitación pública de colaborador (requiere iniciar sesión con Google
+  // en la propia página, pero la ruta no está protegida por RouteGuard)
+  COLLABORATOR_INVITE: '/collab-invite/:firmId/:collaboratorId',
+
   // App — Despacho
   DASHBOARD: '/app/dashboard',
   CONTACTS: '/app/contacts',
@@ -32,6 +36,11 @@ export const ROUTES = {
   COLLABORATORS: '/app/collaborators',
   TEAM: '/app/team',
   SETTINGS: '/app/settings',
+
+  // Panel de colaborador (con plataforma) — transversal a todos los
+  // despachos con los que colabora, no un panel por despacho
+  COLLABORATE: '/collaborate',
+  COLLABORATE_CASE_DETAIL: '/collaborate/cases/:caseId',
 
   // Portal cliente
   PORTAL: '/portal',

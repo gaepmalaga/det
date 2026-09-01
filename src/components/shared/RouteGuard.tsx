@@ -4,7 +4,7 @@ import { ROUTES } from '@/constants/routes'
 
 interface RouteGuardProps {
   children: React.ReactNode
-  allowedTypes?: Array<'superadmin' | 'firm_member' | 'portal_client'>
+  allowedTypes?: Array<'superadmin' | 'firm_member' | 'portal_client' | 'collaborator'>
 }
 
 export function RouteGuard({ children, allowedTypes }: RouteGuardProps) {
@@ -36,6 +36,9 @@ export function RouteGuard({ children, allowedTypes }: RouteGuardProps) {
     }
     if (user.userType === 'portal_client') {
       return <Navigate to={ROUTES.PORTAL} replace />
+    }
+    if (user.userType === 'collaborator') {
+      return <Navigate to={ROUTES.COLLABORATE} replace />
     }
     return <Navigate to={ROUTES.DASHBOARD} replace />
   }

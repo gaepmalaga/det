@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Handshake, Search, X } from 'lucide-react'
+import { Plus, Handshake, Search, X, Link2 } from 'lucide-react'
 import { useCollaborators } from '@/hooks/useCollaborators'
+import { useFirm } from '@/hooks/useFirm'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
@@ -11,11 +12,13 @@ import type { CreateCollaboratorData } from '@/services/collaborators'
 
 export function CollaboratorsPage() {
   const { collaborators, loading, error, create } = useCollaborators()
+  const { firm } = useFirm()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('activo')
+  const [tienePlataforma, setTienePlataforma] = useState(false)
   const [form, setForm] = useState<CreateCollaboratorData>({
     legalName: '',
     tradeName: '',
@@ -27,6 +30,7 @@ export function CollaboratorsPage() {
     tipNumber: '',
     address: '',
     notes: '',
+    invitedEmail: '',
   })
 
   const handleChange = (
@@ -51,9 +55,13 @@ export function CollaboratorsPage() {
         tipNumber: form.tipNumber || undefined,
         address: form.address || undefined,
         notes: form.notes || undefined,
+        tienePlataforma,
+        invitedEmail: tienePlataforma ? form.invitedEmail : undefined,
+        inviterFirmName: tienePlataforma ? (firm?.tradeName ?? firm?.legalName) : undefined,
       })
       if (id) {
         setShowForm(false)
+        setTienePlataforma(false)
         setForm({
           legalName: '',
           tradeName: '',
@@ -65,7 +73,9 @@ export function CollaboratorsPage() {
           tipNumber: '',
           address: '',
           notes: '',
+          invitedEmail: '',
         })
+        if (tienePlataforma) navigate('/app/collaborators/' + id)
       }
     } finally {
       setSubmitting(false)
@@ -270,6 +280,47 @@ export function CollaboratorsPage() {
               />
             </div>
 
+            <div className="border-t border-border pt-4">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={tienePlataforma}
+                  onChange={(e) => setTienePlataforma(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">
+                    Este despacho ya usa DetectiveOS
+                  </span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Le invitas a crear su propia cuenta con acceso restringido
+                    solo a los casos donde colabora contigo.
+                  </span>
+                </span>
+              </label>
+
+              {tienePlataforma && (
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
+                    Email para la invitación <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    name="invitedEmail"
+                    type="email"
+                    value={form.invitedEmail}
+                    onChange={handleChange}
+                    required={tienePlataforma}
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    placeholder="email@despachocolaborador.com"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Al guardar te daremos un enlace de invitación — no
+                    enviamos el email nosotros, lo compartes tú.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
@@ -383,6 +434,12 @@ export function CollaboratorsPage() {
                     TIP: {c.tipNumber}
                   </p>
                 )}
+                {c.tienePlataforma && (
+                  <p className="flex items-center gap-1 text-xs text-primary mt-1.5">
+                    <Link2 className="w-3 h-3" />
+                    {c.invitationStatus === 'aceptada' ? 'Con acceso a la plataforma' : 'Invitación pendiente'}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -434,6 +491,12 @@ export function CollaboratorsPage() {
                     <td className="px-4 py-3">
                       <p className="text-sm text-foreground">{c.contactName}</p>
                       <p className="text-xs text-muted-foreground">{c.contactEmail}</p>
+                      {c.tienePlataforma && (
+                        <p className="flex items-center gap-1 text-xs text-primary mt-0.5">
+                          <Link2 className="w-3 h-3" />
+                          {c.invitationStatus === 'aceptada' ? 'Con acceso' : 'Invitación pendiente'}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${

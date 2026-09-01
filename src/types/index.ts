@@ -95,7 +95,7 @@ export interface Member {
 
 // ─── AUTH CONTEXT ─────────────────────────────────────────────────────────────
 
-export type AppUserType = 'superadmin' | 'firm_member' | 'portal_client' | 'unknown'
+export type AppUserType = 'superadmin' | 'firm_member' | 'portal_client' | 'collaborator' | 'unknown'
 
 export interface AppUser {
   uid: string
@@ -300,6 +300,9 @@ export interface CaseAction {
   detectiveTip: string
   createdAt: Date
   createdBy: string
+  // Colaborador sin plataforma cuyo avance por email/teléfono queda
+  // registrado aquí en su nombre (Fase 5, §4.5).
+  reportedByCollaboratorId?: string
 }
 
 // ─── CLIENT ──────────────────────────────────────────────────────────────────

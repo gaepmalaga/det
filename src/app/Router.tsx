@@ -32,6 +32,10 @@ import { StatsPage } from '@/features/stats/StatsPage'
 
 import { CollaboratorsPage } from '@/features/collaborators/CollaboratorsPage'
 import { CollaboratorDetailPage } from '@/features/collaborators/CollaboratorDetailPage'
+import { CollaborateInvitePage } from '@/features/collaborators/CollaborateInvitePage'
+import { CollaboratePortalLayout } from '@/features/collaborate/CollaboratePortalLayout'
+import { CollaborateDashboard } from '@/features/collaborate/CollaborateDashboard'
+import { CollaborateCaseDetail } from '@/features/collaborate/CollaborateCaseDetail'
 
 const Placeholder = ({ name }: { name: string }) => (
   <div className="text-muted-foreground text-sm">{name} — en construcción</div>
@@ -44,6 +48,7 @@ export function AppRouter() {
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
         <Route path={ROUTES.SIGN_CONTRACT} element={<SignContractPage />} />
+        <Route path={ROUTES.COLLABORATOR_INVITE} element={<CollaborateInvitePage />} />
         <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
         <Route
@@ -71,6 +76,18 @@ export function AppRouter() {
 <Route path="collaborators/:collaboratorId" element={<CollaboratorDetailPage />} />
           <Route path="team" element={<Placeholder name="Equipo" />} />
           <Route path="settings" element={<SettingsPage />} />
+        </Route>
+
+        <Route
+          path="/collaborate"
+          element={
+            <RouteGuard allowedTypes={['collaborator']}>
+              <CollaboratePortalLayout />
+            </RouteGuard>
+          }
+        >
+          <Route index element={<CollaborateDashboard />} />
+          <Route path="cases/:caseId" element={<CollaborateCaseDetail />} />
         </Route>
 
         <Route path="/portal" element={<PortalLoginPage />} />

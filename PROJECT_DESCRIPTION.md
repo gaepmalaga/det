@@ -943,3 +943,105 @@ despliegue, compruebe que el flujo de portal existente (conceder
 acceso desde `CasePortalTab`, el cliente inicia sesión y ve su
 expediente) sigue funcionando — es el área con más riesgo de regresión
 de este cambio, al no haber podido probarlo contra Firestore real.
+
+## Fase 5 — parte 3: colaboradores híbridos (2026-09-01)
+
+Completa la Fase 5 (con esto, las Fases 1-5 del documento están
+implementadas). Modelo según §4.5: dos tipos de colaborador —
+`tienePlataforma: true` (cuenta propia, acceso restringido a los casos
+donde colabora) vs. `false` (alta manual, sin cuenta, el despacho
+titular anota su avance).
+
+**Sin Cloud Functions no se puede enviar el email de invitación
+automáticamente** — mismo límite ya documentado para el informe con
+IA y ahora también aquí: el despacho copia un enlace y lo envía por su
+cuenta (idéntico modelo de confianza que la firma pública de
+contratos: el ID del documento no es adivinable, y la regla de
+seguridad comprueba la identidad real en el momento de aceptar, no la
+posesión del enlace).
+
+**Modelo de datos**:
+- `Collaborator` (en `services/collaborators.ts`, ya existía desde
+  antes de esta fase) gana `tienePlataforma`, `invitedEmail`,
+  `invitationStatus` (`pendiente`/`aceptada`), `linkedUserId`,
+  `linkedUserEmail`, `inviterFirmName` (copiado del despacho titular
+  en el momento de invitar, para que la página pública de invitación
+  no necesite permiso para leer `firms/{firmId}`, al que el
+  colaborador invitado aún no pertenece).
+- `collaboratorIndex/{uid}` (colección nueva, top-level): mismo patrón
+  que `userFirmIndex/{uid}` (ya existente) — un documento por usuario
+  con la lista de colaboraciones aceptadas
+  (`{firmId, collaboratorId, firmName, acceptedAt}`), usado por
+  `AuthContext` para resolver el nuevo `userType: 'collaborator'` sin
+  necesitar una query. **No es la fuente de autorización real** — eso
+  lo decide, para cada acceso a un expediente concreto, si
+  `collaboratingFirms/{id}.linkedUserId` coincide con el uid de quien
+  pide los datos (función `isLinkedCollaborator` en las reglas) —
+  igual que se corrigió para `portalClients` en el incidente anterior,
+  el índice puede ser laxo en su lectura/escritura propia porque por
+  sí solo no concede acceso a nada.
+- `Case` gana un uso real para el ya existente pero nunca usado
+  `collaboratingFirmId` — asignable desde una tarjeta "Colaborador
+  asignado" en `CaseDetailPage` (selector con los colaboradores
+  activos del despacho).
+- `CaseAction` gana `reportedByCollaboratorId?: string` — en
+  `CaseActionsTab`, si el expediente tiene un colaborador sin
+  plataforma asignado, aparece una casilla "Reportado por [nombre]"
+  al crear la actuación.
+
+**Flujo con plataforma**:
+- `CollaboratorsPage`: al crear un colaborador, casilla "Este despacho
+  ya usa DetectiveOS" + email de invitación.
+- `CollaboratorDetailPage`: tarjeta de estado de la invitación +
+  botón "Copiar enlace de invitación" mientras esté pendiente.
+- `/collab-invite/:firmId/:collaboratorId` (`CollaborateInvitePage`,
+  pública, fuera de `RouteGuard`): pide iniciar sesión con Google,
+  comprueba que el email coincide con el invitado, botón "Aceptar
+  invitación" → marca `invitationStatus: 'aceptada'` en el documento
+  del despacho titular y añade la entrada en `collaboratorIndex` del
+  usuario.
+- `/collaborate` (`CollaboratePortalLayout` + `CollaborateDashboard` +
+  `CollaborateCaseDetail`, protegidas por `RouteGuard`
+  `allowedTypes: ['collaborator']`): panel **transversal** — agrega
+  expedientes de todos los despachos en su `collaboratorIndex`, no un
+  panel por despacho (tal como pide §4.5). Cada expediente muestra sus
+  actuaciones y permite añadir nuevas (captura con geolocalización,
+  igual que el formulario del despacho) — nada más: sin acceso al
+  resto del expediente ni de la app.
+
+**Reglas de Firestore** (todas nuevas, ninguna reutiliza el patrón
+`|| isAuth()` que se acaba de corregir en el incidente anterior):
+- `collaboratorIndex/{uid}`: lectura/escritura solo del propio usuario
+  (como `userFirmIndex`).
+- `collaboratingFirms/{id}`: lectura ampliada para que la persona
+  invitada vea su propia invitación (comparando
+  `invitedEmail == request.auth.token.email`, nunca listable);
+  actualización ampliada para "aceptar" con las mismas comprobaciones
+  de `diff().affectedKeys().hasOnly([...])` que ya se usaron para la
+  firma pública de contratos.
+- `cases/{caseId}`: nueva cláusula de lectura para el colaborador
+  vinculado (`isLinkedCollaborator`), aparte de la de portal ya
+  corregida.
+- `cases/{caseId}/actions/{actionId}`: lectura y creación (nunca
+  edición/borrado) para el colaborador vinculado al expediente padre.
+- Ninguna requiere índice compuesto nuevo — la única query añadida
+  (`getCasesForCollaborator`, filtro simple por
+  `collaboratingFirmId`) no lleva `orderBy`, se ordena en el cliente.
+
+Verificado: `npx tsc -b`, `npm run build` y `npm run lint` limpios
+(mismos 16 problemas preexistentes, cero nuevos). Sin verificación
+visual ni del flujo de invitación completo — misma limitación de red
+de siempre, agravada aquí porque probar la aceptación de la invitación
+requeriría dos sesiones de Google distintas (despacho + colaborador).
+Pendiente de que el usuario pruebe el flujo completo en producción:
+crear un colaborador con plataforma, copiar el enlace, aceptarlo desde
+otra cuenta de Google, asignarlo a un expediente y comprobar que
+aparece en `/collaborate`.
+
+**Con esto, las 5 fases del documento están implementadas.** Quedan
+como trabajo futuro, ya anotados en sus secciones correspondientes: el
+informe con prosa real generada por IA (necesita una Cloud Function
+con clave de API real), la exportación de informes a PDF/.docx, y
+desplegar automáticamente `storage.rules` en CI (pendiente de que el
+usuario amplíe permisos del service account si hace falta en el
+futuro).

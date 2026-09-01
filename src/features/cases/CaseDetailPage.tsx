@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, Handshake } from 'lucide-react'
 import { useCaseDetail, useCases } from '@/hooks/useCases'
+import { useCollaborators } from '@/hooks/useCollaborators'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
 import { CaseContractTab } from './tabs/CaseContractTab'
@@ -28,7 +29,8 @@ export function CaseDetailPage() {
   const { caseId } = useParams<{ caseId: string }>()
   const navigate = useNavigate()
   const { caseData, loading, error, reload: reloadDetail } = useCaseDetail(caseId ?? '')
-  const { changeStatus, reload } = useCases()
+  const { changeStatus, update, reload } = useCases()
+  const { collaborators } = useCollaborators()
   const [activeTab, setActiveTab] = useState('resumen')
   const [changingStatus, setChangingStatus] = useState(false)
 
@@ -50,6 +52,11 @@ const handleCaseUpdated = useCallback(() => {
     setChangingStatus(true)
     await changeStatus(caseData.id, newStatus)
     setChangingStatus(false)
+  }
+
+  const handleCollaboratorChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    await update(caseData.id, { collaboratingFirmId: e.target.value || null })
+    reloadDetail()
   }
 
   return (
@@ -255,6 +262,34 @@ const handleCaseUpdated = useCallback(() => {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Handshake className="w-4 h-4 text-muted-foreground" />
+                Colaborador asignado
+              </h3>
+              <select
+                value={caseData.collaboratingFirmId ?? ''}
+                onChange={handleCollaboratorChange}
+                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-card"
+              >
+                <option value="">Sin colaborador</option>
+                {collaborators
+                  .filter((c) => c.status === 'activo')
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.legalName}{c.tienePlataforma ? ' (con acceso a la plataforma)' : ''}
+                    </option>
+                  ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-2">
+                {caseData.collaboratingFirmId
+                  ? collaborators.find((c) => c.id === caseData.collaboratingFirmId)?.tienePlataforma
+                    ? 'Este colaborador puede ver y añadir actuaciones en este expediente.'
+                    : 'Sin cuenta propia — puedes marcar sus actuaciones como reportadas por él en la pestaña Actuaciones.'
+                  : 'Sin colaborador, este expediente lo trabaja tu despacho en exclusiva.'}
+              </p>
             </div>
           </div>
         </div>

@@ -63,7 +63,7 @@ function mapCase(id: string, data: Record<string, unknown>): Case {
     investigatedAddress: (data.investigatedAddress as string) ?? '',
     assignedDetectiveId: data.assignedDetectiveId as string,
     assignedDetectiveTip: data.assignedDetectiveTip as string,
-    collaboratingFirmId: data.collaboratingFirmId as string | undefined,
+    collaboratingFirmId: (data.collaboratingFirmId as string | null) ?? undefined,
     budgetId: data.budgetId as string | undefined,
     budgetApprovedAt: toDateOrUndefined(data.budgetApprovedAt),
     budgetRejectedAt: toDateOrUndefined(data.budgetRejectedAt),
@@ -108,6 +108,21 @@ export async function getCase(firmId: string, caseId: string): Promise<Case | nu
   return mapCase(snap.id, snap.data() as Record<string, unknown>)
 }
 
+// Expedientes donde este colaborador (con plataforma) está asignado —
+// sin orderBy a propósito, para no necesitar un índice compuesto además
+// del filtro de igualdad (que Firestore indexa solo con esto).
+export async function getCasesForCollaborator(
+  firmId: string,
+  collaboratorId: string
+): Promise<Case[]> {
+  const ref = collection(db, 'firms', firmId, 'cases')
+  const q = query(ref, where('collaboratingFirmId', '==', collaboratorId))
+  const snap = await getDocs(q)
+  return snap.docs
+    .map((d) => mapCase(d.id, d.data() as Record<string, unknown>))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+}
+
 export interface CreateCaseData {
   investigationType: string
   investigationTypeCustom?: string
@@ -123,6 +138,7 @@ export interface CreateCaseData {
   branchId?: string
   agreedAmount?: number
   billingMode?: 'quote' | 'framework'
+  collaboratingFirmId?: string
 }
 
 export async function createCase(
@@ -200,11 +216,17 @@ export async function updateCaseStatus(
 export async function updateCase(
   firmId: string,
   caseId: string,
-  data: Partial<CreateCaseData>
+  data: Omit<Partial<CreateCaseData>, 'collaboratingFirmId'> & { collaboratingFirmId?: string | null }
 ): Promise<void> {
   const ref = doc(db, 'firms', firmId, 'cases', caseId)
+  // undefined se descarta (campo no tocado) — Firestore rechaza escribir
+  // undefined literal; null sí se acepta y equivale a "sin colaborador"
+  // a efectos de las comprobaciones `!= null` en la app y en las reglas.
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  )
   await updateDoc(ref, {
-    ...data,
+    ...cleanData,
     updatedAt: serverTimestamp(),
   })
 }

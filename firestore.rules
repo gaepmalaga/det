@@ -36,6 +36,23 @@ service cloud.firestore {
       return isMemberOf(firmId) && getMember(firmId).isActive == true;
     }
 
+    // Colaborador (Fase 5, §4.5) con cuenta propia vinculada a este
+    // colaboratingFirms concreto — usado para dar acceso de solo lectura/
+    // creación a los expedientes donde le hayan asignado, nunca al resto
+    // del despacho.
+    function isLinkedCollaborator(firmId, collaboratorId) {
+      return isAuth() && collaboratorId != null &&
+        get(/databases/$(database)/documents/firms/$(firmId)/collaboratingFirms/$(collaboratorId)).data.linkedUserId == request.auth.uid;
+    }
+
+    // Igual que isLinkedCollaborator pero para una subcolección de
+    // cases/{caseId} — resuelve primero el collaboratingFirmId del
+    // expediente padre.
+    function isLinkedCollaboratorOnCase(firmId, caseId) {
+      let cf = get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)).data.collaboratingFirmId;
+      return isLinkedCollaborator(firmId, cf);
+    }
+
     // ─── PLATFORM ADMINS ─────────────────────────────────────────────────────
 
     match /platformAdmins/{userId} {
@@ -49,6 +66,18 @@ service cloud.firestore {
       allow read: if isAuth() && request.auth.uid == userId;
       allow create: if isAuth() && request.auth.uid == userId;
       allow update: if isAuth() && request.auth.uid == userId;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── COLLABORATOR INDEX ──────────────────────────────────────────────────
+    // Mismo patrón que userFirmIndex: índice por uid de a qué despachos
+    // colabora este usuario. No es la fuente de autorización real — eso lo
+    // decide `collaboratingFirms/{id}.linkedUserId` en cada despacho (ver
+    // isLinkedCollaborator) — así que basta con que cada uno gestione su
+    // propio índice, igual que portalClients no necesita más.
+    match /collaboratorIndex/{userId} {
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow write: if isAuth() && request.auth.uid == userId;
       allow delete: if isSuperAdmin();
     }
 
@@ -183,15 +212,20 @@ service cloud.firestore {
           isAuth() &&
           exists(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)) &&
           get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)).data.isActive == true
+        ) || (
+          resource.data.collaboratingFirmId != null &&
+          isLinkedCollaborator(firmId, resource.data.collaboratingFirmId)
         );
         allow create: if isActiveMember(firmId);
         allow update: if isActiveMember(firmId);
         allow delete: if isSuperAdmin() || isOwner(firmId);
 
-        // Actuaciones
+        // Actuaciones — un colaborador con plataforma asignado al
+        // expediente padre puede leer y añadir, nunca editar/borrar las
+        // de otros ni las suyas ya guardadas.
         match /actions/{actionId} {
-          allow read: if isSuperAdmin() || isActiveMember(firmId);
-          allow create: if isActiveMember(firmId);
+          allow read: if isSuperAdmin() || isActiveMember(firmId) || isLinkedCollaboratorOnCase(firmId, caseId);
+          allow create: if isActiveMember(firmId) || isLinkedCollaboratorOnCase(firmId, caseId);
           allow update: if isActiveMember(firmId);
           allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
         }
@@ -276,9 +310,26 @@ service cloud.firestore {
       // ── COLLABORATING FIRMS ──────────────────────────────────────────────
 
       match /collaboratingFirms/{collabId} {
-        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        // La persona invitada (tienePlataforma) puede leer/aceptar SU
+        // PROPIA invitación comparando contra su email verificado por
+        // Google — nunca puede listar ni leer las de otros.
+        allow read: if isSuperAdmin() || isActiveMember(firmId) || (
+          isAuth() &&
+          resource.data.tienePlataforma == true &&
+          resource.data.invitedEmail == request.auth.token.email
+        );
         allow create: if isOwnerOrDirector(firmId) || isSuperAdmin();
-        allow update: if isOwnerOrDirector(firmId) || isSuperAdmin();
+        allow update: if isOwnerOrDirector(firmId) || isSuperAdmin() || (
+          isAuth() &&
+          resource.data.tienePlataforma == true &&
+          resource.data.invitationStatus == 'pendiente' &&
+          resource.data.invitedEmail == request.auth.token.email &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['invitationStatus', 'linkedUserId', 'linkedUserEmail']) &&
+          request.resource.data.invitationStatus == 'aceptada' &&
+          request.resource.data.linkedUserId == request.auth.uid &&
+          request.resource.data.linkedUserEmail == request.auth.token.email
+        );
         allow delete: if isSuperAdmin() || isOwner(firmId);
       }
 

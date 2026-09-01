@@ -86,7 +86,24 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
     // Sin acceso portal, continuar
   }
 
-  // 4. Usuario nuevo sin contexto → onboarding
+  // 4. ¿Es colaborador con acceso a la plataforma? — índice por uid,
+  // igual que userFirmIndex (ver services/collaborators.ts)
+  try {
+    const indexDoc = await getDoc(doc(db, 'collaboratorIndex', uid))
+    if (indexDoc.exists()) {
+      return {
+        uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        userType: 'collaborator' as AppUserType,
+      }
+    }
+  } catch {
+    // Sin colaboraciones, continuar
+  }
+
+  // 5. Usuario nuevo sin contexto → onboarding
   return {
     uid,
     email: firebaseUser.email,
