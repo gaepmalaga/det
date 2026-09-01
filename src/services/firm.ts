@@ -1,6 +1,8 @@
 import {
   doc,
   getDoc,
+  setDoc,
+  deleteDoc,
   updateDoc,
   collection,
   getDocs,
@@ -78,6 +80,7 @@ function mapMember(id: string, data: Record<string, unknown>): Member {
       autoAssignAsDetective: (data.preferences as Record<string, unknown>)?.autoAssignAsDetective as boolean ?? false,
     },
     isActive: data.isActive as boolean ?? true,
+    invitationStatus: data.invitationStatus as Member['invitationStatus'],
     createdAt: toDate(data.createdAt),
     updatedAt: toDate(data.updatedAt),
   }
@@ -187,15 +190,20 @@ export interface InviteMemberData {
 
 export async function addMember(firmId: string, data: InviteMemberData): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'members')
+  const normalizedEmail = data.email.toLowerCase().trim()
   const cleanData: Record<string, unknown> = {
     firmId,
-    email: data.email,
+    userId: '',
+    email: normalizedEmail,
     displayName: data.displayName,
     role: data.role,
     tipStatus: 'active' as TipStatus,
     dependencyType: 'dependent',
     preferences: { autoAssignAsDetective: false },
     isActive: true,
+    // Sin cuenta vinculada todavía — se resuelve por email verificado en el
+    // primer inicio de sesión de la persona invitada, ver claimMemberInvite.
+    invitationStatus: 'pendiente',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   }
@@ -203,7 +211,64 @@ export async function addMember(firmId: string, data: InviteMemberData): Promise
     cleanData.tipNumber = data.tipNumber.toUpperCase()
   }
   const docRef = await addDoc(ref, cleanData)
+
+  // Índice top-level (doc ID = email) para que AuthContext.resolveUserType
+  // pueda encontrar esta invitación por email sin necesitar una query —
+  // mismo patrón que portalAccess (ID = email) y collaboratingFirms/
+  // portalClients (campo email + isVerifiedEmail en las reglas).
+  await setDoc(doc(db, 'memberInvites', normalizedEmail), {
+    firmId,
+    memberId: docRef.id,
+    invitedAt: serverTimestamp(),
+  })
+
   return docRef.id
+}
+
+export interface ClaimedMemberInvite {
+  firmId: string
+  memberId: string
+  role: FirmMemberRole
+}
+
+// Vincula la cuenta recién autenticada de un miembro invitado por email
+// (TeamTab → addMember) con el firms/{firmId}/members/{memberId} que ya
+// existía para él, buscando por email verificado — mismo mecanismo que
+// portalClients/collaboratingFirms usan para resolver identidad por email.
+// Se llama desde AuthContext.resolveUserType en cada inicio de sesión
+// mientras el usuario no tenga todavía su propio userFirmIndex.
+export async function claimMemberInvite(
+  uid: string,
+  email: string
+): Promise<ClaimedMemberInvite | null> {
+  const normalizedEmail = email.toLowerCase().trim()
+  const inviteRef = doc(db, 'memberInvites', normalizedEmail)
+  const inviteSnap = await getDoc(inviteRef)
+  if (!inviteSnap.exists()) return null
+
+  const { firmId, memberId } = inviteSnap.data() as { firmId: string; memberId: string }
+  const memberRef = doc(db, 'firms', firmId, 'members', memberId)
+  const memberSnap = await getDoc(memberRef)
+  if (!memberSnap.exists() || memberSnap.data().invitationStatus !== 'pendiente') return null
+
+  const role = memberSnap.data().role as FirmMemberRole
+
+  await updateDoc(memberRef, {
+    userId: uid,
+    invitationStatus: 'aceptada',
+    updatedAt: serverTimestamp(),
+  })
+
+  await setDoc(doc(db, 'userFirmIndex', uid), {
+    firmId,
+    memberId,
+    role,
+    updatedAt: serverTimestamp(),
+  })
+
+  await deleteDoc(inviteRef)
+
+  return { firmId, memberId, role }
 }
 
 export async function updateMember(

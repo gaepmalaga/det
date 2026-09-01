@@ -89,6 +89,11 @@ export interface Member {
   dependencyType: DependencyType
   preferences: MemberPreferences
   isActive: boolean
+  // Miembro invitado por email (TeamTab → addMember) cuya cuenta futura aún
+  // no se ha vinculado — ver memberInvites/{email} y claimMemberInvite en
+  // services/firm.ts. Ausente en miembros ya vinculados al crearse (p. ej.
+  // el titular en OnboardingPage).
+  invitationStatus?: 'pendiente' | 'aceptada'
   createdAt: Date
   updatedAt: Date
 }

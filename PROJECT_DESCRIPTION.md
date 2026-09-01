@@ -1496,3 +1496,81 @@ que nunca tuvo acceso de red a Firebase):
 - El diseño navy/dorado se ve correcto en las pantallas autenticadas
   (Dashboard, Expedientes, Configuración) — ninguna sesión anterior
   había podido verlas renderizadas, solo revisar el código.
+
+## Arreglado: miembro invitado no se vinculaba a su despacho (2026-09-01)
+
+Cierra el "hallazgo aparte, no arreglado" de la sección anterior. Igual
+que `portalClients`/`collaboratingFirms`, la vinculación se resuelve por
+email verificado en el primer inicio de sesión, sin necesitar Cloud
+Functions ni un enlace de invitación aparte — el miembro invitado
+simplemente usa el login normal de despacho (`LoginPage.tsx`, con Google
+o con email/contraseña) y, si su email verificado coincide con una
+invitación pendiente, se vincula solo.
+
+**Modelo de datos**:
+- `Member` (`types/index.ts`) gana `invitationStatus?: 'pendiente' |
+  'aceptada'`. Ausente en miembros ya vinculados al crearse (el titular
+  de `OnboardingPage.tsx`); `'pendiente'` en los creados desde "Añadir
+  miembro" hasta que alguien los reclama.
+- `memberInvites/{email}` (colección nueva, top-level, doc ID = email
+  normalizado): índice `{firmId, memberId, invitedAt}`, mismo patrón que
+  `portalAccess` (ID = email) — permite encontrar la invitación sin
+  query. No es la fuente de autorización real (esa sigue siendo
+  `members/{memberId}.userId`); se borra en el momento de vincular.
+
+**`services/firm.ts`**:
+- `addMember()` ahora normaliza el email a minúsculas, guarda
+  `userId: ''` + `invitationStatus: 'pendiente'` en el miembro, y crea el
+  `memberInvites/{email}` correspondiente.
+- `claimMemberInvite(uid, email)` (nuevo): busca `memberInvites/{email}`,
+  localiza el miembro, comprueba que sigue `'pendiente'`, le asigna
+  `userId`/`invitationStatus: 'aceptada'`, crea su `userFirmIndex/{uid}`
+  (igual que hace `OnboardingPage.tsx` para el titular) y borra el
+  índice de invitación.
+- `AuthContext.resolveUserType()`: nuevo paso 2.5, entre el chequeo de
+  `userFirmIndex` y el de `portalClients` — llama a `claimMemberInvite`
+  solo si `firebaseUser.emailVerified` (con Google siempre lo es; con
+  email/contraseña, solo tras confirmar el enlace), mismo criterio que
+  el resto de resoluciones por email de esa función.
+
+**`firestore.rules`**:
+- `memberInvites/{email}` (nueva): `get`/`delete` para
+  `isVerifiedEmail(email)` o para quien sea `isOwnerOrDirector` del
+  `firmId` guardado dentro; `create` solo para `isOwnerOrDirector`. Sin
+  `list` — solo se puede leer el documento propio por ID exacto, igual
+  que `portalAccess`.
+- `members/{memberId}`: nueva rama de lectura para que la persona
+  invitada (`invitationStatus == 'pendiente'`) pueda leer su propio
+  documento comparando `isVerifiedEmail(resource.data.email)`, antes de
+  ser miembro activo del despacho. Nueva rama de escritura equivalente
+  para la propia operación de vincularse, con
+  `diff().affectedKeys().hasOnly(['userId', 'invitationStatus',
+  'updatedAt'])` y los valores de destino fijados
+  (`invitationStatus == 'aceptada'`, `userId == request.auth.uid`) —
+  mismo patrón exacto que ya usan `collaboratingFirms` y `portalClients`
+  para su propia auto-aceptación, así que no reabre el hueco de
+  suplantación que se cerró en la sesión de login con
+  email/contraseña.
+
+**TeamTab.tsx**: la columna "Estado" muestra "Invitación pendiente" (en
+vez de Activo/Inactivo) mientras el miembro no se ha vinculado, para que
+el despacho vea de un vistazo quién falta por entrar.
+
+**Nota compartida con el resto del modelo de email verificado**: igual
+que `portalClients`/`collaboratingFirms`, la comparación depende de que
+`request.auth.token.email` tenga exactamente la misma capitalización que
+el valor normalizado (minúsculas) guardado en Firestore — con Google
+esto nunca falla en la práctica, con email/contraseña un email tecleado
+en mayúsculas en el signup rompería el emparejamiento. No es una
+regresión de este cambio: es el mismo límite ya asumido para portal y
+colaboradores, sin tocar `signInWithEmail`/`signUpWithEmail` hoy para no
+arriesgar el login recién publicado.
+
+Verificado `npx tsc -b`, `npm run build` y `npm run lint` limpios (16
+problemas preexistentes, cero nuevos, ninguno en los archivos tocados).
+
+**Sin verificar en producción** — misma limitación de siempre; pendiente
+que el usuario pruebe el ciclo completo (invitar un miembro desde
+Configuración → Equipo, iniciar sesión con ese email por primera vez —
+Google o email/contraseña — y confirmar que aterriza en el Dashboard del
+despacho correcto, no en Onboarding).

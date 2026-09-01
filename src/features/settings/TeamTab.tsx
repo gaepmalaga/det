@@ -227,13 +227,19 @@ export function TeamTab() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-                    member.isActive
-                      ? 'bg-green-50 text-green-700 border-green-200'
-                      : 'bg-muted text-muted-foreground border-border'
-                  }`}>
-                    {member.isActive ? 'Activo' : 'Inactivo'}
-                  </span>
+                  {member.invitationStatus === 'pendiente' ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">
+                      Invitación pendiente
+                    </span>
+                  ) : (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                      member.isActive
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-muted text-muted-foreground border-border'
+                    }`}>
+                      {member.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {member.role !== 'firm_owner' && (

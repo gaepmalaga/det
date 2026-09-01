@@ -91,6 +91,27 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // ─── MEMBER INVITES ──────────────────────────────────────────────────────
+    // Índice top-level (doc ID = email normalizado) que vincula la cuenta
+    // futura de un miembro invitado por email (firms/{firmId}/members creado
+    // desde TeamTab → addMember) con ese documento de miembro concreto, para
+    // que AuthContext.resolveUserType lo encuentre sin necesitar una query —
+    // mismo problema que portalClients/collaboratingFirms resuelven por
+    // email verificado, ver isVerifiedEmail. No es la fuente de autorización
+    // real (esa es members/{memberId}.userId) — se borra en el momento de
+    // vincular (claimMemberInvite), así que su sola existencia ya implica
+    // "invitación pendiente sin reclamar". No listable: solo se permite
+    // leer/borrar el documento propio por ID exacto.
+    match /memberInvites/{email} {
+      allow get: if isSuperAdmin() ||
+        isVerifiedEmail(email) ||
+        (isAuth() && isOwnerOrDirector(resource.data.firmId));
+      allow create: if isSuperAdmin() || isOwnerOrDirector(request.resource.data.firmId);
+      allow delete: if isSuperAdmin() ||
+        isVerifiedEmail(email) ||
+        (isAuth() && isOwnerOrDirector(resource.data.firmId));
+    }
+
     // ─── PORTAL CLIENTS ──────────────────────────────────────────────────────
 
     // Antes: create/update sin ninguna comprobación de quién escribe, lo
@@ -161,13 +182,31 @@ service cloud.firestore {
       // ── MEMBERS ──────────────────────────────────────────────────────────
 
       match /members/{memberId} {
-        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        // La persona invitada por email (invitationStatus == 'pendiente',
+        // ver memberInvites y claimMemberInvite) puede leer/reclamar SU
+        // PROPIO documento de miembro comparando contra su email verificado
+        // (isVerifiedEmail) antes de tener sesión activa en el despacho —
+        // nunca puede listar ni leer los de otros miembros.
+        allow read: if isSuperAdmin() || isActiveMember(firmId) || (
+          ('invitationStatus' in resource.data) &&
+          resource.data.invitationStatus == 'pendiente' &&
+          isVerifiedEmail(resource.data.email)
+        );
         allow create: if isSuperAdmin() ||
           isOwnerOrDirector(firmId) ||
           (isAuth() && request.auth.uid == request.resource.data.userId);
         allow update: if isSuperAdmin() ||
           isOwnerOrDirector(firmId) ||
-          (isAuth() && resource.data.userId == request.auth.uid);
+          (isAuth() && resource.data.userId == request.auth.uid) ||
+          (
+            ('invitationStatus' in resource.data) &&
+            resource.data.invitationStatus == 'pendiente' &&
+            isVerifiedEmail(resource.data.email) &&
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['userId', 'invitationStatus', 'updatedAt']) &&
+            request.resource.data.userId == request.auth.uid &&
+            request.resource.data.invitationStatus == 'aceptada'
+          );
         allow delete: if isSuperAdmin() || isOwner(firmId);
       }
 

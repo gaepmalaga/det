@@ -17,6 +17,7 @@ import {
 } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db, googleProvider } from '@/lib/firebase'
+import { claimMemberInvite } from '@/services/firm'
 import type { AppUser, AppUserType, FirmMemberRole, FirmStatus } from '@/types'
 
 interface AuthContextValue {
@@ -71,6 +72,33 @@ async function resolveUserType(firebaseUser: User): Promise<AppUser> {
     }
   } catch {
     // Sin índice, continuar
+  }
+
+  // 2.5. ¿Tiene una invitación de miembro de despacho pendiente para este
+  // email? (TeamTab → "Añadir miembro" crea el documento en
+  // firms/{firmId}/members pero, hasta ahora, nunca vinculaba la cuenta que
+  // esa persona crease después — se quedaba sin userFirmIndex y terminaba
+  // creando su propio despacho en Onboarding). Solo si el email está
+  // verificado, mismo criterio que el resto de resoluciones por email de
+  // aquí abajo — con Google siempre lo está, con email/contraseña solo tras
+  // confirmar el enlace de verificación.
+  if (firebaseUser.emailVerified) {
+    try {
+      const claimed = await claimMemberInvite(uid, email)
+      if (claimed) {
+        return {
+          uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          userType: 'firm_member' as AppUserType,
+          firmId: claimed.firmId,
+          memberRole: claimed.role,
+        }
+      }
+    } catch {
+      // Sin invitación válida, continuar
+    }
   }
 
   // 3. ¿Es cliente de portal? — buscar por email. Solo si el email está
