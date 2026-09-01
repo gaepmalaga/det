@@ -28,6 +28,7 @@ import { FirmsPage } from '@/features/superadmin/FirmsPage'
 import { FirmDetailPage } from '@/features/superadmin/FirmDetailPage'
 
 import { ReportsPage } from '@/features/reports/ReportsPage'
+import { StatsPage } from '@/features/stats/StatsPage'
 
 import { CollaboratorsPage } from '@/features/collaborators/CollaboratorsPage'
 import { CollaboratorDetailPage } from '@/features/collaborators/CollaboratorDetailPage'
@@ -65,6 +66,7 @@ export function AppRouter() {
           <Route path="contracts" element={<ContractsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="compliance" element={<CompliancePage />} />
+          <Route path="stats" element={<StatsPage />} />
           <Route path="collaborators" element={<CollaboratorsPage />} />
 <Route path="collaborators/:collaboratorId" element={<CollaboratorDetailPage />} />
           <Route path="team" element={<Placeholder name="Equipo" />} />

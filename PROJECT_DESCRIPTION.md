@@ -425,6 +425,53 @@ seguimiento de implementación (§8).
 - El siguiente paso natural: Fase 5 (colaboradores híbridos, contrato
   marco del cliente habitual, estadísticas) — con esto la Fase 4 queda
   completa.
+- **Fase 5 — parte 1, contrato marco del cliente habitual (2026-09-01)**:
+  - `types/index.ts`: nuevo `FrameworkContract` (id, firmId, clientId,
+    fileName, fileUrl, notes?, status: activo/inactivo). `Case` gana
+    `agreedAmount?: number` y `billingMode: 'quote' | 'framework'`
+    (con fallback a `'quote'` al leer casos ya existentes que no lo
+    tenían).
+  - `services/frameworkContracts.ts` (nuevo): subida del PDF a Storage
+    en `firms/{firmId}/frameworkContracts/{id}/{fileName}` (la regla de
+    Firestore para esta colección ya existía desde antes de esta
+    sesión, sin usar — se aprovechó); `setClientFrameworkContract` en
+    `services/clients.ts` enlaza el contrato al cliente.
+  - `FrameworkContractSection.tsx` (en `features/clients/`, montado
+    dentro de `ClientDetailPage`): si el cliente no tiene contrato
+    marco activo, formulario de subida (PDF + nota opcional); si lo
+    tiene, muestra el archivo, fecha, botón "Nuevo expediente" y
+    "Desactivar". Subir uno nuevo desactiva automáticamente el
+    anterior (no lo borra, quede como histórico).
+  - `CreateFrameworkCaseDialog.tsx`: mismo formulario que
+    `ConvertQuoteToCaseDialog` (tipo de investigación, objeto/alcance,
+    interés legítimo, investigado — campos legales obligatorios) pero
+    sin presupuesto: crea el expediente directamente con
+    `billingMode: 'framework'` y un `agreedAmount` opcional "solo para
+    control interno", tal como se decidió en §4.6/§7.
+  - No se tocó `firestore.rules` (la regla de `frameworkContracts` ya
+    estaba desplegada desde el incidente de esta misma sesión) ni
+    `firestore.indexes.json` (no hace falta — se accede al contrato
+    marco por ID directo desde `Client.frameworkContractId`, sin query).
+- **Fase 5 — parte 2, Estadísticas (2026-09-01)**: pantalla de solo
+  lectura en `/app/stats` (`StatsPage.tsx`), tal como se decidió en
+  §7 — sin colección propia, agrega en el cliente los datos que ya
+  cargan `useQuotes()`/`useCases()`: presupuestos enviados/aceptados/
+  rechazados por mes (barras de css puro, sin librería de gráficos —
+  el bundle ya avisa de que es grande), tasa de conversión, expedientes
+  activos vs. cerrados, importe acordado por tipo de investigación
+  (suma presupuestos aceptados + casos de contrato marco con
+  `agreedAmount`), y expedientes por estado. Sin escritura, sin riesgo
+  de reglas de Firestore.
+  - Verificado ambas partes: `npm run build`, `npx tsc -b` y
+    `npm run lint` limpios (los mismos 16 problemas preexistentes,
+    cero nuevos). Sin verificación visual — misma limitación de red
+    del sandbox de siempre (Contrato marco y Estadísticas requieren
+    sesión autenticada).
+  - Pendiente dentro de la Fase 5: **parte 3, colaboradores
+    híbridos** (el modelo `tienePlataforma`, invitación por email, y
+    el panel transversal de colaboraciones) — es la pieza más grande
+    de las tres, con implicaciones de autenticación cross-despacho;
+    se aborda a continuación en un commit aparte.
 
 ## Repaso visual (iniciado 2026-09-01)
 

@@ -126,3 +126,15 @@ export async function updateClient(
 
   await updateDoc(ref, cleanData)
 }
+
+export async function setClientFrameworkContract(
+  firmId: string,
+  clientId: string,
+  frameworkContractId: string
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'clients', clientId)
+  await updateDoc(ref, {
+    frameworkContractId,
+    updatedAt: serverTimestamp(),
+  })
+}

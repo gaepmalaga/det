@@ -28,6 +28,7 @@ export const ROUTES = {
   FRAMEWORK_CONTRACTS: '/app/framework-contracts',
   REPORTS: '/app/reports',
   COMPLIANCE: '/app/compliance',
+  STATS: '/app/stats',
   COLLABORATORS: '/app/collaborators',
   TEAM: '/app/team',
   SETTINGS: '/app/settings',

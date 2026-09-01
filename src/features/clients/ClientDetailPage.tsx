@@ -14,6 +14,7 @@ import { useClientDetail } from '@/hooks/useClients'
 import { useCases } from '@/hooks/useCases'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
+import { FrameworkContractSection } from './FrameworkContractSection'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -222,6 +223,9 @@ export function ClientDetailPage() {
               </p>
             )}
           </div>
+
+          {/* Contrato marco (cliente habitual) */}
+          <FrameworkContractSection client={client} />
 
           {/* Información general */}
           <div className="bg-card border border-border rounded-xl p-5 shadow-sm">

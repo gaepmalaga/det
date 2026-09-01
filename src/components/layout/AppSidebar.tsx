@@ -14,6 +14,7 @@ import {
   Inbox,
   X,
   Fingerprint,
+  TrendingUp,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ROUTES } from '@/constants/routes'
@@ -29,6 +30,7 @@ const navItems = [
   { label: 'Contratos', icon: FileText, to: ROUTES.CONTRACTS },
   { label: 'Informes', icon: FileText, to: ROUTES.REPORTS },
   { label: 'Cumplimiento', icon: ShieldCheck, to: ROUTES.COMPLIANCE },
+  { label: 'Estadísticas', icon: TrendingUp, to: ROUTES.STATS },
   { label: 'Colaboradores', icon: Handshake, to: ROUTES.COLLABORATORS },
   { label: 'Equipo', icon: Building2, to: ROUTES.TEAM },
 ]

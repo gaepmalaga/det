@@ -209,6 +209,12 @@ export interface Case {
   clientId?: string
   branchId?: string
 
+  // Económico — también se rellena cuando el origen es un contrato marco
+  // (billingMode: 'framework'), que no pasa por quotes (ver §4.6/§7 del
+  // documento de producto).
+  agreedAmount?: number
+  billingMode: 'quote' | 'framework'
+
   // Estado
   status: CaseStatus
   statusHistory: StatusHistoryEntry[]
@@ -326,6 +332,26 @@ export interface Client {
   createdAt: Date
   createdBy: string
   updatedAt: Date
+}
+
+// ─── FRAMEWORK CONTRACT (contrato marco — cliente habitual) ──────────────────
+// Documento externo (redactado por el propio cliente/sus abogados), subido
+// tal cual — a diferencia de `ContractTemplate`/`Contract`, no se genera
+// desde una plantilla. Mientras esté activo, los expedientes de este cliente
+// se abren directamente sin pasar por `quotes`.
+
+export type FrameworkContractStatus = 'activo' | 'inactivo'
+
+export interface FrameworkContract {
+  id: string
+  firmId: string
+  clientId: string
+  fileName: string
+  fileUrl: string
+  notes?: string
+  status: FrameworkContractStatus
+  createdAt: Date
+  createdBy: string
 }
 
 // ─── REGISTRY BOOK ───────────────────────────────────────────────────────────

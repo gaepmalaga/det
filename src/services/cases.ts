@@ -49,6 +49,8 @@ function mapCase(id: string, data: Record<string, unknown>): Case {
     quoteId: data.quoteId as string | undefined,
     clientId: data.clientId as string | undefined,
     branchId: data.branchId as string | undefined,
+    agreedAmount: data.agreedAmount as number | undefined,
+    billingMode: (data.billingMode as Case['billingMode']) ?? 'quote',
     status: data.status as CaseStatus,
     statusHistory,
     investigationType: data.investigationType as string,
@@ -119,6 +121,8 @@ export interface CreateCaseData {
   quoteId?: string
   clientId?: string
   branchId?: string
+  agreedAmount?: number
+  billingMode?: 'quote' | 'framework'
 }
 
 export async function createCase(
@@ -147,6 +151,7 @@ const initialStatusEntry = {
     caseNumber,
     caseNumberInt: count,
     ...data,
+    billingMode: data.billingMode ?? 'quote',
     status: 'revision' as CaseStatus,
     statusHistory: [initialStatusEntry],
     legitimateInterestValidated: false,
