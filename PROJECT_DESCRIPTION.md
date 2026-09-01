@@ -94,8 +94,13 @@ directamente relacionada con el objeto y finalidad de la investigación; nada
 de datos del investigado/cliente descubiertos "de paso" que no vengan a
 cuento.
 
-Pendiente de afinar (no cerrado): opciones de exportación para que cada
-despacho lo ponga en su propia plantilla con logo, etc.
+**Exportación (decidido)**: PDF (maquetación final, no editable — toda la
+edición ocurre antes, dentro del editor del informe) **y** `.docx` editable,
+para que el despacho lo retoque fuera de la plataforma si lo necesita.
+Personalización de plantilla: cada despacho sube su logo una vez en Ajustes
+y se aplica automáticamente sobre un diseño fijo (misma tipografía, orden de
+secciones, pie de página con RNSP) — sin editor de plantilla, sin colores
+personalizables por ahora.
 
 ### 4.3 Contrato
 
@@ -135,23 +140,29 @@ Se distingue entre dos tipos de despacho colaborador:
   conste en el informe quién hizo qué (relevante también para el TIP, que debe
   figurar en el libro-registro si aplica).
 
-Pendiente de decidir: mecanismo exacto de invitación por email para el
-colaborador con plataforma (link → crea cuenta con acceso restringido) frente
-a alta manual por el titular — no se ha cerrado del todo, aunque la
-distinción por `tienePlataforma` sí queda fijada.
+**Invitación (decidido)**: por email. El titular introduce el email del
+colaborador, se le envía un link, y el colaborador crea su propia cuenta con
+acceso restringido a los casos donde colabora (nada más del despacho
+titular). No hay alta manual con credenciales generadas por el titular.
 
 ### 4.6 Cliente esporádico vs. habitual (mutuas, aseguradoras, empresas)
 
-Sigue **abierto**. La duda de fondo: si un cliente habitual firma un contrato
-marco una vez (cubre todos sus casos futuros, sin fricción) o si sigue
-firmando contrato en cada expediente igual que un particular, y lo único que
-cambia es que tiene portal.
+La duda de fondo: si un cliente habitual firma un contrato marco una vez
+(cubre todos sus casos futuros, sin fricción) o si sigue firmando contrato en
+cada expediente igual que un particular, y lo único que cambia es que tiene
+portal.
 
 **Decidido**: si hay contrato marco activo, el expediente se abre directamente
 sin pasar por `quotes` (las condiciones económicas ya están pactadas en el
 marco), pero sí se registra una cifra por asunto para control interno —
 como campos directos en `cases` (`agreedAmount`, `billingMode: 'quote' |
-'framework'`), no como una colección de contabilidad aparte. Detalle en §7.
+'framework'`), no como una colección de contabilidad aparte.
+
+**Origen del contrato marco (decidido)**: solo subida de PDF externo. El
+despacho sube el documento que le manda el cliente (redactado por sus
+propios abogados) y lo marca como firmado/aceptado — no se genera desde
+`contractTemplates`. `contractTemplates` queda reservado para el contrato
+individual del cliente particular/esporádico (§4.3).
 
 ## 5. Modelo de datos (borrador, ~8 colecciones)
 
@@ -234,7 +245,7 @@ anterior de este documento que lo daba por pendiente estaba equivocada.
 Coincide con el número de DNI del detective — no es un código aparte que haya
 que generar, solo capturarlo. Es personal e intransferible.
 
-## 7. Decisiones recientes y abierto / sin decidir todavía
+## 7. Decisiones recientes
 
 ### Estadísticas vs. contabilidad (decidido)
 
@@ -254,15 +265,15 @@ llevamos dos conversaciones recortando. En su lugar:
   plantea como integración con el software de facturación del despacho, no
   como módulo propio.
 
-### Sin decidir todavía
+### Invitación de colaborador, exportación de informe y contrato marco (decidido)
 
-1. **Invitación de colaborador con plataforma** — mecanismo exacto (email con
-   link de auto-registro vs. alta manual por el titular).
-2. **Exportación del informe** — formatos, plantilla con logo del despacho,
-   qué tan editable es la maquetación final.
-3. **Contrato marco de cliente habitual** — quién lo redacta (parece que en
-   algunos casos lo aportan los propios abogados del cliente, no el despacho),
-   y cómo se sube/adjunta frente a generarse desde plantilla.
+Los 3 puntos que quedaban abiertos se cerraron y ya están integrados en sus
+secciones correspondientes: invitación de colaborador por email (§4.5),
+informe exportable en PDF + `.docx` con logo del despacho (§4.2), y contrato
+marco por subida de PDF externo (§4.6).
+
+No queda ningún punto de alcance abierto — el documento pasa a modo
+seguimiento de implementación (§8).
 
 ## 8. Estado técnico (a fecha de este documento)
 
@@ -282,10 +293,12 @@ llevamos dos conversaciones recortando. En su lugar:
 - El PR #1 se fusionó a `main`. A partir de ahora el trabajo se hace
   directamente sobre `main`, sin ramas ni PRs intermedios (petición explícita
   del usuario).
-- El resto de este documento (§1-§5, §7) sigue siendo diseño, sin
-  implementar — la reescritura grande (nuevas colecciones, quitar
+- El alcance (§1-§7) está completamente cerrado, sin puntos pendientes de
+  decisión. El resto de este documento sigue siendo diseño sin implementar
+  todavía — la reescritura grande (nuevas colecciones, quitar
   evidencias/compliance/portal-mensajería, informe con IA, plantillas de
-  contrato, colaboradores híbridos, marco/estadísticas) no ha empezado.
+  contrato, colaboradores híbridos, marco/estadísticas) no ha empezado, salvo
+  la corrección del libro-registro de abajo.
 - **Ya implementado y en `main`**: el gap del libro-registro de §6 (Anexo
   VII) — `investigatedName`/`investigatedAddress` obligatorios en la
   creación de expediente, `knownOffenses`/`offensesReportedTo` editables
