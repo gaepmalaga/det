@@ -1045,3 +1045,46 @@ con clave de API real), la exportación de informes a PDF/.docx, y
 desplegar automáticamente `storage.rules` en CI (pendiente de que el
 usuario amplíe permisos del service account si hace falta en el
 futuro).
+
+## Incidente — "Crear expediente" no avanzaba al aceptar un presupuesto (2026-09-01)
+
+Reportado por el usuario probando el flujo real por primera vez desde
+que existe (Fase 2). No es un bug de esta sesión, ni de las fases más
+recientes — estaba ahí desde que se creó `ConvertQuoteToCaseDialog`.
+
+**Causa**: `createCase()` (`services/cases.ts`) es la única función
+`create*` de todo el proyecto que hacía `addDoc(ref, { ...data, ... })`
+con el objeto del formulario esparcido directamente, en vez del patrón
+que usan todas las demás (`createContact`, `createQuote`,
+`createCollaborator`, `createClient`...): copiar cada campo opcional
+uno a uno con `if (data.x) cleanData.x = data.x`. Cuando un campo
+opcional del formulario se deja vacío, el valor que llega es
+`undefined` explícito (p. ej.
+`investigationTypeCustom: form.investigationTypeCustom || undefined`)
+— y Firestore **rechaza cualquier `undefined` literal** en un
+`addDoc`/`updateDoc`, lanzando una excepción en el propio cliente,
+antes de tocar la red. Como `handleSubmit` en el diálogo no tenía
+`catch`, esa excepción se tragaba en silencio: `setLoading(false)`
+se ejecutaba igualmente vía `finally`, así que el botón volvía a
+estar activo pero sin ningún mensaje de error — de ahí la sensación de
+"no avanza".
+
+Se dispara con el caso más común: dejar "Tipo de investigación
+personalizado" en blanco (que es opcional y la mayoría de veces no
+hace falta rellenar).
+
+**Arreglado**: `createCase()` ahora filtra los campos `undefined` del
+objeto antes de esparcirlo, igual que ya se hizo para `updateCase()`
+en el arreglo de seguridad anterior de esta misma sesión.
+
+**Mismo bug ya estaba latente en el contrato marco de esta sesión**:
+`CreateFrameworkCaseDialog.tsx` (Fase 5, parte 1) tiene el mismo patrón
+(`agreedAmount: form.agreedAmount ? parseFloat(...) : undefined`, un
+campo marcado como opcional) — con el fix genérico en `createCase()`
+queda cubierto también, sin tocar ese diálogo.
+
+Verificado build/lint limpios. Revisado el resto de servicios
+(`grep` de `...data` esparcido en un `addDoc`) — `createCase` era el
+único caso, no hay más instancias conocidas de este patrón.
+
+**Sin verificar en producción** — misma limitación de siempre.

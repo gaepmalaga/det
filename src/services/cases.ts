@@ -162,11 +162,19 @@ const initialStatusEntry = {
   changedBy: userId,
 }
 
+  // Los campos opcionales del formulario llegan como `undefined` cuando se
+  // dejan en blanco (`x || undefined`, `cond ? x : undefined`) — Firestore
+  // rechaza cualquier valor `undefined` explícito en un addDoc/updateDoc,
+  // así que hay que filtrarlos antes de mandar la escritura.
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  )
+
   const docRef = await addDoc(ref, {
     firmId,
     caseNumber,
     caseNumberInt: count,
-    ...data,
+    ...cleanData,
     billingMode: data.billingMode ?? 'quote',
     status: 'revision' as CaseStatus,
     statusHistory: [initialStatusEntry],
