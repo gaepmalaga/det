@@ -1,11 +1,12 @@
 import { getGenerativeModel } from 'firebase/ai'
 import { ai } from '@/lib/firebase'
 
-// gemini-2.0-flash-lite: de sobra para resumir/estructurar notas de
+// gemini-3.5-flash-lite: de sobra para resumir/estructurar notas de
 // campo en prosa de informe — no hace falta un modelo de última
 // generación para esta tarea, y esta clase de modelo entra en la capa
-// gratuita del backend Gemini Developer API.
-const MODEL_ID = 'gemini-2.0-flash-lite'
+// gratuita del backend Gemini Developer API. (gemini-2.0-flash-lite,
+// usado originalmente, fue retirado por Google — ver PROJECT_DESCRIPTION.md.)
+const MODEL_ID = 'gemini-3.5-flash-lite'
 
 export interface DraftReportInput {
   caseNumber: string

@@ -1344,8 +1344,28 @@ Firebase (paso manual, no bloquea el resto de la app mientras tanto).
 **Actualización (2026-09-01, desde una sesión local)**: el usuario activó
 AI Logic en la consola de Firebase (Gemini Developer API, capa gratuita,
 AI Monitoring incluido) y habilitó el proveedor Email/contraseña en
-Authentication. El botón "Generar borrador con IA" ya debería funcionar
-en producción.
+Authentication.
+
+**Incidente al probarlo — App Check bloqueaba las llamadas**: el propio
+asistente de "Comenzar" de AI Logic activa automáticamente la
+Verificación de aplicaciones (App Check) en modo **Aplicado** para la
+API de Gemini. Como el código de esta app nunca ha integrado el SDK de
+App Check (no hay `ReCaptchaEnterpriseProvider`/`ReCaptchaV3Provider`
+inicializado en `src/lib/firebase.ts`), toda llamada real fallaba con
+`AI/fetch-error` / `401 Firebase App Check token is invalid`, probado
+en el navegador contra producción. Se cambió manualmente en Firebase
+Console → App Check → Firebase AI Logic a **"Sin aplicar" (solo
+supervisión)**, para que las peticiones sin token de App Check dejen de
+bloquearse (tarda hasta 15 min en propagarse).
+
+**Esto es un parche temporal, no la solución correcta**: Firebase avisa
+en la propia consola que **a partir del 2 de noviembre de 2026 la
+aplicación forzosa de App Check para AI Logic será obligatoria y no se
+podrá desactivar**. Antes de esa fecha hay que integrar de verdad el SDK
+de App Check en `src/lib/firebase.ts` (`initializeAppCheck` con
+`ReCaptchaV3Provider`, more probablemente, que no requiere backend) para
+que el botón "Generar borrador con IA" no se vuelva a romper. Pendiente,
+no implementado en esta sesión.
 
 ## Login con email/contraseña (2026-09-01, sesión local)
 
