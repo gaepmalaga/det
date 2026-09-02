@@ -1764,3 +1764,62 @@ del sistema no tenía ningún bug pendiente.
 (informe generado con IA → aprobado → entregado → expediente cerrado),
 para que el despacho demo muestre el ciclo de vida completo (un
 expediente abierto y otro cerrado) en vez de solo casos activos.
+
+## Exportación de informes a PDF y Word (2026-09-02)
+
+Añadidos dos botones ("Exportar PDF" / "Exportar Word") en la pestaña
+de Informe del expediente (`CaseReportTab.tsx`), visibles en cualquier
+estado del informe (borrador, aprobado o entregado). Genera el
+documento enteramente en el cliente — sin backend ni Cloud Functions,
+consistente con el resto de la plataforma — a partir del `Report` ya
+cargado y de los datos del despacho (`useFirm()`), con un membrete
+simple (nombre comercial, NIF, nº RNSP y dirección registrada) seguido
+de las mismas secciones que ya se mostraban en pantalla (datos del
+contratante, detectives intervinientes, objeto, medios, actuaciones,
+resultados, conclusiones/observaciones y, si procede, entrega).
+
+- **PDF**: con `jspdf`. Paginación manual (`ensureSpace`) que mide el
+  espacio restante antes de cada línea y añade página cuando hace
+  falta — no hay una API de "flow" de texto multipágina en jsPDF, así
+  que hay que llevar la cuenta de la posición `y` a mano.
+- **Word (.docx)**: con la librería `docx` (`Document`/`Paragraph`/
+  `TextRun` → `Packer.toBlob`), que sí soporta un DOM válido de Word
+  desde cero sin depender de una plantilla `.dotx`.
+- Ambas librerías (`jspdf` + `docx`, con su dependencia `html2canvas`)
+  pesan bastante sin comprimir — el bundle principal creció de ~1,99 MB
+  a ~2,68 MB si se importan de forma estática. Se resolvió con
+  `import()` dinámico en los dos manejadores de `CaseReportTab.tsx`
+  (`handleExportPdf`/`handleExportDocx`), de forma que
+  `reportExport.ts` y sus dependencias solo se descargan la primera vez
+  que alguien pulsa un botón de exportar, no en cada carga de la app.
+  El bundle principal quedó en ~1,21 MB (antes de añadir esta
+  funcionalidad) y el chunk separado de exportación pesa ~753 KB,
+  cargado bajo demanda.
+- **Bug evitado, no solo de pruebas**: el `.save()` nativo de jsPDF usa
+  internamente un mecanismo de descarga (al estilo FileSaver) que hace
+  una comprobación de capacidades del navegador con una petición XHR
+  síncrona a la que intenta cambiarle `responseType` — Chrome moderno
+  lanza `InvalidAccessError` en cuanto se intenta eso ("The response
+  type cannot be changed for synchronous requests"). Saltó al probar la
+  exportación en un entorno de navegador automatizado, pero no hay
+  garantía de que no ocurra también en algún navegador/contexto real
+  (hay incidencias abiertas de jsPDF sobre este mismo patrón). Se evitó
+  del todo generando el PDF con `doc.output('blob')` y descargándolo
+  con el mismo mecanismo manual (`<a download>` + `URL.createObjectURL`
+  + `.click()`) ya usado para el `.docx`, en vez de confiar en el
+  `.save()` interno de jsPDF.
+- **Verificación**: no se pudo probar por la UI completa en local
+  porque el login de email/contraseña falla en `localhost` — la clave
+  de sitio de reCAPTCHA v3 de App Check solo tiene registrado el dominio
+  de producción, así que cualquier llamada de Auth que dependa de un
+  token de App Check falla con `appCheck/recaptcha-error` fuera de
+  `detectivesprivadosesp.web.app` (limitación conocida del entorno, no
+  un bug de esta funcionalidad). En su lugar se probó cargando
+  directamente el chunk compilado de `reportExport` en el navegador con
+  datos de informe simulados y se interceptó `URL.createObjectURL` para
+  inspeccionar el blob generado en cada caso: cabecera `%PDF` y tamaño
+  de ~6 KB para el PDF, cabecera de ZIP válida (`PK\x03\x04`) y tamaño
+  de ~9 KB para el `.docx`, sin ninguna excepción en ninguno de los dos
+  casos. **Pendiente para el usuario**: confirmar visualmente el
+  resultado (maquetación, saltos de página, tildes/eñes) abriendo un
+  informe real ya entregado en producción y pulsando ambos botones.

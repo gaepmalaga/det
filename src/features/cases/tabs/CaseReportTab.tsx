@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles, Loader2 } from 'lucide-react'
+import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles, Loader2, Download, FileDown } from 'lucide-react'
 import { useCaseReport } from '@/hooks/useReports'
 import { useCaseActions } from '@/hooks/useActions'
+import { useFirm } from '@/hooks/useFirm'
 import { useAuth } from '@/contexts/AuthContext'
 import { createAuditLog } from '@/services/auditLog'
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore'
@@ -52,6 +53,7 @@ interface CaseReportTabProps {
 
 export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const { user } = useAuth()
+  const { firm } = useFirm()
   const { report, loading, create, update, approve, deliver } = useCaseReport(caseData.id)
   const { actions: caseActions } = useCaseActions(caseData.id)
   const [showForm, setShowForm] = useState(false)
@@ -62,6 +64,8 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const [generatingDraft, setGeneratingDraft] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
   const [draftGenerated, setDraftGenerated] = useState(false)
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportingDocx, setExportingDocx] = useState(false)
 
   const [form, setForm] = useState({
     clientName: '',
@@ -224,6 +228,28 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
       )
     } finally {
       setGeneratingDraft(false)
+    }
+  }
+
+  const handleExportPdf = async () => {
+    if (!report || !firm || exportingPdf) return
+    setExportingPdf(true)
+    try {
+      const { exportReportToPdf } = await import('@/services/reportExport')
+      exportReportToPdf(report, firm)
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
+  const handleExportDocx = async () => {
+    if (!report || !firm || exportingDocx) return
+    setExportingDocx(true)
+    try {
+      const { exportReportToDocx } = await import('@/services/reportExport')
+      await exportReportToDocx(report, firm)
+    } finally {
+      setExportingDocx(false)
     }
   }
 
@@ -527,6 +553,22 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleExportPdf}
+              disabled={!firm || exportingPdf}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              {exportingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+              Exportar PDF
+            </button>
+            <button
+              onClick={handleExportDocx}
+              disabled={!firm || exportingDocx}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              {exportingDocx ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              Exportar Word
+            </button>
             {report.status === 'borrador' && !isClosed && (
               <>
                 <button
