@@ -2193,3 +2193,58 @@ propio repositorio dejadas por ramas que ya no existen, y duplicaba cada
 aviso del código real. Añadido `.claude` a `globalIgnores` en
 `eslint.config.js`. **La línea base real es 16 problemas (15 errores, 1
 aviso)**, todos preexistentes; es esa la cifra que no debe subir.
+
+## La navegación deja de ser un menú de tablas de la base de datos (2026-09-02)
+
+Había trece entradas en el menú, una por colección: Contactos,
+Presupuestos, Clientes, Expedientes, Libro-registro, Contratos,
+Informes, Cumplimiento, Estadísticas, Colaboradores, Equipo... Eso es el
+esquema de Firestore puesto en una barra lateral, no la forma en que un
+despacho trabaja. Un contrato no es un sitio al que se va: es un papel
+de un asunto, y se ve dentro del asunto.
+
+Quedan cinco destinos de trabajo — **Hoy · Archivo · Oportunidades ·
+Clientes · Colaboradores** — más Configuración, y debajo, en un bloque
+aparte y más apagado, tres que se consultan de vez en cuando:
+libro-registro, cumplimiento y estadísticas. `/app` y el inicio de
+sesión llevan ahora a Hoy, no al Dashboard.
+
+**Hoy** (`features/today/TodayPage.tsx`) es la pantalla de cada día: los
+asuntos abiertos con **lo más parado arriba**, porque un asunto sin
+anotar durante días es el problema que nadie ve hasta que hay que
+redactar el informe y no queda de dónde sacarlo. Cada uno enseña el
+único paso que toca ahora —firmar, anotar, informar o cerrar—, cuántas
+actuaciones lleva y cuánto hace que no se toca, y entra directamente en
+la pestaña correspondiente del expediente: **la pestaña va ahora en la
+URL** (`?tab=actuaciones`), antes era estado local y no se podía enlazar.
+
+**Archivo** (`features/registry/ArchivePage.tsx`) es la estantería que
+ya tienen: los años como lomos y los asuntos dentro, con el año en curso
+abierto y los anteriores plegados. Cada año dice cuántos asuntos tiene y
+qué rango de asientos cubre. La búsqueda cruza nº de asiento, cliente,
+NIF, investigado, objeto y detective — que es la parte que una
+estantería física no puede hacer.
+
+**Oportunidades** (`features/opportunities/OpportunitiesPage.tsx`)
+fusiona Contactos y Presupuestos, que eran dos vistas de lo mismo: un
+presupuesto no existe sin alguien que lo pidió. Y resuelve la queja de
+que en Contactos apareciesen todos revueltos, el que llamó ayer junto al
+que lleva tres asuntos. Cada oportunidad tiene ahora su estado —
+`sin presupuestar` → `presupuesto enviado` → `contratado`, o
+`descartado`.
+
+**El estado no es un campo nuevo, a propósito** (`services/pipeline.ts`,
+`buildOpportunities`): se deduce de los presupuestos del contacto. Un
+campo guardado se quedaría obsoleto en cuanto alguien aceptase un
+presupuesto sin acordarse de cambiarlo; deducido no puede mentir.
+
+Presupuestar, aceptar y rechazar se han traído a esta pantalla: sin eso
+la redirección habría roto el flujo presupuesto → contrato → expediente.
+`/app/contacts` y `/app/quotes` redirigen a Oportunidades para no romper
+enlaces guardados. `ContactsPage.tsx` y `QuotesPage.tsx` se han borrado
+— dejarlas muertas es el mismo problema de dispersión, en el código.
+
+Verificado en producción: las tres pantallas nuevas, el sidebar con los
+9 enlaces, las dos redirecciones, y Oportunidades mostrando los 5
+contactos demo repartidos correctamente (2 presupuesto enviado con sus
+botones Aceptar/Rechazar, 2 contratados, 1 descartado).
