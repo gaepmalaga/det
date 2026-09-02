@@ -356,7 +356,7 @@ service cloud.firestore {
           request.resource.data.signedByName is string &&
           request.resource.data.signedByName.size() > 0 &&
           request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'signedAt', 'signedByName', 'signedIp'])
+            .hasOnly(['status', 'signedAt', 'signedByName', 'signedIp', 'signatureDataUrl'])
         );
         allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
       }

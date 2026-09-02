@@ -19,7 +19,6 @@ export function CollaboratorsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('activo')
   const [tienePlataforma, setTienePlataforma] = useState(false)
-  const [esDependiente, setEsDependiente] = useState(false)
   const [form, setForm] = useState<CreateCollaboratorData>({
     legalName: '',
     tradeName: '',
@@ -59,12 +58,10 @@ export function CollaboratorsPage() {
         tienePlataforma,
         invitedEmail: tienePlataforma ? form.invitedEmail : undefined,
         inviterFirmName: tienePlataforma ? (firm?.tradeName ?? firm?.legalName) : undefined,
-        esDependiente,
       })
       if (id) {
         setShowForm(false)
         setTienePlataforma(false)
-        setEsDependiente(false)
         setForm({
           legalName: '',
           tradeName: '',
@@ -281,28 +278,6 @@ export function CollaboratorsPage() {
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
                 placeholder="Notas sobre este colaborador..."
               />
-            </div>
-
-            <div className="border-t border-border pt-4">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={esDependiente}
-                  onChange={(e) => setEsDependiente(e.target.checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  <span className="block text-sm font-medium text-foreground">
-                    Es un colaborador dependiente del despacho
-                  </span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">
-                    Trabaja como un detective más de tu despacho, aunque no
-                    figure en Equipo. No necesita un contrato de
-                    colaboración aparte — a diferencia de un despacho o
-                    profesional independiente subcontratado (Ley 5/2014).
-                  </span>
-                </span>
-              </label>
             </div>
 
             <div className="border-t border-border pt-4">

@@ -48,11 +48,11 @@ export function ContractsPage() {
     }
   }
 
-  const handleSign = async (contractId: string, signedByName: string) => {
+  const handleSign = async (contractId: string, signedByName: string, signatureDataUrl: string | null) => {
     if (!user?.firmId) return
     setError(null)
     try {
-      await sign(contractId, signedByName)
+      await sign(contractId, signedByName, signatureDataUrl)
       const caseId = await openCaseFromContract(user.firmId, user.uid, contractId)
       setSelectedContract(null)
       navigate(ROUTES.CASE_DETAIL.replace(':caseId', caseId))
@@ -203,7 +203,7 @@ export function ContractsPage() {
           open={true}
           contract={selectedContract}
           onClose={() => setSelectedContract(null)}
-          onSign={(name) => handleSign(selectedContract.id, name)}
+          onSign={(name, sig) => handleSign(selectedContract.id, name, sig)}
           onUploadDocument={(file) => handleUpload(selectedContract.id, file)}
         />
       )}

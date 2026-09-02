@@ -54,10 +54,10 @@ export function useContracts() {
     }
   }
 
-  const sign = async (contractId: string, signedByName: string) => {
+  const sign = async (contractId: string, signedByName: string, signatureDataUrl?: string | null) => {
     if (!firmId) return
     try {
-      await markContractAsSigned(firmId, contractId, signedByName)
+      await markContractAsSigned(firmId, contractId, signedByName, signatureDataUrl)
       await load()
     } catch (err) {
       console.error(err)
@@ -132,10 +132,10 @@ export function useCaseContracts(caseId: string) {
     }
   }
 
-  const sign = async (contractId: string, signedByName: string) => {
+  const sign = async (contractId: string, signedByName: string, signatureDataUrl?: string | null) => {
     if (!firmId) return
     try {
-      await markContractAsSigned(firmId, contractId, signedByName)
+      await markContractAsSigned(firmId, contractId, signedByName, signatureDataUrl)
       await load()
     } catch (err) {
       console.error(err)
@@ -199,10 +199,10 @@ export function useCollaboratorContracts(collaboratorId: string) {
     }
   }
 
-  const sign = async (contractId: string, signedByName: string) => {
+  const sign = async (contractId: string, signedByName: string, signatureDataUrl?: string | null) => {
     if (!firmId) return
     try {
-      await markContractAsSigned(firmId, contractId, signedByName)
+      await markContractAsSigned(firmId, contractId, signedByName, signatureDataUrl)
       await load()
     } catch (err) {
       console.error(err)

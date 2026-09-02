@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react'
 import { X, Upload, CheckCircle } from 'lucide-react'
+import { SignaturePad, type SignaturePadHandle } from '@/components/shared/SignaturePad'
 import type { Contract } from '@/services/contracts'
 
 interface SignContractDialogProps {
   open: boolean
   contract: Contract
   onClose: () => void
-  onSign: (signedByName: string) => Promise<void>
+  onSign: (signedByName: string, signatureDataUrl: string | null) => Promise<void>
   onUploadDocument: (file: File) => Promise<void>
 }
 
@@ -24,12 +25,13 @@ export function SignContractDialog({
     contract.scannedDocumentName ?? null
   )
   const fileRef = useRef<HTMLInputElement>(null)
+  const signaturePadRef = useRef<SignaturePadHandle>(null)
 
   const handleSign = async () => {
     if (!signedByName.trim()) return
     setSigning(true)
     try {
-      await onSign(signedByName.trim())
+      await onSign(signedByName.trim(), signaturePadRef.current?.getDataUrl() ?? null)
       onClose()
     } finally {
       setSigning(false)
@@ -67,14 +69,21 @@ export function SignContractDialog({
 
         <div className="p-6 space-y-5">
           {isSigned ? (
-            <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-green-900">Contrato firmado</p>
-                <p className="text-xs text-green-700 mt-0.5">
-                  Firmado por: {contract.signedByName}
-                </p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-green-900">Contrato firmado</p>
+                  <p className="text-xs text-green-700 mt-0.5">
+                    Firmado por: {contract.signedByName}
+                  </p>
+                </div>
               </div>
+              {contract.signatureDataUrl && (
+                <div className="p-3 border border-border rounded-lg bg-white">
+                  <img src={contract.signatureDataUrl} alt="Firma" className="h-16 mx-auto" />
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -97,6 +106,16 @@ export function SignContractDialog({
                 <p className="text-xs text-muted-foreground mt-1">
                   Nombre de la persona que firma el contrato en representación del cliente.
                 </p>
+              </div>
+
+              <div>
+                <p className="block text-xs font-medium text-foreground mb-1.5">
+                  Firma{' '}
+                  <span className="text-muted-foreground font-normal">
+                    (opcional si el firmante no está delante de esta pantalla)
+                  </span>
+                </p>
+                <SignaturePad ref={signaturePadRef} />
               </div>
             </div>
           )}

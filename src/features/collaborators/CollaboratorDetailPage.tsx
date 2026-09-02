@@ -103,7 +103,6 @@ export function CollaboratorDetailPage() {
     address: '',
     notes: '',
   })
-  const [esDependienteForm, setEsDependienteForm] = useState(false)
 
   const startEditing = () => {
     if (!collaborator) return
@@ -119,7 +118,6 @@ export function CollaboratorDetailPage() {
       address: collaborator.address ?? '',
       notes: collaborator.notes ?? '',
     })
-    setEsDependienteForm(collaborator.esDependiente)
     setEditing(true)
   }
 
@@ -145,7 +143,6 @@ export function CollaboratorDetailPage() {
         tipNumber: form.tipNumber || undefined,
         address: form.address || undefined,
         notes: form.notes || undefined,
-        esDependiente: esDependienteForm,
       })
       await reload()
       setEditing(false)
@@ -375,25 +372,6 @@ export function CollaboratorDetailPage() {
                 />
               </div>
 
-              <div className="border-t border-border pt-4">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={esDependienteForm}
-                    onChange={(e) => setEsDependienteForm(e.target.checked)}
-                    className="mt-0.5"
-                  />
-                  <span>
-                    <span className="block text-sm font-medium text-foreground">
-                      Es un colaborador dependiente del despacho
-                    </span>
-                    <span className="block text-xs text-muted-foreground mt-0.5">
-                      No necesita un contrato de colaboración aparte.
-                    </span>
-                  </span>
-                </label>
-              </div>
-
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -439,12 +417,6 @@ export function CollaboratorDetailPage() {
                       </p>
                     </div>
                   )}
-                  <div>
-                    <p className="text-xs text-muted-foreground">Régimen</p>
-                    <p className="text-sm text-foreground">
-                      {collaborator.esDependiente ? 'Dependiente del despacho' : 'Independiente'}
-                    </p>
-                  </div>
                 </div>
               </div>
 
@@ -505,11 +477,7 @@ export function CollaboratorDetailPage() {
               Contrato de colaboración
             </h3>
 
-            {collaborator.esDependiente ? (
-              <p className="text-xs text-muted-foreground">
-                No se requiere — es un colaborador dependiente del despacho.
-              </p>
-            ) : !contract ? (
+            {!contract ? (
               <>
                 <p className="text-xs text-muted-foreground mb-3">
                   Ley 5/2014: al subcontratar a un despacho o profesional
@@ -535,13 +503,20 @@ export function CollaboratorDetailPage() {
                   {contract.status === 'firmado' ? 'Firmado' : 'Pendiente de firma'}
                 </span>
                 {contract.status === 'firmado' ? (
-                  <p className="text-xs text-muted-foreground">
-                    Firmado por {contract.signedByName}
-                    {contract.signedAt && (
-                      <> el {format(contract.signedAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}</>
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Firmado por {contract.signedByName}
+                      {contract.signedAt && (
+                        <> el {format(contract.signedAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}</>
+                      )}
+                      .
+                    </p>
+                    {contract.signatureDataUrl && (
+                      <div className="p-2 border border-border rounded-lg bg-white">
+                        <img src={contract.signatureDataUrl} alt="Firma" className="h-12 mx-auto" />
+                      </div>
                     )}
-                    .
-                  </p>
+                  </>
                 ) : (
                   <div className="flex flex-col gap-2">
                     <button
@@ -641,7 +616,7 @@ export function CollaboratorDetailPage() {
           open={true}
           contract={signingContract}
           onClose={() => setSigningContract(null)}
-          onSign={(name) => signCollabContract(signingContract.id, name)}
+          onSign={(name, sig) => signCollabContract(signingContract.id, name, sig)}
           onUploadDocument={(file) => uploadCollabContractDocument(signingContract.id, file).then(() => {})}
         />
       )}

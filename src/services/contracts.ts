@@ -45,6 +45,13 @@ export interface Contract {
   signedAt?: Date
   signedByName?: string
   signedIp?: string
+  // Garabato dibujado a mano (ratón o táctil) en el momento de firmar,
+  // como imagen PNG en base64 — guardado directamente en el documento
+  // (en vez de Storage) porque quien firma por enlace público no está
+  // autenticado y Storage exige `request.auth != null` para escribir;
+  // las reglas de Firestore para `contracts` ya permiten esa firma
+  // pública tocando solo los campos concretos de la firma.
+  signatureDataUrl?: string
   serviceDescription: string
   agreedPrice?: string
   specificConditions?: string
@@ -92,6 +99,7 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     signedAt: toDateOrUndefined(data.signedAt),
     signedByName: data.signedByName as string | undefined,
     signedIp: data.signedIp as string | undefined,
+    signatureDataUrl: data.signatureDataUrl as string | undefined,
     serviceDescription: data.serviceDescription as string,
     agreedPrice: data.agreedPrice as string | undefined,
     specificConditions: data.specificConditions as string | undefined,
@@ -202,7 +210,8 @@ export async function signContractPublicly(
   firmId: string,
   contractId: string,
   signedByName: string,
-  signedIp: string | null
+  signedIp: string | null,
+  signatureDataUrl?: string | null
 ): Promise<void> {
   const ref = doc(db, 'firms', firmId, 'contracts', contractId)
   const updateData: Record<string, unknown> = {
@@ -211,21 +220,25 @@ export async function signContractPublicly(
     signedByName,
   }
   if (signedIp) updateData.signedIp = signedIp
+  if (signatureDataUrl) updateData.signatureDataUrl = signatureDataUrl
   await updateDoc(ref, updateData)
 }
 
 export async function markContractAsSigned(
   firmId: string,
   contractId: string,
-  signedByName: string
+  signedByName: string,
+  signatureDataUrl?: string | null
 ): Promise<void> {
   const ref = doc(db, 'firms', firmId, 'contracts', contractId)
-  await updateDoc(ref, {
+  const updateData: Record<string, unknown> = {
     status: 'firmado' as ContractStatus,
     signedAt: serverTimestamp(),
     signedByName,
     updatedAt: serverTimestamp(),
-  })
+  }
+  if (signatureDataUrl) updateData.signatureDataUrl = signatureDataUrl
+  await updateDoc(ref, updateData)
 }
 
 export async function setContractCase(

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { CheckCircle, FileText } from 'lucide-react'
 import { getContractForSigning, signContractPublicly } from '@/services/contracts'
+import { SignaturePad, type SignaturePadHandle } from '@/components/shared/SignaturePad'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { Contract } from '@/services/contracts'
@@ -26,6 +27,9 @@ export function SignContractPage() {
   const [accepted, setAccepted] = useState(false)
   const [signing, setSigning] = useState(false)
   const [justSigned, setJustSigned] = useState(false)
+  const [signatureError, setSignatureError] = useState(false)
+  const [justSignedDataUrl, setJustSignedDataUrl] = useState<string | null>(null)
+  const signaturePadRef = useRef<SignaturePadHandle>(null)
 
   useEffect(() => {
     if (!firmId || !contractId) return
@@ -47,10 +51,17 @@ export function SignContractPage() {
   const handleSign = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!firmId || !contractId || !signedByName.trim() || !accepted) return
+    const signatureDataUrl = signaturePadRef.current?.getDataUrl() ?? null
+    if (!signatureDataUrl) {
+      setSignatureError(true)
+      return
+    }
+    setSignatureError(false)
     setSigning(true)
     try {
       const ip = await fetchPublicIp()
-      await signContractPublicly(firmId, contractId, signedByName.trim(), ip)
+      await signContractPublicly(firmId, contractId, signedByName.trim(), ip, signatureDataUrl)
+      setJustSignedDataUrl(signatureDataUrl)
       setJustSigned(true)
     } finally {
       setSigning(false)
@@ -106,6 +117,15 @@ export function SignContractPage() {
               <p className="text-xs text-muted-foreground">
                 {contract.signedByName ?? signedByName} — {format(contract.signedAt ?? new Date(), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
               </p>
+            )}
+            {(justSignedDataUrl ?? contract.signatureDataUrl) && (
+              <div className="mt-4 p-3 border border-border rounded-lg bg-white inline-block">
+                <img
+                  src={justSignedDataUrl ?? contract.signatureDataUrl}
+                  alt="Firma"
+                  className="h-16"
+                />
+              </div>
             )}
             <p className="text-xs text-muted-foreground mt-4">
               Ya puedes cerrar esta página. El despacho recibirá la confirmación.
@@ -176,6 +196,18 @@ export function SignContractPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1.5">
+                  Firma <span className="text-red-500">*</span>
+                </label>
+                <SignaturePad ref={signaturePadRef} />
+                {signatureError && (
+                  <p className="text-xs text-red-600 mt-1">
+                    Dibuja tu firma antes de continuar.
+                  </p>
+                )}
+              </div>
+
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -185,7 +217,7 @@ export function SignContractPage() {
                 />
                 <span className="text-xs text-muted-foreground">
                   He leído el contrato y acepto sus términos. Entiendo que al firmar
-                  se registrará mi nombre, la fecha, la hora y mi dirección IP.
+                  se registrará mi nombre, mi firma, la fecha, la hora y mi dirección IP.
                 </span>
               </label>
 

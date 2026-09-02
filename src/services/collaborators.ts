@@ -17,6 +17,16 @@ import { db } from '@/lib/firebase'
 export type CollaboratorStatus = 'activo' | 'inactivo'
 export type CollaboratorInvitationStatus = 'pendiente' | 'aceptada'
 
+// Un Collaborator es siempre un despacho o profesional EXTERNO, con su
+// propio RNSP distinto al del despacho titular — nunca un detective
+// dependiente del propio despacho (esos son members de firms/{firmId}/
+// members con dependencyType:'dependent', y trabajan bajo el mismo RNSP
+// sin necesitar ningún contrato: el cliente contrata "al despacho con
+// RNSP X", y cualquier detective de ese despacho, titular o dependiente,
+// puede intervenir, dejando constancia de qué actuación hizo cada uno).
+// Por eso todo Collaborator, al ser siempre externo, requiere en algún
+// momento un contrato de colaboración entre despachos (Ley 5/2014) — ver
+// la tarjeta "Contrato de colaboración" en CollaboratorDetailPage.tsx.
 export interface Collaborator {
   id: string
   firmId: string
@@ -47,12 +57,6 @@ export interface Collaborator {
   // así la página pública de invitación no necesita permiso para leer
   // `firms/{firmId}` (a la que un colaborador sin cuenta aún no pertenece).
   inviterFirmName?: string
-  // Un colaborador dependiente trabaja bajo la estructura del propio
-  // despacho (como un detective más, aunque no conste en `members`) y no
-  // necesita un contrato de colaboración aparte — a diferencia de un
-  // despacho o profesional independiente subcontratado, que sí lo
-  // necesita (Ley 5/2014).
-  esDependiente: boolean
 }
 
 export interface CreateCollaboratorData {
@@ -69,7 +73,6 @@ export interface CreateCollaboratorData {
   tienePlataforma?: boolean
   invitedEmail?: string
   inviterFirmName?: string
-  esDependiente?: boolean
 }
 
 function toDate(val: unknown): Date {
@@ -103,7 +106,6 @@ function mapCollaborator(id: string, data: Record<string, unknown>): Collaborato
     linkedUserId: data.linkedUserId as string | undefined,
     linkedUserEmail: data.linkedUserEmail as string | undefined,
     inviterFirmName: data.inviterFirmName as string | undefined,
-    esDependiente: (data.esDependiente as boolean) ?? false,
   }
 }
 
@@ -156,7 +158,6 @@ export async function createCollaborator(
   } else {
     cleanData.tienePlataforma = false
   }
-  cleanData.esDependiente = data.esDependiente ?? false
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id
@@ -239,7 +240,6 @@ export async function updateCollaborator(
   if (data.address !== undefined) cleanData.address = data.address
   if (data.notes !== undefined) cleanData.notes = data.notes
   if (data.status !== undefined) cleanData.status = data.status
-  if (data.esDependiente !== undefined) cleanData.esDependiente = data.esDependiente
 
   await updateDoc(ref, cleanData)
 }

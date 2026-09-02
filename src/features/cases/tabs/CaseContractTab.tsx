@@ -63,10 +63,10 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
     setShowCreate(false)
   }
 
-  const handleSign = async (contractId: string, signedByName: string) => {
+  const handleSign = async (contractId: string, signedByName: string, signatureDataUrl: string | null) => {
     if (!user || !user.firmId) return
 
-    await sign(contractId, signedByName)
+    await sign(contractId, signedByName, signatureDataUrl)
 
     try {
       const firmDoc = await getDoc(doc(db, 'firms', user.firmId))
@@ -75,6 +75,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
       let clientName = 'Sin cliente'
       let clientTaxId = ''
       let clientType: 'individual' | 'corporate' = 'individual'
+      let clientAddress = ''
 
       if (caseData.clientId) {
         const clientDoc = await getDoc(doc(db, 'firms', user.firmId, 'clients', caseData.clientId))
@@ -83,6 +84,10 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
           clientName = clientData.legalName as string
           clientTaxId = (clientData.taxId as string) || ''
           clientType = clientData.clientType as 'individual' | 'corporate'
+          const address = clientData.address as Record<string, string> | undefined
+          if (address) {
+            clientAddress = `${address.street}, ${address.postalCode} ${address.city} (${address.province})`
+          }
         }
       }
 
@@ -96,6 +101,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
         clientName,
         clientTaxId,
         clientType,
+        clientAddress,
         investigationObject: caseData.objectScope || caseData.description,
         investigatedName: caseData.investigatedName,
         investigatedAddress: caseData.investigatedAddress,
@@ -265,6 +271,14 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
                     <p className="text-foreground">{contract.signedByName}</p>
                   </div>
                 )}
+                {contract.signatureDataUrl && (
+                  <div>
+                    <p className="text-muted-foreground mb-1">Firma</p>
+                    <div className="p-2 border border-border rounded-lg bg-white inline-block">
+                      <img src={contract.signatureDataUrl} alt="Firma" className="h-12" />
+                    </div>
+                  </div>
+                )}
                 {contract.signedIp && (
                   <div>
                     <p className="text-muted-foreground">IP de firma</p>
@@ -323,7 +337,7 @@ export function CaseContractTab({ caseData, onCaseUpdated }: CaseContractTabProp
           open={true}
           contract={selectedContract}
           onClose={() => setSelectedContract(null)}
-          onSign={(name) => handleSign(selectedContract.id, name)}
+          onSign={(name, sig) => handleSign(selectedContract.id, name, sig)}
           onUploadDocument={(file) => handleUpload(selectedContract.id, file)}
         />
       )}
