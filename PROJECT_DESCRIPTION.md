@@ -1707,16 +1707,28 @@ dispositivo/pestaña) y vuelve a la misma sesión del navegador se
 quedaría con `permission-denied` en todo lo que dependa de su email
 verificado, sin ningún mensaje de error claro.
 
-**Arreglado en `AuthContext.tsx`**: en el listener de
-`onAuthStateChanged`, si `fbUser.emailVerified` es `false` al
-recuperar la sesión, se llama a `fbUser.reload()` seguido de
-`fbUser.getIdToken(true)` antes de resolver el tipo de usuario — esto
-refresca tanto el estado local como el JWT real que usan las reglas.
-Se limita a este caso (en vez de hacerlo siempre) para no añadir una
-llamada de red extra en cada carga de página para el resto de sesiones
-ya verificadas.
+**Primer intento (insuficiente)**: refrescar el token solo cuando
+`fbUser.emailVerified` fuera `false` al recuperar la sesión. No bastaba
+— comprobado por API REST (`accounts:signInWithPassword` +
+`accounts:lookup`) que la cuenta sí estaba verificada de verdad en el
+servidor, y aun así el portal seguía fallando. Motivo:
+`fbUser.emailVerified` viene del **perfil** de la cuenta, que sí se
+refresca solo al recuperar la sesión persistida — pero el **JWT
+cacheado en sí** (lo único que las reglas de Firestore pueden leer vía
+`request.auth.token.email_verified`) no se renueva hasta su expiración
+natural. Es decir, `fbUser.emailVerified` puede leer `true` mientras el
+token que de verdad viaja en cada petición sigue firmado con `false` —
+la comprobación `if (!fbUser.emailVerified)` nunca detectaba este
+desajuste porque miraba el dato equivocado.
+
+**Arreglado de verdad**: en vez de mirar solo `fbUser.emailVerified`,
+se compara contra el claim `email_verified` del token ya cacheado
+(`fbUser.getIdTokenResult()`, sin forzar — solo decodifica el JWT en
+memoria, no cuesta red) y, si no coinciden, se fuerza la renovación con
+`fbUser.getIdToken(true)`. Así solo se paga la llamada de red extra
+cuando de verdad hay un desajuste, no en cada carga de página.
 
 Verificado en producción con la cuenta demo de portal
-(`gaepmalaga+mariaportal@gmail.com`): tras el fix, el portal carga el
-expediente y el importe del presupuesto correctamente en la misma
-sesión que antes fallaba.
+(`gaepmalaga+mariaportal@gmail.com`): tras este segundo fix, el portal
+carga el expediente y el importe del presupuesto correctamente en la
+misma sesión que antes fallaba dos veces seguidas.
