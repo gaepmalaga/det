@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ShieldCheck, Handshake } from 'lucide-react'
 import { useCaseDetail, useCases } from '@/hooks/useCases'
 import { useCollaborators } from '@/hooks/useCollaborators'
@@ -31,7 +31,13 @@ export function CaseDetailPage() {
   const { caseData, loading, error, reload: reloadDetail } = useCaseDetail(caseId ?? '')
   const { changeStatus, update, reload } = useCases()
   const { collaborators } = useCollaborators()
-  const [activeTab, setActiveTab] = useState('resumen')
+  // La pestaña va en la URL para poder enlazar directamente a ella: desde
+  // Hoy se entra a anotar una actuación, no al resumen del expediente.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requested = searchParams.get('tab')
+  const activeTab = TABS.some((t) => t.id === requested) ? requested! : 'resumen'
+  const setActiveTab = (tab: string) =>
+    setSearchParams(tab === 'resumen' ? {} : { tab }, { replace: true })
   const [changingStatus, setChangingStatus] = useState(false)
 
 const handleCaseUpdated = useCallback(() => {

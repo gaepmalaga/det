@@ -6,9 +6,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { SignContractPage } from '@/features/sign/SignContractPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { ContactsPage } from '@/features/contacts/ContactsPage'
 import { ContactDetailPage } from '@/features/contacts/ContactDetailPage'
-import { QuotesPage } from '@/features/quotes/QuotesPage'
 import { CasesPage } from '@/features/cases/CasesPage'
 import { CaseDetailPage } from '@/features/cases/CaseDetailPage'
 import { ClientsPage } from '@/features/clients/ClientsPage'
@@ -16,6 +14,9 @@ import { ClientDetailPage } from '@/features/clients/ClientDetailPage'
 import { ContractsPage } from '@/features/contracts/ContractsPage'
 import { RegistryBookPage } from '@/features/registry/RegistryBookPage'
 import { RegistryEntryPage } from '@/features/registry/RegistryEntryPage'
+import { ArchivePage } from '@/features/registry/ArchivePage'
+import { TodayPage } from '@/features/today/TodayPage'
+import { OpportunitiesPage } from '@/features/opportunities/OpportunitiesPage'
 import { CompliancePage } from '@/features/compliance/CompliancePage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { PortalLoginPage } from '@/features/portal/PortalLoginPage'
@@ -60,10 +61,19 @@ export function AppRouter() {
             </RouteGuard>
           }
         >
+          <Route index element={<Navigate to={ROUTES.TODAY} replace />} />
+          <Route path="today" element={<TodayPage />} />
+          <Route path="archive" element={<ArchivePage />} />
+          <Route path="opportunities" element={<OpportunitiesPage />} />
+
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="contacts" element={<ContactsPage />} />
           <Route path="contacts/:contactId" element={<ContactDetailPage />} />
-          <Route path="quotes" element={<QuotesPage />} />
+
+          {/* Contactos y Presupuestos eran dos pantallas de lo mismo:
+              ahora son Oportunidades. Se mantienen como redirección para
+              que no se rompa un enlace guardado ni el historial de nadie. */}
+          <Route path="contacts" element={<Navigate to={ROUTES.OPPORTUNITIES} replace />} />
+          <Route path="quotes" element={<Navigate to={ROUTES.OPPORTUNITIES} replace />} />
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/:clientId" element={<ClientDetailPage />} />
           <Route path="cases" element={<CasesPage />} />

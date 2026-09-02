@@ -15,6 +15,16 @@ export const ROUTES = {
   COLLABORATOR_INVITE: '/collab-invite/:firmId/:collaboratorId',
 
   // App — Despacho
+  // La navegación se apoya en seis destinos, no en uno por colección:
+  // Hoy (lo que se trabaja), Archivo (todo lo cerrado y abierto, por años),
+  // Oportunidades (quien todavía no es cliente), Clientes, Colaboradores y
+  // Configuración. Contratos, informes y actuaciones no son destinos: se
+  // ven dentro del asunto al que pertenecen.
+  TODAY: '/app/today',
+  ARCHIVE: '/app/archive',
+  OPPORTUNITIES: '/app/opportunities',
+  REGISTRY_ENTRY: '/app/registry-book/:entryId',
+
   DASHBOARD: '/app/dashboard',
   CONTACTS: '/app/contacts',
   CONTACT_DETAIL: '/app/contacts/:contactId',

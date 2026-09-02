@@ -1,17 +1,14 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  FolderOpen,
+  Sun,
+  Archive,
   Users,
-  FileText,
   BookOpen,
   ShieldCheck,
-  Receipt,
   Handshake,
   Building2,
   Settings,
   LogOut,
-  Inbox,
   X,
   Fingerprint,
   TrendingUp,
@@ -20,19 +17,24 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/lib/utils'
 
+// Seis destinos, no uno por colección de la base de datos. Un contrato o
+// un informe no son sitios a los que se va: son papeles de un asunto, y se
+// ven dentro de él. Lo que sí es un sitio es el día de hoy, el archivo del
+// despacho y la gente que todavía no ha contratado.
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: ROUTES.DASHBOARD },
-  { label: 'Contactos', icon: Inbox, to: ROUTES.CONTACTS },
-  { label: 'Presupuestos', icon: Receipt, to: ROUTES.QUOTES },
+  { label: 'Hoy', icon: Sun, to: ROUTES.TODAY },
+  { label: 'Archivo', icon: Archive, to: ROUTES.ARCHIVE },
+  { label: 'Oportunidades', icon: Handshake, to: ROUTES.OPPORTUNITIES },
   { label: 'Clientes', icon: Users, to: ROUTES.CLIENTS },
-  { label: 'Expedientes', icon: FolderOpen, to: ROUTES.CASES },
+  { label: 'Colaboradores', icon: Building2, to: ROUTES.COLLABORATORS },
+]
+
+// Fuera del bloque principal: se consultan de vez en cuando, no se
+// trabajan a diario.
+const secondaryItems = [
   { label: 'Libro-registro', icon: BookOpen, to: ROUTES.REGISTRY_BOOK },
-  { label: 'Contratos', icon: FileText, to: ROUTES.CONTRACTS },
-  { label: 'Informes', icon: FileText, to: ROUTES.REPORTS },
   { label: 'Cumplimiento', icon: ShieldCheck, to: ROUTES.COMPLIANCE },
   { label: 'Estadísticas', icon: TrendingUp, to: ROUTES.STATS },
-  { label: 'Colaboradores', icon: Handshake, to: ROUTES.COLLABORATORS },
-  { label: 'Equipo', icon: Building2, to: ROUTES.TEAM },
 ]
 
 interface AppSidebarProps {
@@ -112,6 +114,30 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
             </li>
           ))}
         </ul>
+
+        <div className="mt-5 pt-4 border-t border-sidebar-border">
+          <ul className="space-y-0.5">
+            {secondaryItems.map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    cn(
+                      'relative flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
+                    )
+                  }
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1">{item.label}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
       </nav>
 
       {/* Footer */}

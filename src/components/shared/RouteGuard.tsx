@@ -40,7 +40,7 @@ export function RouteGuard({ children, allowedTypes }: RouteGuardProps) {
     if (user.userType === 'collaborator') {
       return <Navigate to={ROUTES.COLLABORATE} replace />
     }
-    return <Navigate to={ROUTES.DASHBOARD} replace />
+    return <Navigate to={ROUTES.TODAY} replace />
   }
 
   return <>{children}</>

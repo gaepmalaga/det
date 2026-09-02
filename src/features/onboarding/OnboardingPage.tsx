@@ -113,7 +113,7 @@ export function OnboardingPage() {
       })
 
       await refreshUser()
-      navigate(ROUTES.DASHBOARD)
+      navigate(ROUTES.TODAY)
     } catch (err) {
       console.error(err)
       setError('Error al crear el despacho. Inténtalo de nuevo.')
