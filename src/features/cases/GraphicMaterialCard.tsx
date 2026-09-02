@@ -24,7 +24,14 @@ export function GraphicMaterialCard({ caseData, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const status = retentionStatus(caseData)
+  // Sobre lo que hay en el formulario, no sobre lo guardado: en cuanto se
+  // marca la casilla el detective tiene que ver la fecha de destrucción,
+  // sin tener que guardar primero para descubrirla.
+  const status = retentionStatus({
+    ...caseData,
+    hasGraphicMaterial: has,
+    hasActiveException: held,
+  })
   const destroyed = !!caseData.graphicMaterialDestroyedAt
 
   const handleSave = async () => {
