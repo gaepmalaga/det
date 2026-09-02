@@ -1691,3 +1691,32 @@ supervisión), esto no bloqueó nada — pero conviene tenerlo presente si
 en el futuro se activa App Check forzado para más productos: probar
 desde un navegador real, no automatizado, antes de dar por rota una
 función.
+
+**Segunda causa del mismo síntoma, más de fondo**: tras desplegar la
+regla de `quotes` de arriba, el portal seguía dando
+`permission-denied`. Causa real: el token JWT de sesión no se
+actualiza solo cuando el email se verifica en **otra pestaña o
+dispositivo** — `fbUser.emailVerified` en el cliente sí se refresca
+(por eso la pantalla de "verifica tu email" desaparece correctamente),
+pero `request.auth.token.email_verified`, que es lo único que
+`isVerifiedEmail()`/`isPortalClientForCase()` pueden ver del lado del
+servidor, sigue siendo `false` en el JWT cacheado hasta que expira por
+sí solo (hasta 1 hora) o se fuerza su renovación. Un cliente que se
+registra, verifica el email desde el correo (normalmente en otro
+dispositivo/pestaña) y vuelve a la misma sesión del navegador se
+quedaría con `permission-denied` en todo lo que dependa de su email
+verificado, sin ningún mensaje de error claro.
+
+**Arreglado en `AuthContext.tsx`**: en el listener de
+`onAuthStateChanged`, si `fbUser.emailVerified` es `false` al
+recuperar la sesión, se llama a `fbUser.reload()` seguido de
+`fbUser.getIdToken(true)` antes de resolver el tipo de usuario — esto
+refresca tanto el estado local como el JWT real que usan las reglas.
+Se limita a este caso (en vez de hacerlo siempre) para no añadir una
+llamada de red extra en cada carga de página para el resto de sesiones
+ya verificadas.
+
+Verificado en producción con la cuenta demo de portal
+(`gaepmalaga+mariaportal@gmail.com`): tras el fix, el portal carga el
+expediente y el importe del presupuesto correctamente en la misma
+sesión que antes fallaba.

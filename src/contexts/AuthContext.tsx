@@ -161,6 +161,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
+        if (!fbUser.emailVerified) {
+          // El estado persistido (IndexedDB) puede venir de antes de
+          // verificar el email en otra pestaña o dispositivo — reload()
+          // refresca fbUser.emailVerified, pero el token JWT en sí (lo
+          // único que ven las reglas de Firestore vía
+          // request.auth.token.email_verified) no se renueva solo hasta
+          // su expiración natural. Sin este getIdToken(true), un usuario
+          // recién verificado seguiría viendo permission-denied en todo
+          // lo que dependa de isVerifiedEmail() del lado del servidor,
+          // aunque la UI ya no muestre el aviso de verificación.
+          await fbUser.reload()
+          await fbUser.getIdToken(true)
+        }
         setFirebaseUser(fbUser)
         const appUser = await resolveUserType(fbUser)
         setUser(appUser)
