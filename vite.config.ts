@@ -10,6 +10,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // El registro lo hace src/lib/appUpdate.ts, que además comprueba
+      // versiones nuevas cada media hora; dejar aquí el automático
+      // registraría el service worker dos veces.
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png'],
       manifest: {
         name: 'DetectiveOS',
