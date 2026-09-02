@@ -165,7 +165,7 @@ function drawSide(
   const columns = groups.flatMap((g) => g.columns)
   const tableW = widthOf(groups)
   const startX = (pageW - tableW) / 2
-  const [from, to] = folioRange(folio.number, config)
+  const [from] = folioRange(folio.number, config)
 
   // ── Encabezado ──
   doc.setFont('helvetica', 'bold').setFontSize(10)
@@ -176,7 +176,7 @@ function drawSide(
   )
   doc.setFont('helvetica', 'normal').setFontSize(7.5).setTextColor(70)
   doc.text(
-    `Nº de registro (RNSP): ${firm.rnsp || '—'}   ·   Orden INT/318/2011, Anexo VII   ·   Asientos ${from} a ${to}`,
+    `Nº de registro (RNSP): ${firm.rnsp || '—'}   ·   Orden INT/318/2011, Anexo VII`,
     startX,
     TOP + 4.5
   )
@@ -266,12 +266,10 @@ function drawSide(
   const footer = d
     ? `Libro habilitado por diligencia ${d.reference} de ${fmtDate(d.date)}, ${d.authority} — ${d.foliosAuthorized} folios.`
     : 'Diligencia de habilitación pendiente de registrar en la plataforma.'
+  // Sin fecha de impresión ni recuento: lo que se imprime aquí es una
+  // hoja del libro, y en una hoja del libro no va nada que no sea el
+  // libro. Cuándo se imprimió cada folio queda registrado en la
+  // plataforma, que es donde hace falta.
   doc.text(footer, startX, pageH - 8)
-  doc.text(
-    `Impreso el ${format(new Date(), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}`,
-    pageW - startX,
-    pageH - 8,
-    { align: 'right' }
-  )
   doc.setTextColor(0)
 }

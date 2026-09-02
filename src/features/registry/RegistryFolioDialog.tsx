@@ -10,7 +10,6 @@ import {
   type Folio,
   type RegistryBookConfig,
 } from '@/services/registryFolios'
-import { exportRegistryToCsv } from '@/services/registryExport'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import type { RegistryEntry } from '@/types'
 
@@ -197,11 +196,19 @@ export function RegistryFolioDialog({ open, entries, onClose, onPrinted }: Props
             {!exported ? (
               <div className="flex gap-3">
                 <button
-                  onClick={() => firm && exportRegistryToCsv(entries, firm.rnsp)}
+                  onClick={async () => {
+                    if (!firm) return
+                    // Carga diferida: el generador arrastra JSZip y no
+                    // tiene por qué pesar en el arranque.
+                    const { exportRegistryToXlsx } = await import(
+                      '@/services/registryXlsx'
+                    )
+                    await exportRegistryToXlsx(entries, firm.rnsp)
+                  }}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
                 >
                   <Download className="w-4 h-4" />
-                  Copia en CSV
+                  Copia en Excel
                 </button>
                 <button
                   onClick={handleExport}
