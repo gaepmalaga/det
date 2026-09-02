@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { RegistryOffensesDialog } from './RegistryOffensesDialog'
-import { RegistryExportDialog } from './RegistryExportDialog'
+import { RegistryFolioDialog } from './RegistryFolioDialog'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RegistryEntry } from '@/types'
@@ -359,11 +359,11 @@ export function RegistryBookPage() {
       )}
 
       {showExport && (
-        <RegistryExportDialog
+        <RegistryFolioDialog
           open={true}
           entries={entries}
           onClose={() => setShowExport(false)}
-          onMarkedPrinted={() => setShowExport(false)}
+          onPrinted={() => setShowExport(false)}
         />
       )}
     </div>

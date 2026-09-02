@@ -3,6 +3,7 @@ import { BookOpen, Save } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { peekSequenceNumber, setNextSequenceNumber } from '@/services/counters'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { RegistryFolioSettings } from './RegistryFolioSettings'
 
 // El libro de papel manda: un despacho que llega con 200 asuntos anotados
 // tiene que continuar en el 201, no volver a empezar. Y como alguien
@@ -64,6 +65,7 @@ export function RegistryBookTab() {
   const changed = nextNumber !== null && Number(value) !== nextNumber
 
   return (
+    <div className="space-y-5">
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
@@ -119,5 +121,8 @@ export function RegistryBookTab() {
         {saving ? 'Guardando...' : 'Guardar numeración'}
       </button>
     </form>
+
+    <RegistryFolioSettings />
+    </div>
   )
 }
