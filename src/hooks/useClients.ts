@@ -90,5 +90,16 @@ export function useClientDetail(clientId: string) {
     load()
   }, [load])
 
-  return { client, loading, error, reload: load }
+  const update = async (data: Partial<CreateClientData>) => {
+    if (!firmId || !clientId) return
+    try {
+      await updateClient(firmId, clientId, data)
+      await load()
+    } catch (err) {
+      console.error(err)
+      setError('Error al actualizar el cliente.')
+    }
+  }
+
+  return { client, loading, error, update, reload: load }
 }

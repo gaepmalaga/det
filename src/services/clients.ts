@@ -12,7 +12,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import type { Client, ContactType, CorporateType } from '@/types'
+import type { Client, ClientAddress, ContactType, CorporateType } from '@/types'
 
 function toDate(val: unknown): Date {
   if (!val) return new Date()
@@ -60,6 +60,7 @@ export interface CreateClientData {
   taxId?: string
   email: string
   phone: string
+  address?: ClientAddress
   convertedFromContactId?: string
 }
 
@@ -114,6 +115,7 @@ export async function createClient(
   if (data.corporateType) cleanData.corporateType = data.corporateType
   if (data.tradeName) cleanData.tradeName = data.tradeName
   if (data.taxId) cleanData.taxId = data.taxId
+  if (data.address) cleanData.address = data.address
   if (data.convertedFromContactId) cleanData.convertedFromContactId = data.convertedFromContactId
 
   const docRef = await addDoc(ref, cleanData)
@@ -138,6 +140,7 @@ export async function updateClient(
   if (data.taxId) cleanData.taxId = data.taxId
   if (data.tradeName) cleanData.tradeName = data.tradeName
   if (data.corporateType) cleanData.corporateType = data.corporateType
+  if (data.address !== undefined) cleanData.address = data.address
 
   await updateDoc(ref, cleanData)
 }
