@@ -1808,18 +1808,19 @@ resultados, conclusiones/observaciones y, si procede, entrega).
   con el mismo mecanismo manual (`<a download>` + `URL.createObjectURL`
   + `.click()`) ya usado para el `.docx`, en vez de confiar en el
   `.save()` interno de jsPDF.
-- **Verificación**: no se pudo probar por la UI completa en local
-  porque el login de email/contraseña falla en `localhost` — la clave
-  de sitio de reCAPTCHA v3 de App Check solo tiene registrado el dominio
-  de producción, así que cualquier llamada de Auth que dependa de un
-  token de App Check falla con `appCheck/recaptcha-error` fuera de
+- **Verificación**: no se pudo probar por la UI completa en `localhost`
+  porque el login de email/contraseña falla ahí — la clave de sitio de
+  reCAPTCHA v3 de App Check solo tiene registrado el dominio de
+  producción, así que cualquier llamada de Auth que dependa de un token
+  de App Check falla con `appCheck/recaptcha-error` fuera de
   `detectivesprivadosesp.web.app` (limitación conocida del entorno, no
-  un bug de esta funcionalidad). En su lugar se probó cargando
-  directamente el chunk compilado de `reportExport` en el navegador con
-  datos de informe simulados y se interceptó `URL.createObjectURL` para
-  inspeccionar el blob generado en cada caso: cabecera `%PDF` y tamaño
-  de ~6 KB para el PDF, cabecera de ZIP válida (`PK\x03\x04`) y tamaño
-  de ~9 KB para el `.docx`, sin ninguna excepción en ninguno de los dos
-  casos. **Pendiente para el usuario**: confirmar visualmente el
-  resultado (maquetación, saltos de página, tildes/eñes) abriendo un
-  informe real ya entregado en producción y pulsando ambos botones.
+  un bug de esta funcionalidad). Se probó primero cargando el chunk
+  compilado de `reportExport` con datos de informe simulados e
+  interceptando `URL.createObjectURL` para inspeccionar el blob
+  generado: cabecera `%PDF` y cabecera de ZIP válida (`PK\x03\x04`) para
+  el `.docx`, sin ninguna excepción. Después, ya desplegado en
+  producción, se repitió la prueba con un informe real (EXP-0002,
+  entregado a Laura Ortega Campos) pulsando los botones "Exportar PDF" /
+  "Exportar Word" de verdad desde la UI: ambos generaron su blob
+  correctamente (PDF de 7.939 bytes, `.docx` de 9.729 bytes) sin ningún
+  error nuevo en consola.
