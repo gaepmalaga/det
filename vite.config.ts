@@ -9,9 +9,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      // El registro lo hace src/lib/appUpdate.ts, que además comprueba
-      // versiones nuevas cada media hora; dejar aquí el automático
+      // 'prompt', no 'autoUpdate': en modo autoUpdate el service worker
+      // llama él mismo a skipWaiting y no incluye el receptor de mensajes
+      // SKIP_WAITING, así que si por lo que sea se queda en espera —y se
+      // quedaba— la página no tiene forma de activarlo. En modo prompt el
+      // control lo lleva src/lib/appUpdate.ts, que sí puede.
+      registerType: 'prompt',
+      // El registro lo hace también appUpdate.ts; dejar aquí el automático
       // registraría el service worker dos veces.
       injectRegister: null,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png'],
