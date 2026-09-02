@@ -2324,3 +2324,48 @@ De paso se quitó el recargado automático: le arrancaría a alguien un
 parte de actuación a medio escribir. Ahora aparece una barra discreta
 abajo con «Actualizar», y la versión nueva entra sola en cuanto se pasa
 a otra pestaña o a otra aplicación, que es cuando no molesta.
+
+## El folio pasa a ser dos caras apaisadas enfrentadas (2026-09-02)
+
+Confirmado con el despacho: en una sola cara las diez columnas salen
+demasiado estrechas para escribir en ellas. El modelo del Anexo VII las
+reparte, además, en dos páginas que se leen enfrentadas.
+
+Cada folio son ahora **dos caras A4 apaisadas** consecutivas en el PDF
+(izquierda, derecha, izquierda, derecha...), para imprimir a una cara y
+colocarlas emparejadas:
+
+- **Cara izquierda**: Número de orden · [Encargo de investigación: fecha
+  de inicio, fecha de finalización, asunto] · [Contratante: nombre y
+  apellidos o razón social, domicilio/localidad].
+- **Cara derecha**: [Investigado: nombre y apellidos o razón social,
+  domicilio/localidad] · Delitos perseguibles de oficio conocidos ·
+  Órgano al que se comunicaron.
+
+Las dos comparten arranque de rejilla y alto de fila —es lo que hace que
+las líneas casen al ponerlas una al lado de la otra— y llevan el mismo
+nº de folio, la derecha marcada como «cara derecha · continuación».
+
+Al repartirse en dos caras las columnas ganan sitio: el asunto pasa de
+47 a 85 mm y los domicilios de 33 a 65.
+
+Verificado en producción renderizando el PDF: dos páginas, los grupos de
+cabecera en su sitio, los dos asientos en el mismo orden en ambas caras
+y la línea de separación entre ellos a la misma altura.
+
+## Bug real: la salida de emergencia del service worker (2026-09-02)
+
+Verificando la doble cara, la barra de «Actualizar» apareció sola —el
+mecanismo nuevo funciona— pero al pulsarla no pasaba nada. El service
+worker que estaba en espera venía de la versión generada en modo
+`autoUpdate`, que no incluye el receptor del mensaje `SKIP_WAITING`: ni
+`updateSW` ni un `postMessage` directo lo mueven, porque no hay nadie
+escuchando al otro lado. Comprobado enviando el mensaje a mano desde la
+consola: el worker seguía en `installed`.
+
+Eso le ocurriría a **cualquier instalación existente** al dar el salto, y
+la dejaría congelada en la versión vieja para siempre. Así que
+`appUpdate.ts` tiene ahora salida de emergencia: si el worker no toma el
+control en cuatro segundos, se borra junto con sus cachés y se recarga en
+frío. Cuesta una recarga lenta y solo ocurre una vez, al salir de esa
+situación.
