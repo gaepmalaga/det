@@ -2532,3 +2532,43 @@ Málaga (Málaga)», «Andalucía». Y en el PDF, confirmado que ya no
 aparecen ni «Impreso el» ni el rango de asientos.
 
 Se borra `registryExport.ts`, que solo contenía ya el CSV.
+
+## Página pública y demostración aislada por visitante (2026-09-02)
+
+La raíz `/` deja de ser una redirección al login y pasa a ser la página
+desde la que se entra a probar la plataforma (`features/landing`).
+
+**Cuenta dos cosas, no diez.** Un despacho no cambia de forma de trabajar
+porque le enseñes una lista de funciones: cambia porque le quitas de
+encima lo que más tiempo le come. Y eso son dos cosas — anotar las
+actuaciones sobre la marcha, con hora y ubicación, para que el informe se
+levante sobre lo ya anotado; y tener el libro-registro impreso en formato
+Anexo VII. Todo lo demás (conservación, cumplimiento, portal, colaboración)
+sobra en una primera visita y solo abruma.
+
+**Tres puertas — despacho, colaborador, cliente — que entran directas, sin
+registro.** Cada visita recibe **su propio despacho**: `services/demoSession.ts`
+crea una cuenta al vuelo con un dominio inexistente a propósito
+(`@demo.detectiveos.invalid`, no puede recibir correo), monta el despacho,
+la ficha de miembro y el índice de usuario, y lo rellena con `seedDemoData`.
+
+No es un modo de solo lectura ni un simulador: es la plataforma de verdad
+con datos que solo existen para esa persona. Puede anotar actuaciones,
+crear presupuestos, cerrar asuntos e imprimir el libro sin tocar los datos
+de nadie ni estropearle la demostración al siguiente. Los despachos así
+creados quedan marcados con `isDemo: true` para poder purgarlos.
+
+**Bug encontrado al probarlo**: se entraba en la pantalla de «Configura tu
+despacho». Firebase avisa del inicio de sesión **antes** de que exista el
+despacho, así que la aplicación ya había resuelto que ese usuario no tenía
+ninguno; y `refreshUser()` no lo arreglaba porque captura el usuario de
+antes del alta. Se entra ahora con una recarga completa
+(`window.location.assign`), que resuelve en frío con el despacho ya creado
+y relleno. Verificado en producción: pulsar «Soy un despacho» abre un
+despacho nuevo con su libro y sus asuntos en unos segundos.
+
+**Pendiente de la consola de Firebase**: el acceso anónimo está
+desactivado (`ADMIN_ONLY_OPERATION`). Habilitándolo —un interruptor en
+Authentication → Sign-in method— la demostración dejaría de crear cuentas
+de correo ficticias y usaría sesiones anónimas, que es más limpio. El
+cambio en el código es de una línea.
