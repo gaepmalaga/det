@@ -2248,3 +2248,79 @@ Verificado en producción: las tres pantallas nuevas, el sidebar con los
 9 enlaces, las dos redirecciones, y Oportunidades mostrando los 5
 contactos demo repartidos correctamente (2 presupuesto enviado con sus
 botones Aceptar/Rechazar, 2 contratados, 1 descartado).
+
+## El libro se imprime por folios, con la geometría del Anexo VII (2026-09-02)
+
+La ley permite llevar el libro-registro en soporte informático, pero
+para valer como libro tiene que acabar impreso sobre hojas numeradas y
+selladas, con la diligencia de habilitación de la unidad policial. Eso
+impone dos condiciones que un listado corrido no cumple:
+
+1. **Cada asiento tiene que caer siempre en el mismo folio y la misma
+   fila**, se imprima hoy o dentro de un año.
+2. **Un folio impreso no se reimprime**: la hoja sellada es única.
+
+La exportación anterior fluía libremente entre páginas, con filas de
+alto variable según lo largo que fuera el texto. Era imposible saber qué
+asientos caían en qué folio, y no había forma de reimprimir el folio 7.
+
+**`services/registryFolios.ts`** convierte el libro en una rejilla:
+`folioOf(nº)`, `folioRange(folio)` y `buildFolios()` reparten los
+asientos en folios de N filas, y cada folio queda en uno de tres
+estados: `incompleto` (aún caben asientos), `completo` (listo para
+imprimir) o `impreso`.
+
+**`services/registryFolioExport.ts`** dibuja un folio por página:
+- Cabecera de dos niveles calcada del modelo: «Número de orden» suelto y
+  los grupos **Encargo de investigación**, **Contratante** e
+  **Investigado** sobre sus columnas, más las dos de delitos sueltas.
+- El nº de folio grande arriba a la derecha, para casarlo con la hoja
+  sellada; la diligencia de habilitación al pie, que es donde un
+  inspector la busca.
+- Las filas vacías se dibujan igual: el folio ocupa la hoja entera.
+- Una celda nunca desborda su fila; el texto largo se recorta con «…».
+  El libro es un índice, no el archivo — el asiento completo está en el
+  PDF del asunto.
+
+**Configuración → Libro-registro** describe ahora el libro físico
+(asientos por folio, folio de arranque, asiento que lo abre) y la
+diligencia de habilitación (fecha, unidad policial, referencia, folios
+habilitados). Los folios ya impresos se listan y no se reasignan aunque
+se cambien los números: la hoja ya está escrita.
+
+**`RegistryFolioDialog`** sustituye al diálogo de rangos de asientos,
+que no era la unidad que importa. Pregunta por folios y avisa de las dos
+cosas que estropean una hoja sellada: imprimir un folio a medias (los
+asientos que falten ya no cabrán) y reimprimir uno ya impreso.
+
+Verificado en producción con el despacho demo configurado a 2 asientos
+por folio: el folio 1 salió como «Asientos 1–2 · 2 de 2 escritos ·
+Listo», el PDF con los dos grupos de cabecera, los dos asientos
+completos y el pie «Libro habilitado por diligencia DIL-2026/0447 de
+15/01/2026, Comisaría Provincial de Málaga — 200 folios», y al marcarlo
+pasó a «Ya impreso», deseleccionado, con el aviso rojo al volver a
+marcarlo.
+
+Se borran `RegistryExportDialog.tsx` y `exportRegistryToPdf`, sin uso.
+El CSV se mantiene como copia de trabajo.
+
+## Bug real: la actualización se quedaba en espera y nunca entraba (2026-09-02)
+
+El arreglo del service worker de esta misma mañana **no funcionaba**, y
+se vio al verificar la fase siguiente: el worker nuevo quedaba instalado
+pero en estado `waiting` indefinidamente, y la aplicación seguía
+ejecutando la versión anterior recarga tras recarga.
+
+Causa: con `registerType: 'autoUpdate'`, el service worker generado
+llama él mismo a `skipWaiting()` y **no incluye el receptor del mensaje
+`SKIP_WAITING`**, así que cuando por lo que sea se queda en espera la
+página no tiene ninguna forma de activarlo — y `onNeedRefresh` tampoco
+se invoca en ese modo, con lo que el callback de `appUpdate.ts` nunca
+llegaba a ejecutarse. Pasando a `registerType: 'prompt'`, el service
+worker sí trae el receptor (verificado en el `dist/sw.js` generado) y el
+control lo lleva la aplicación.
+
+De paso se quitó el recargado automático: le arrancaría a alguien un
+parte de actuación a medio escribir. Ahora aparece una barra discreta
+abajo con «Actualizar», y la versión nueva entra sola en cuanto se pasa
+a otra pestaña o a otra aplicación, que es cuando no molesta.
