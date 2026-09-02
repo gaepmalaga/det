@@ -64,6 +64,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const [generatingDraft, setGeneratingDraft] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
   const [draftGenerated, setDraftGenerated] = useState(false)
+  const [approveError, setApproveError] = useState<string | null>(null)
   const [exportingPdf, setExportingPdf] = useState(false)
   const [exportingDocx, setExportingDocx] = useState(false)
 
@@ -141,8 +142,31 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
     }
   }
 
+  // El art. 49.1 de la Ley 5/2014 fija el contenido mínimo del informe.
+  // Un borrador puede estar a medias —para eso es un borrador—, pero
+  // aprobarlo es decir que está terminado, y ahí sí tiene que estarlo.
+  const faltanEnInforme = (r: typeof report): string[] => {
+    if (!r) return []
+    const campos: Array<[string, string]> = [
+      [r.clientName, 'el contratante'],
+      [r.serviceObject, 'el objeto del servicio'],
+      [r.methodsUsed, 'los medios empleados'],
+      [r.actionsPerformed, 'las actuaciones practicadas'],
+      [r.results, 'los resultados'],
+    ]
+    return campos.filter(([v]) => !v?.trim()).map(([, n]) => n)
+  }
+
   const handleApprove = async () => {
     if (!report || !user || !user.firmId) return
+    const faltan = faltanEnInforme(report)
+    if (faltan.length > 0) {
+      setApproveError(
+        `Antes de aprobarlo falta ${faltan.join(', ')}. Un informe aprobado dice que está terminado.`
+      )
+      return
+    }
+    setApproveError(null)
     setSubmitting(true)
     try {
       await approve(report.id)
@@ -342,7 +366,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground">
-            {editing ? 'Editar informe' : 'Nuevo informe de investigación'}
+            {editing ? 'Editar el borrador' : 'Nuevo informe de investigación'}
           </h3>
           <button
             onClick={() => { setShowForm(false); setEditing(false); setDraftGenerated(false) }}
@@ -381,7 +405,6 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
                 name="clientName"
                 value={form.clientName}
                 onChange={handleChange}
-                required
                 className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Nombre completo del cliente"
               />
@@ -408,7 +431,6 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               name="serviceObject"
               value={form.serviceObject}
               onChange={handleChange}
-              required
               rows={3}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe el objeto de la investigación contratada..."
@@ -423,7 +445,6 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               name="methodsUsed"
               value={form.methodsUsed}
               onChange={handleChange}
-              required
               rows={3}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe los medios técnicos y humanos empleados..."
@@ -455,7 +476,6 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               name="actionsPerformed"
               value={form.actionsPerformed}
               onChange={handleChange}
-              required
               rows={6}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe cronológicamente las actuaciones realizadas durante la investigación..."
@@ -476,7 +496,6 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               name="results"
               value={form.results}
               onChange={handleChange}
-              required
               rows={4}
               className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none focus:border-primary"
               placeholder="Describe los resultados y hallazgos de la investigación..."
@@ -526,7 +545,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               disabled={submitting}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear informe'}
+              {submitting ? 'Guardando...' : editing ? 'Guardar cambios' : 'Guardar borrador'}
             </button>
           </div>
         </form>
@@ -597,6 +616,20 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
               </button>
             )}
           </div>
+
+          {report.status === 'borrador' && !isClosed && faltanEnInforme(report).length > 0 && (
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
+              Borrador a medias: falta {faltanEnInforme(report).join(', ')}. Puedes
+              dejarlo así y seguir otro día; para aprobarlo tendrá que estar
+              completo.
+            </p>
+          )}
+
+          {approveError && (
+            <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3">
+              {approveError}
+            </p>
+          )}
         </div>
 
         {/* Formulario de entrega */}

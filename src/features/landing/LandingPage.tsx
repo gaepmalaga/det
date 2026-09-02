@@ -6,8 +6,6 @@ import {
   BookOpen,
   ArrowRight,
   Briefcase,
-  Handshake,
-  UserRound,
   Loader2,
 } from 'lucide-react'
 import { startDemo, type DemoRole } from '@/services/demoSession'
@@ -16,31 +14,13 @@ import { ROUTES } from '@/constants/routes'
 // Dos cosas, no diez. Un despacho no cambia de forma de trabajar porque le
 // enseñes una lista de funciones: cambia porque le quitas de encima lo que
 // más tiempo le come. Aquí solo se cuentan esas dos, y se entra a probarlo.
-const PUERTAS: {
-  role: DemoRole
-  icon: React.ElementType
-  title: string
-  desc: string
-}[] = [
-  {
-    role: 'despacho',
-    icon: Briefcase,
-    title: 'Soy un despacho',
-    desc: 'El libro-registro, los asuntos y las actuaciones del día a día.',
-  },
-  {
-    role: 'colaborador',
-    icon: Handshake,
-    title: 'Colaboro con despachos',
-    desc: 'Cómo se reciben encargos y se reportan actuaciones a otro despacho.',
-  },
-  {
-    role: 'cliente',
-    icon: UserRound,
-    title: 'Soy cliente de uno',
-    desc: 'Lo que ve quien te contrata: estado del asunto e informe.',
-  },
-]
+// Una sola puerta. Colaborador y cliente entraban al panel del despacho,
+// que no es lo suyo: enseñar algo que no es lo que dice ser es peor que no
+// enseñarlo. Vuelven cuando tengan su propio escenario montado.
+const PUERTA = {
+  role: 'despacho' as DemoRole,
+  icon: Briefcase,
+}
 
 export function LandingPage() {
   const [loading, setLoading] = useState<DemoRole | null>(null)
@@ -318,38 +298,26 @@ export function LandingPage() {
             Se abre un despacho tuyo, con un año de archivo dentro, y puedes
             tocarlo todo: anotar actuaciones, crear presupuestos, imprimir el
             libro. Es tuyo y de nadie más — no altera los datos de nadie ni deja
-            rastro en el de al lado.
+            rastro en el de al lado. Dentro tienes una guía con qué probar.
           </p>
 
-          <div className="grid sm:grid-cols-3 gap-3">
-            {PUERTAS.map((p) => (
-              <button
-                key={p.role}
-                onClick={() => entrar(p.role)}
-                disabled={loading !== null}
-                className="text-left bg-card border border-border rounded-xl p-5 hover:border-brand-gold/50 hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-wait group"
-              >
-                <p.icon className="w-5 h-5 text-brand-gold mb-3" />
-                <p className="font-medium mb-1">{p.title}</p>
-                <p className="text-sm text-muted-foreground leading-snug mb-4">
-                  {p.desc}
-                </p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  {loading === p.role ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Preparando tu despacho...
-                    </>
-                  ) : (
-                    <>
-                      Entrar
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </>
-                  )}
-                </span>
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => entrar(PUERTA.role)}
+            disabled={loading !== null}
+            className="inline-flex items-center gap-2.5 px-6 py-3.5 text-base font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-wait"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Preparando tu despacho...
+              </>
+            ) : (
+              <>
+                <PUERTA.icon className="w-4 h-4" />
+                Abrir un despacho de prueba
+              </>
+            )}
+          </button>
 
           {loading && (
             <p className="text-sm text-muted-foreground mt-5">
