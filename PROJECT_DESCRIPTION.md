@@ -2091,3 +2091,105 @@ pero en un documento distinto (`registryBooks/{entryId}`, no
 que los informes: "Marta Sánchez Vega" en los dos asientos. El libro-
 registro demo queda ahora con las 10 columnas completas en ambos
 asientos.
+
+## Numeración correlativa: contador atómico y arranque configurable (2026-09-02)
+
+Las cinco numeraciones del despacho (asientos del libro, expedientes,
+contratos, presupuestos y contactos) se calculaban igual:
+`getDocs(coleccion).size + 1`. Tres problemas, en orden de gravedad:
+
+1. **Borrar reutilizaba números.** Al eliminar un documento el contador
+   bajaba, así que la siguiente alta repetía un número ya usado. En el
+   libro-registro eso rompe la correlatividad que exigen el art. 108 del
+   Reglamento de Seguridad Privada y el art. 17 de la Orden INT/318/2011:
+   los asientos no se repiten ni se reciclan.
+2. **Dos altas simultáneas se llevaban el mismo número.**
+3. Leía la colección entera en cada alta.
+
+Sustituido por `src/services/counters.ts`: un contador por secuencia en
+`firms/{firmId}/counters/{sequence}`, incrementado dentro de una
+`runTransaction`. Nunca retrocede.
+
+**El riesgo de la migración** era que el contador arrancase en 1 y
+repitiese los números de los despachos que ya venían usando la
+plataforma. Resuelto con `highestExistingNumber()`: la primera vez que
+se usa una secuencia se siembra desde el mayor número existente en la
+colección. Como una transacción de cliente no puede lanzar consultas, la
+semilla se calcula fuera y se aplica como suelo dentro. Verificado en
+producción con el despacho demo, que ya tenía los asientos 1 y 2: el
+contador arrancó anunciando el nº 3, no el 1.
+
+Añadido **Configuración → Libro-registro**, donde un despacho que llega
+con 200 asuntos anotados en papel continúa en el 201. Solo avanza:
+retroceder repetiría un asiento, y la transacción lo rechaza con "El
+número N ya está usado. La numeración solo puede continuar a partir del
+N+1." Verificado en producción intentando volver al 2.
+
+También en tipos, de cara a la reforma del libro: `RegistryEntry.origin`
+(`'plataforma' | 'historico'`), para que los asientos importados del
+papel no se traten como incompletos, y `RegistryEntry.physicalLocation`,
+dónde está la carpeta física del asunto.
+
+## Vista del asiento: todo el asunto en una pantalla (2026-09-02)
+
+El problema que motivó la reestructuración: cuando la Policía Nacional
+inspecciona un despacho no pide "el módulo de contratos", señala una
+línea del libro y dice *«dame todo lo relacionado con el asiento 124»*.
+Hasta ahora eso obligaba a recorrer cinco pantallas independientes.
+
+Cada asiento del libro se abre ahora en `/app/registry-book/:entryId`
+(`RegistryEntryPage.tsx`) y muestra la carpeta entera: el asiento con
+las columnas del Anexo VII, el cliente, el presupuesto, el contrato, el
+encargo, las actuaciones y el informe. `services/dossier.ts` reúne las
+piezas (`getDossier`, y `getDossierByEntryNumber` para buscar por el
+número que dice el inspector, no por el ID interno).
+
+Arriba del todo, **antes** que el contenido, va lo que le falta al
+asunto (`dossierGaps`): columnas del Anexo VII sin rellenar, contrato
+sin firmar, informe ausente, interés legítimo sin acreditar (art. 48.2
+de la Ley 5/2014). Distingue lo exigible de lo que simplemente está en
+curso — un asunto abierto sin informe todavía es un aviso, uno cerrado
+sin informe es un incumplimiento — y no marca como incompletos los
+asientos de origen `historico`, que se anotaron en su día con lo que
+entonces se pedía.
+
+`services/dossierExport.ts` genera el PDF del asunto completo, paginado,
+con pie de página que repite el nº de asiento y RNSP en cada hoja, para
+entregar en mano. Incluye la misma revisión de ausencias al final:
+ocultarla no la haría desaparecer en una inspección.
+
+Verificado en producción sobre el asiento nº 2 del despacho demo: la
+pantalla detectó un hueco real (el cliente no tenía NIF/CIF, columna
+obligatoria del Anexo VII) y el PDF salió con 2 páginas y 115 líneas de
+texto, con la revisión y la paginación correctas.
+
+## Bug real: la aplicación instalada se quedaba en la versión anterior (2026-09-02)
+
+Al verificar la vista del asiento en producción, el navegador seguía
+ejecutando el bundle antiguo pese a que el despliegue había sido
+correcto. Dos causas independientes:
+
+- **Firebase Hosting** servía `index.html` y `sw.js` con su caché por
+  defecto de una hora, así que durante ese rato se seguía entregando la
+  versión vieja. Añadida sección `headers` en `firebase.json`:
+  `no-cache` para esos dos, y `max-age=31536000, immutable` para
+  `/assets/**`, que ya llevan hash en el nombre.
+- **El service worker** solo buscaba versión nueva al cargar la página.
+  Un despacho abre la aplicación por la mañana y la deja abierta todo el
+  día: un arreglo desplegado hoy podía no llegarle hasta el día
+  siguiente. `src/lib/appUpdate.ts` comprueba ahora cada media hora y
+  aplica la actualización sola (no hay estado en memoria que perder:
+  todo vive en Firestore). El registro pasa a hacerse desde el código,
+  con `injectRegister: null` en `vite.config.ts`, para no registrar el
+  service worker dos veces.
+
+Verificado en producción: cabeceras `no-cache` correctas, y la
+aplicación pasa sola al bundle nuevo tras un ciclo de recarga.
+
+## La línea base de lint eran 48 avisos, pero solo 16 eran reales (2026-09-02)
+
+ESLint analizaba `.claude/worktrees/`, copias de trabajo temporales del
+propio repositorio dejadas por ramas que ya no existen, y duplicaba cada
+aviso del código real. Añadido `.claude` a `globalIgnores` en
+`eslint.config.js`. **La línea base real es 16 problemas (15 errores, 1
+aviso)**, todos preexistentes; es esa la cifra que no debe subir.
