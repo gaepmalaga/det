@@ -3,8 +3,10 @@ import {
   doc,
   addDoc,
   updateDoc,
+  getDoc,
   getDocs,
   query,
+  where,
   orderBy,
   serverTimestamp,
   Timestamp,
@@ -101,12 +103,35 @@ export async function getRegistryEntries(firmId: string): Promise<RegistryEntry[
   return snap.docs.map((d) => mapEntry(d.id, d.data() as Record<string, unknown>))
 }
 
+export async function getRegistryEntry(
+  firmId: string,
+  entryId: string
+): Promise<RegistryEntry | null> {
+  const snap = await getDoc(doc(db, 'firms', firmId, 'registryBooks', entryId))
+  if (!snap.exists()) return null
+  return mapEntry(snap.id, snap.data() as Record<string, unknown>)
+}
+
+// Un inspector no pregunta por el ID interno del asiento, pregunta por el
+// número: «dame todo lo del asiento 124».
+export async function getRegistryEntryByNumber(
+  firmId: string,
+  entryNumber: number
+): Promise<RegistryEntry | null> {
+  const ref = collection(db, 'firms', firmId, 'registryBooks')
+  const snap = await getDocs(query(ref, where('entryNumber', '==', entryNumber)))
+  if (snap.empty) return null
+  const d = snap.docs[0]
+  return mapEntry(d.id, d.data() as Record<string, unknown>)
+}
+
 export async function createRegistryEntry(
   firmId: string,
   userId: string,
   data: CreateRegistryEntryData,
   // Número por el que arranca el libro si es el primer asiento del
-  // despacho (Firm.registryStartNumber). Solo cuenta la primera vez.
+  // despacho. Solo cuenta la primera vez: a partir de ahí manda el
+  // contador (Configuración → Libro-registro).
   registryStartNumber = 1
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'registryBooks')

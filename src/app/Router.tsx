@@ -15,6 +15,7 @@ import { ClientsPage } from '@/features/clients/ClientsPage'
 import { ClientDetailPage } from '@/features/clients/ClientDetailPage'
 import { ContractsPage } from '@/features/contracts/ContractsPage'
 import { RegistryBookPage } from '@/features/registry/RegistryBookPage'
+import { RegistryEntryPage } from '@/features/registry/RegistryEntryPage'
 import { CompliancePage } from '@/features/compliance/CompliancePage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { PortalLoginPage } from '@/features/portal/PortalLoginPage'
@@ -68,6 +69,7 @@ export function AppRouter() {
           <Route path="cases" element={<CasesPage />} />
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
           <Route path="registry-book" element={<RegistryBookPage />} />
+          <Route path="registry-book/:entryId" element={<RegistryEntryPage />} />
           <Route path="contracts" element={<ContractsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="compliance" element={<CompliancePage />} />

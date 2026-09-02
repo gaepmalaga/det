@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { BookOpen, Search, Download, AlertTriangle, Pencil } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { BookOpen, Search, Download, AlertTriangle, Pencil, Archive } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getRegistryEntries } from '@/services/registry'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -13,6 +14,7 @@ import type { RegistryEntry } from '@/types'
 
 export function RegistryBookPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [entries, setEntries] = useState<RegistryEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -109,13 +111,20 @@ export function RegistryBookPage() {
             {filtered.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-card border border-border rounded-xl p-4 shadow-sm"
+                onClick={() => navigate(`/app/registry-book/${entry.id}`)}
+                className="bg-card border border-border rounded-xl p-4 shadow-sm cursor-pointer active:bg-muted transition-colors"
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">
                       {String(entry.entryNumber).padStart(4, '0')}
                     </span>
+                    {entry.origin === 'historico' && (
+                      <Archive
+                        className="w-3.5 h-3.5 text-amber-600"
+                        aria-label="Asiento histórico en papel"
+                      />
+                    )}
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
                         entry.status === 'abierto'
@@ -186,7 +195,10 @@ export function RegistryBookPage() {
                         {entry.caseNumber}
                       </span>
                       <button
-                        onClick={() => setEditingEntry(entry)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingEntry(entry)
+                        }}
                         className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
                         aria-label="Editar delitos perseguibles de oficio"
                       >
@@ -237,10 +249,19 @@ export function RegistryBookPage() {
                 {filtered.map((entry) => (
                   <tr
                     key={entry.id}
-                    className="hover:bg-muted transition-colors"
+                    onClick={() => navigate(`/app/registry-book/${entry.id}`)}
+                    className="hover:bg-muted transition-colors cursor-pointer"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground font-semibold">
-                      {String(entry.entryNumber).padStart(4, '0')}
+                      <span className="inline-flex items-center gap-1.5">
+                        {String(entry.entryNumber).padStart(4, '0')}
+                        {entry.origin === 'historico' && (
+                          <Archive
+                            className="w-3 h-3 text-amber-600"
+                            aria-label="Asiento histórico en papel"
+                          />
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
                       {format(entry.entryDate, 'dd/MM/yyyy', { locale: es })}
@@ -307,7 +328,10 @@ export function RegistryBookPage() {
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => setEditingEntry(entry)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingEntry(entry)
+                        }}
                         className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
                         aria-label="Editar delitos perseguibles de oficio"
                       >

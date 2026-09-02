@@ -6,7 +6,10 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // .claude/worktrees son copias de trabajo temporales del propio
+  // repositorio: analizarlas duplica cada aviso y esconde los del código
+  // real detrás de ruido de una rama que ya no existe.
+  globalIgnores(['dist', '.claude']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

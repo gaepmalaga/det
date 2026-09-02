@@ -168,7 +168,7 @@ export async function setNextSequenceNumber(
 
     if (target < floor) {
       throw new Error(
-        `Ya existe el número ${floor}. No se puede volver atrás al ${target + 1} sin repetirlo.`
+        `El número ${floor} ya está usado. La numeración solo puede continuar a partir del ${floor + 1}.`
       )
     }
 
