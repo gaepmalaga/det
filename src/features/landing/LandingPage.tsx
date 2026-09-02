@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   Fingerprint,
   MapPin,
@@ -10,7 +10,6 @@ import {
   UserRound,
   Loader2,
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
 import { startDemo, type DemoRole } from '@/services/demoSession'
 import { ROUTES } from '@/constants/routes'
 
@@ -44,8 +43,6 @@ const PUERTAS: {
 ]
 
 export function LandingPage() {
-  const navigate = useNavigate()
-  const { refreshUser } = useAuth()
   const [loading, setLoading] = useState<DemoRole | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,11 +51,12 @@ export function LandingPage() {
     setError(null)
     try {
       await startDemo(role)
-      // El despacho y la ficha de miembro se crean después de que Firebase
-      // avise del inicio de sesión, así que hay que releer el usuario o
-      // entraría creyendo que todavía no tiene despacho.
-      await refreshUser()
-      navigate(ROUTES.TODAY)
+      // Recarga completa a propósito, no navegación interna: Firebase avisa
+      // del inicio de sesión antes de que exista el despacho, así que la
+      // aplicación ya ha decidido que este usuario no tiene ninguno y
+      // mandaría a configurarlo. Entrando en frío, resuelve con el despacho
+      // ya creado y relleno.
+      window.location.assign(ROUTES.TODAY)
     } catch (err) {
       console.error(err)
       setError(
