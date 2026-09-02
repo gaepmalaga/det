@@ -2430,3 +2430,62 @@ expediente guardado y no sobre el formulario, así que al marcar la
 casilla no salía ni la fecha ni el aviso — había que guardar a ciegas
 para descubrir qué implicaba lo marcado. Corregido proyectando el estado
 del formulario antes de calcular.
+
+## Traer el libro de papel (2026-09-02)
+
+Un despacho que llega con doscientos asuntos anotados a mano no los va a
+teclear, y hasta ahora la plataforma solo servía para lo que pasara a
+partir de hoy: el archivo arrancaba vacío y su historia se quedaba
+fuera. Pero casi todos llevan además una copia en Excel del mismo libro,
+y esa es la vía.
+
+**Archivo → «Traer el libro de papel»** (`ImportBookDialog`): se pegan
+las filas del Excel tal cual (tabuladores) o se sube un CSV (coma o
+punto y coma — el delimitador se detecta contando cuál manda en la
+primera línea, sin preguntar). La plataforma **adivina qué columna es
+cada cosa** por el encabezado (`guessMapping`, con pistas ordenadas de
+más específica a menos para que «domicilio del investigado» no se coma
+«domicilio del contratante»), se corrige lo que no cuadre en catorce
+desplegables y entra el histórico completo.
+
+Antes de escribir nada enseña cuántos asientos entran, de qué número a
+cuál, cuál será el siguiente de la plataforma, qué filas se quedan fuera
+y por qué, y las cinco primeras tal y como quedarían. Avisa además de
+dos cosas que solo se ven mirando el conjunto: **números que ya existen**
+en el libro —no se pueden volver a dar— y **huecos en la numeración**,
+que suelen significar que una fila se quedó sin seleccionar al copiar.
+
+Los asientos entran con `origin: 'historico'`, que es lo que hace que
+`dossierGaps` no los trate como incompletos: se anotaron en su día con
+lo que entonces se pedía, y no tienen contrato ni informe digital. Al
+terminar, `setNextSequenceNumber` deja el contador por encima del mayor
+importado, así que el siguiente asiento continúa la numeración del papel
+en vez de chocar con ella.
+
+**Descifrar lo pegado vive aparte**, en `registryImportParse.ts`, sin
+dependencias de Firestore: es lógica con muchos casos límite y así se
+puede ejecutar sin navegador (`npx vite-node`). Probándola así apareció
+un fallo que no se habría visto de otra forma: `new Date(9999, 98, 99)`
+no falla, **desborda hasta el año 10007**, así que un dedazo de fecha en
+el Excel entraba como un asiento de un año inventado y el Archivo lo
+agrupaba en él. `parseSpanishDate` comprueba ahora que la fecha
+construida sea la que se pidió; 31/02 y 29/02 de un año no bisiesto se
+rechazan igual, y 29/02/2024 se acepta.
+
+Verificado en producción importando un libro de ejemplo con trampas: las
+12 columnas se mapearon solas sin un fallo, rechazó el nº 2 por colisión
+con un asiento existente y la fila con fecha 31/02/2022, avisó del hueco
+en el 6, importó los 4 buenos, el Archivo los agrupó en 2021 (asientos
+3–5) y 2022 (asiento 7), y el contador pasó del nº 3 al **nº 8**.
+
+**Tres fallos que solo se vieron importando de verdad:**
+
+1. El diálogo desaparecía antes de decir cuántos asientos habían entrado.
+   `ArchivePage` devolvía el spinner de página completa en cada recarga,
+   y eso desmonta todo lo que hay encima. El spinner es ahora solo para
+   la primera carga.
+2. Un asiento de papel decía «Contrato firmado, informe y datos del
+   Anexo VII, todo anotado» cuando no hay ni contrato ni informe digital.
+3. Y sus piezas decían «No consta en este asiento», que hace pensar que
+   falta algo. No falta: ahora dicen dónde está — «En la carpeta física:
+   Archivador 2021, carpeta 3».
