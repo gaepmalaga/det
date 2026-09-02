@@ -6,6 +6,8 @@ import {
   Download,
   Upload,
   ChevronRight,
+  Rows3,
+  FolderTree,
   AlertTriangle,
   FolderOpen,
 } from 'lucide-react'
@@ -16,6 +18,12 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { RegistryFolioDialog } from './RegistryFolioDialog'
 import { ImportBookDialog } from './ImportBookDialog'
+import { RegistryOfficialView } from './RegistryOfficialView'
+import {
+  getRegistryBookConfig,
+  DEFAULT_CONFIG,
+  type RegistryBookConfig,
+} from '@/services/registryFolios'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RegistryEntry } from '@/types'
@@ -66,13 +74,39 @@ export function ArchivePage() {
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   const [showExport, setShowExport] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  // Dos formas de mirar lo mismo: por años, que es como están sus
+  // carpetas, y el modelo oficial, que es como va a salir impreso. La
+  // elección se recuerda porque cada despacho tiene su costumbre.
+  const [vista, setVista] = useState<'anos' | 'oficial'>(() => {
+    try {
+      return localStorage.getItem('detectiveos.libro.vista') === 'oficial'
+        ? 'oficial'
+        : 'anos'
+    } catch {
+      return 'anos'
+    }
+  })
+  const [config, setConfig] = useState<RegistryBookConfig>(DEFAULT_CONFIG)
+
+  const cambiarVista = (v: 'anos' | 'oficial') => {
+    setVista(v)
+    try {
+      localStorage.setItem('detectiveos.libro.vista', v)
+    } catch {
+      /* sin almacenamiento, la elección dura lo que la sesión */
+    }
+  }
 
   const load = useCallback(async () => {
     if (!user?.firmId) return
     setLoading(true)
     try {
-      const data = await getRegistryEntries(user.firmId)
+      const [data, cfg] = await Promise.all([
+        getRegistryEntries(user.firmId),
+        getRegistryBookConfig(user.firmId),
+      ])
       setEntries(data)
+      setConfig(cfg)
       // Se abre el año en curso y se cierran los anteriores: lo del año
       // pasado se consulta, lo de este año se trabaja.
       const years = new Set(data.map((e) => e.startDate.getFullYear()))
@@ -153,6 +187,29 @@ export function ArchivePage() {
         }
       />
 
+      {entries.length > 0 && (
+        <div className="flex gap-1 mb-4 p-1 bg-muted rounded-lg w-fit">
+          {([
+            { id: 'anos', label: 'Por años', icon: FolderTree },
+            { id: 'oficial', label: 'Formato oficial', icon: Rows3 },
+          ] as const).map((v) => (
+            <button
+              key={v.id}
+              onClick={() => cambiarVista(v.id)}
+              aria-pressed={vista === v.id}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                vista === v.id
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <v.icon className="w-3.5 h-3.5" />
+              {v.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="relative mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
@@ -176,6 +233,8 @@ export function ArchivePage() {
           title="Ningún asunto coincide"
           description={`No hay asuntos que contengan «${search}».`}
         />
+      ) : vista === 'oficial' ? (
+        <RegistryOfficialView entries={filtered} config={config} />
       ) : (
         <div className="space-y-3">
           {groups.map((group) => {

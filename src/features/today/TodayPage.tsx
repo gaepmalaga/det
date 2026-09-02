@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Sun,
   PenLine,
@@ -45,6 +45,7 @@ interface OpenCase {
 
 export function TodayPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [cases, setCases] = useState<OpenCase[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -141,7 +142,7 @@ export function TodayPage() {
             return (
               <Link
                 key={entry.id}
-                to={`/app/cases/${entry.caseId}?tab=${info.tab}`}
+                to={`/app/cases/${entry.caseId}?tab=actuaciones`}
                 className="block bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 hover:shadow transition-all"
               >
                 <div className="flex items-start gap-3">
@@ -165,8 +166,16 @@ export function TodayPage() {
                     </p>
 
                     <div className="flex items-center gap-3 flex-wrap mt-2">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium border ${
+                      <button
+                        onClick={(e) => {
+                          // La tarjeta va a actuaciones, que es lo que se
+                          // hace a diario; el paso pendiente lleva a lo
+                          // suyo sin arrastrar toda la tarjeta.
+                          e.preventDefault()
+                          e.stopPropagation()
+                          navigate(`/app/cases/${entry.caseId}?tab=${info.tab}`)
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium border transition-colors hover:brightness-95 ${
                           step === 'firmar'
                             ? 'bg-red-50 text-red-700 border-red-200'
                             : step === 'cerrar'
@@ -176,7 +185,7 @@ export function TodayPage() {
                       >
                         <Icon className="w-3 h-3" />
                         {info.label}
-                      </span>
+                      </button>
 
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
