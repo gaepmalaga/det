@@ -215,11 +215,29 @@ export interface ImportRow {
   errors: string[]
 }
 
+// El libro-registro se numera por orden de encargo: el asiento 15 no puede
+// haber empezado antes que el 14. Si al traerse el papel los números no
+// casan con las fechas, el libro queda contando la historia al revés — y
+// eso es justo lo que mira quien inspecciona para ver si los asientos se
+// anotaron cuando tocaba o se rellenaron después de golpe.
+export interface ChronologyIssue {
+  entryNumber: number
+  date: Date
+  /** El asiento anterior, con número menor pero fecha posterior. */
+  previousNumber: number
+  previousDate: Date
+}
+
 export interface ImportPreview {
   rows: ImportRow[]
   valid: ImportRow[]
   /** Números que ya existen en el libro: no se pueden volver a dar. */
   collisions: number[]
+  /**
+   * Sitios donde el libro resultante iría hacia atrás en el tiempo: un
+   * asiento con número mayor que empieza antes que otro con número menor.
+   */
+  chronology: ChronologyIssue[]
   firstNumber: number | null
   lastNumber: number | null
   /** Huecos en la numeración de lo que se va a importar. */
@@ -283,10 +301,36 @@ export function buildPreview(
     }
   }
 
+  // Se comprueba sobre el libro resultante —lo que ya hay más lo que
+  // entraría—, no solo sobre el fichero: el caso que más duele es traerse
+  // el histórico de 2021 con números por encima de los asientos que la
+  // plataforma ya dio este año.
+  const combined = [
+    ...existing.map((e) => ({ entryNumber: e.entryNumber, date: e.startDate })),
+    ...valid
+      .filter((r) => r.startDate)
+      .map((r) => ({ entryNumber: r.entryNumber!, date: r.startDate! })),
+  ].sort((a, b) => a.entryNumber - b.entryNumber)
+
+  const chronology: ChronologyIssue[] = []
+  for (let i = 1; i < combined.length; i++) {
+    const prev = combined[i - 1]
+    const cur = combined[i]
+    if (cur.date.getTime() < prev.date.getTime()) {
+      chronology.push({
+        entryNumber: cur.entryNumber,
+        date: cur.date,
+        previousNumber: prev.entryNumber,
+        previousDate: prev.date,
+      })
+    }
+  }
+
   return {
     rows,
     valid,
     collisions,
+    chronology,
     firstNumber: numbers[0] ?? null,
     lastNumber: numbers[numbers.length - 1] ?? null,
     gaps,

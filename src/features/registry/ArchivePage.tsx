@@ -130,7 +130,7 @@ export function ArchivePage() {
   return (
     <div className="pb-8">
       <PageHeader
-        title="Archivo"
+        title="Libro-registro"
         description="Todos los asuntos del despacho, por año y número de asiento."
         action={
           <div className="flex gap-2">
@@ -167,8 +167,8 @@ export function ArchivePage() {
       {entries.length === 0 ? (
         <EmptyState
           icon={Archive}
-          title="El archivo está vacío"
-          description="Cada asunto entra aquí al firmarse su contrato. Si ya llevas un libro en papel, tráetelo entero con «Traer el libro de papel»."
+          title="El libro está vacío"
+          description="Cada asunto se anota aquí al firmarse su contrato. Si ya llevas un libro en papel, tráetelo entero con «Traer el libro de papel»."
         />
       ) : groups.length === 0 ? (
         <EmptyState

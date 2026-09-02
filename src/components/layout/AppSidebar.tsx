@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Sun,
-  Archive,
   Users,
   BookOpen,
   ShieldCheck,
@@ -23,7 +22,7 @@ import { cn } from '@/lib/utils'
 // despacho y la gente que todavía no ha contratado.
 const navItems = [
   { label: 'Hoy', icon: Sun, to: ROUTES.TODAY },
-  { label: 'Archivo', icon: Archive, to: ROUTES.ARCHIVE },
+  { label: 'Libro-registro', icon: BookOpen, to: ROUTES.REGISTRY_BOOK },
   { label: 'Oportunidades', icon: Handshake, to: ROUTES.OPPORTUNITIES },
   { label: 'Clientes', icon: Users, to: ROUTES.CLIENTS },
   { label: 'Colaboradores', icon: Building2, to: ROUTES.COLLABORATORS },
@@ -32,7 +31,6 @@ const navItems = [
 // Fuera del bloque principal: se consultan de vez en cuando, no se
 // trabajan a diario.
 const secondaryItems = [
-  { label: 'Libro-registro', icon: BookOpen, to: ROUTES.REGISTRY_BOOK },
   { label: 'Cumplimiento', icon: ShieldCheck, to: ROUTES.COMPLIANCE },
   { label: 'Estadísticas', icon: TrendingUp, to: ROUTES.STATS },
 ]

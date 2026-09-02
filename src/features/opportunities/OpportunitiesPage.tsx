@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Handshake, Receipt, ArrowRight } from 'lucide-react'
+import { Plus, Search, Handshake, Receipt, ArrowRight, Check } from 'lucide-react'
 import { useContacts } from '@/hooks/useContacts'
 import { useQuotes } from '@/hooks/useQuotes'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -14,6 +14,7 @@ import {
   STAGE_LABELS,
   STAGE_HINTS,
   STAGE_ORDER,
+  OPEN_STAGES,
   type OpportunityStage,
 } from '@/services/pipeline'
 import { ROUTES } from '@/constants/routes'
@@ -43,13 +44,19 @@ export function OpportunitiesPage() {
     uploadDocument,
   } = useQuotes()
   const [search, setSearch] = useState('')
-  const [stage, setStage] = useState<OpportunityStage | 'todas'>('todas')
+  // Los tres estados son filtros que se encienden y apagan, no
+  // pestañas: lo normal es querer ver a la vez a quien falta presupuestar
+  // y a quien ya tiene precio y no contesta.
+  const [active, setActive] = useState<Set<OpportunityStage>>(new Set(OPEN_STAGES))
   const [showContact, setShowContact] = useState(false)
   const [quoteFor, setQuoteFor] = useState<string | null>(null)
   const [accepting, setAccepting] = useState<Quote | null>(null)
 
   const opportunities = useMemo(
-    () => buildOpportunities(contacts, quotes),
+    () =>
+      buildOpportunities(contacts, quotes).filter((o) =>
+        OPEN_STAGES.includes(o.stage)
+      ),
     [contacts, quotes]
   )
 
@@ -63,7 +70,7 @@ export function OpportunitiesPage() {
   const filtered = useMemo(
     () =>
       opportunities
-        .filter((o) => stage === 'todas' || o.stage === stage)
+        .filter((o) => active.has(o.stage))
         .filter(
           (o) =>
             !term ||
@@ -78,7 +85,7 @@ export function OpportunitiesPage() {
             ? byStage
             : b.lastActivity.getTime() - a.lastActivity.getTime()
         }),
-    [opportunities, stage, term]
+    [opportunities, active, term]
   )
 
   if (loadingContacts || loadingQuotes) return <LoadingSpinner />
@@ -87,7 +94,7 @@ export function OpportunitiesPage() {
     <div className="pb-8">
       <PageHeader
         title="Oportunidades"
-        description="Quien pregunta, quien tiene precio y quien ya ha contratado."
+        description="Quien ha preguntado y todavía no ha contratado. Al aceptar el presupuesto pasa a Clientes."
         action={
           <button
             onClick={() => setShowContact(true)}
@@ -99,28 +106,43 @@ export function OpportunitiesPage() {
         }
       />
 
-      <div className="flex gap-1 mb-4 border-b border-border overflow-x-auto">
-        {(['todas', ...STAGE_ORDER] as const).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStage(s)}
-            className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              stage === s
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {s === 'todas' ? 'Todas' : STAGE_LABELS[s]}
-            <span className="ml-1.5 text-xs text-muted-foreground tabular-nums">
-              {s === 'todas' ? opportunities.length : (counts.get(s) ?? 0)}
-            </span>
-          </button>
-        ))}
+      {/* Filtros combinables: se pueden ver los tres, dos o uno. */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {OPEN_STAGES.map((s) => {
+          const on = active.has(s)
+          const count = counts.get(s) ?? 0
+          return (
+            <button
+              key={s}
+              onClick={() =>
+                setActive((prev) => {
+                  const next = new Set(prev)
+                  // Nunca se quedan los tres apagados: eso solo deja la
+                  // pantalla en blanco sin decir por qué.
+                  if (next.has(s)) {
+                    if (next.size > 1) next.delete(s)
+                  } else next.add(s)
+                  return next
+                })
+              }
+              aria-pressed={on}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
+                on
+                  ? 'bg-primary/10 text-primary border-primary/30'
+                  : 'bg-card text-muted-foreground border-border hover:bg-muted'
+              }`}
+            >
+              {on && <Check className="w-3.5 h-3.5" />}
+              {STAGE_LABELS[s]}
+              <span className="tabular-nums opacity-70">{count}</span>
+            </button>
+          )
+        })}
       </div>
 
-      {stage !== 'todas' && (
-        <p className="text-xs text-muted-foreground mb-4">{STAGE_HINTS[stage]}</p>
-      )}
+      <p className="text-xs text-muted-foreground mb-4">
+        {[...active].map((s) => STAGE_HINTS[s]).join(' ')}
+      </p>
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

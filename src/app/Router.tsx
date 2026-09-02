@@ -12,7 +12,6 @@ import { CaseDetailPage } from '@/features/cases/CaseDetailPage'
 import { ClientsPage } from '@/features/clients/ClientsPage'
 import { ClientDetailPage } from '@/features/clients/ClientDetailPage'
 import { ContractsPage } from '@/features/contracts/ContractsPage'
-import { RegistryBookPage } from '@/features/registry/RegistryBookPage'
 import { RegistryEntryPage } from '@/features/registry/RegistryEntryPage'
 import { ArchivePage } from '@/features/registry/ArchivePage'
 import { TodayPage } from '@/features/today/TodayPage'
@@ -63,7 +62,10 @@ export function AppRouter() {
         >
           <Route index element={<Navigate to={ROUTES.TODAY} replace />} />
           <Route path="today" element={<TodayPage />} />
-          <Route path="archive" element={<ArchivePage />} />
+          {/* Archivo y Libro-registro eran la misma pantalla con dos
+              nombres. Se queda el nombre legal, que es el que usa el
+              despacho y por el que pregunta una inspección. */}
+          <Route path="archive" element={<Navigate to={ROUTES.REGISTRY_BOOK} replace />} />
           <Route path="opportunities" element={<OpportunitiesPage />} />
 
           <Route path="dashboard" element={<DashboardPage />} />
@@ -78,7 +80,7 @@ export function AppRouter() {
           <Route path="clients/:clientId" element={<ClientDetailPage />} />
           <Route path="cases" element={<CasesPage />} />
           <Route path="cases/:caseId" element={<CaseDetailPage />} />
-          <Route path="registry-book" element={<RegistryBookPage />} />
+          <Route path="registry-book" element={<ArchivePage />} />
           <Route path="registry-book/:entryId" element={<RegistryEntryPage />} />
           <Route path="contracts" element={<ContractsPage />} />
           <Route path="reports" element={<ReportsPage />} />

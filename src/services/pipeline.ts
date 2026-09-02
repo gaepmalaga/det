@@ -73,3 +73,9 @@ export const STAGE_ORDER: OpportunityStage[] = [
   'ganado',
   'perdido',
 ]
+
+// Los contratados ya no son una oportunidad: son clientes, con su ficha y
+// su asiento en el libro. Dejarlos aquí hacía que la pantalla mezclara a
+// quien hay que llamar mañana con quien lleva tres asuntos cerrados —que
+// era justo lo que había que arreglar.
+export const OPEN_STAGES: OpportunityStage[] = ['nuevo', 'presupuestado', 'perdido']

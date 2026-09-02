@@ -224,6 +224,35 @@ export function ImportBookDialog({ open, existing, onClose, onImported }: Props)
                 )}
               </div>
 
+              {preview.chronology.length > 0 && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-xs font-medium text-red-900 mb-1.5 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    El libro quedaría desordenado en el tiempo
+                  </p>
+                  <p className="text-xs text-red-800 mb-1.5">
+                    El libro se numera por orden de encargo: el asiento 15 no
+                    puede haber empezado antes que el 14. Con estos números, la
+                    plataforma daría un libro que va hacia atrás.
+                  </p>
+                  <ul className="space-y-0.5 max-h-24 overflow-y-auto">
+                    {preview.chronology.slice(0, 8).map((c) => (
+                      <li key={c.entryNumber} className="text-xs text-red-800">
+                        El nº {c.entryNumber} empieza el{' '}
+                        {c.date.toLocaleDateString('es-ES')}, antes que el nº{' '}
+                        {c.previousNumber} ({c.previousDate.toLocaleDateString('es-ES')}
+                        ).
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-red-800 mt-1.5">
+                    Suele significar que el histórico debe ir por debajo de los
+                    asientos que ya existen. Ajusta los números en tu Excel antes
+                    de importarlo.
+                  </p>
+                </div>
+              )}
+
               {preview.rows.some((r) => r.errors.length > 0) && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-xs font-medium text-amber-900 mb-1.5 flex items-center gap-1.5">

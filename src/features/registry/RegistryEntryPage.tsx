@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { getDossier, dossierGaps, type Dossier } from '@/services/dossier'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { RegistryOffensesDialog } from './RegistryOffensesDialog'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -85,6 +86,7 @@ export function RegistryEntryPage() {
   const [dossier, setDossier] = useState<Dossier | null>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [editingOffenses, setEditingOffenses] = useState(false)
 
   const load = useCallback(async () => {
     if (!user?.firmId || !entryId) return
@@ -183,6 +185,14 @@ export function RegistryEntryPage() {
           </p>
         </div>
 
+        <div className="flex gap-2">
+        <button
+          onClick={() => setEditingOffenses(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Delitos de oficio
+        </button>
         <button
           onClick={handleExport}
           disabled={exporting}
@@ -191,6 +201,7 @@ export function RegistryEntryPage() {
           <Download className="w-4 h-4" />
           {exporting ? 'Generando...' : 'Descargar el asunto completo'}
         </button>
+        </div>
       </div>
 
       {/* Lo primero que se ve: si esta carpeta aguanta una inspección. */}
@@ -453,6 +464,17 @@ export function RegistryEntryPage() {
           </ul>
         </Piece>
       </div>
+    {editingOffenses && (
+        <RegistryOffensesDialog
+          open={true}
+          entry={entry}
+          onClose={() => setEditingOffenses(false)}
+          onSaved={() => {
+            setEditingOffenses(false)
+            load()
+          }}
+        />
+      )}
     </div>
   )
 }
