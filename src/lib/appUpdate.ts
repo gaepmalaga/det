@@ -64,15 +64,56 @@ function showUpdateBar(apply: () => void) {
   )
 }
 
+// Cuánto se espera a que el service worker en espera conteste antes de
+// dar por hecho que no va a hacerlo.
+const HANDOVER_TIMEOUT_MS = 4000
+
+// Aplicar la versión nueva es pedirle al worker en espera que tome el
+// control y recargar cuando lo haga. Pero un worker instalado por una
+// versión anterior de la aplicación puede no tener el receptor de ese
+// mensaje —los generados en modo autoUpdate no lo tienen— y entonces no
+// contesta nunca y la aplicación se queda congelada en la versión vieja
+// para siempre. Por eso hay salida de emergencia: si no contesta, se
+// borra el service worker y sus cachés y se recarga en frío. Cuesta una
+// recarga lenta y solo pasa una vez, al salir de esa situación.
+function applyUpdate(registration: ServiceWorkerRegistration): void {
+  let done = false
+  const reload = () => {
+    if (done) return
+    done = true
+    window.location.reload()
+  }
+
+  navigator.serviceWorker.addEventListener('controllerchange', reload, { once: true })
+  registration.waiting?.postMessage({ type: 'SKIP_WAITING' })
+
+  window.setTimeout(async () => {
+    if (done) return
+    done = true
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(regs.map((r) => r.unregister()))
+      const keys = await caches.keys()
+      await Promise.all(keys.map((k) => caches.delete(k)))
+    } catch {
+      // Da igual por qué falle la limpieza: recargar es lo que importa.
+    }
+    window.location.reload()
+  }, HANDOVER_TIMEOUT_MS)
+}
+
 export function registerAppUpdates(): void {
-  const applyUpdate = registerSW({
+  let current: ServiceWorkerRegistration | null = null
+
+  registerSW({
     immediate: true,
     onRegisteredSW(_url, registration) {
       if (!registration) return
+      current = registration
 
       // Puede haber quedado una versión instalada y en espera de una
       // sesión anterior: se ofrece igualmente, no se pierde.
-      if (registration.waiting) showUpdateBar(() => applyUpdate(true))
+      if (registration.waiting) showUpdateBar(() => applyUpdate(registration))
 
       setInterval(() => {
         // Sin conexión, pedir la actualización solo ensucia la consola;
@@ -81,7 +122,7 @@ export function registerAppUpdates(): void {
       }, CHECK_INTERVAL_MS)
     },
     onNeedRefresh() {
-      showUpdateBar(() => applyUpdate(true))
+      if (current) showUpdateBar(() => applyUpdate(current!))
     },
   })
 }
