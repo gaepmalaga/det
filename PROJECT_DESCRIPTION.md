@@ -1884,3 +1884,69 @@ De paso se borraron dos cuentas de prueba (`gaepmalaga+testname01@…`,
 creadas dos veces por un reintento durante las pruebas de este mismo
 arreglo) desde Authentication → Usuarios — no forman parte del
 despacho demo, solo ruido de las pruebas.
+
+## PWA ya instalable, ubicación de actuaciones, datos del investigado para el colaborador y contrato despacho-colaborador (2026-09-02)
+
+Cuatro peticiones seguidas del usuario, revisadas y resueltas en el
+mismo bloque:
+
+- **PWA instalable**: ya lo estaba. `vite.config.ts` tiene
+  `VitePWA` con manifest completo (iconos 72 a 512, `display:
+  standalone`, `start_url`), los 8 PNG existen en `public/icons/`, y
+  el build ya genera `manifest.webmanifest` + `sw.js` + los enlaces e
+  inyección correctos en `index.html`. Verificado en producción:
+  manifest servido con 200 y sus 8 iconos, service worker activo y
+  controlando la página, todos los iconos/PNG accesibles. No hacía
+  falta ningún cambio de código — solo instalarla desde el navegador
+  (Chrome: menú → "Instalar aplicación"; Android: "Añadir a pantalla
+  de inicio"; iOS Safari: compartir → "Añadir a pantalla de inicio").
+- **Ubicación de una actuación ya guardada**: ya existía. En la
+  pestaña Actuaciones, cada actuación con coordenadas guardadas
+  muestra un enlace "Ver ubicación" (con icono de chincheta) que abre
+  Google Maps en una pestaña nueva
+  (`CaseActionsTab.tsx:206-216`). Las actuaciones de ejemplo del
+  despacho demo no tenían ubicación guardada (el picker de mapa nunca
+  se usó al crearlas) — se añadió una actuación nueva de prueba en
+  EXP-0001 marcando un punto en el mapa (sin depender del GPS real del
+  navegador) para confirmar el ciclo completo: guardar con
+  `locationLat`/`locationLng` → aparece "Ver ubicación" → el enlace
+  abre Google Maps con las coordenadas correctas.
+- **El colaborador no veía a quién investigar ni su domicilio — bug
+  real, no solo del colaborador**: `Case.investigatedName` e
+  `investigatedAddress` ya existían en el modelo y se leían bien
+  (`getCase` devuelve el documento completo), pero no se pintaban en
+  ningún sitio — ni en `CollaborateCaseDetail.tsx` (vista del
+  colaborador) ni en el Resumen del expediente del propio despacho
+  (`CaseDetailPage.tsx`, tarjeta "Encargo"), donde solo se veían
+  Objeto y alcance / Interés legítimo / Descripción. Añadida una
+  sección "Investigado" (nombre + domicilio) en ambos sitios.
+- **Contrato entre el despacho y el colaborador**: el modelo de datos
+  ya preveía un contrato de este tipo (`ContractType` incluía
+  `'marco_colaboracion'` desde antes) pero nunca se construyó la UI
+  para crearlo ni firmarlo. Añadido:
+  - `Collaborator.esDependiente: boolean` — un colaborador dependiente
+    trabaja como un detective más de la estructura del propio
+    despacho (aunque no conste en `members`) y no necesita contrato
+    aparte; uno independiente subcontratado sí, conforme a la Ley
+    5/2014. Campo añadido a los formularios de alta y edición, y
+    visible como "Régimen: Independiente / Dependiente del despacho"
+    en la ficha.
+  - `Contract.collaboratorId` (opcional, mismo patrón que `clientId`)
+    + `getContractsByCollaborator` + `useCollaboratorContracts` —
+    ninguna regla de Firestore nueva hizo falta, las reglas de
+    `contracts` ya eran genéricas por `firmId`/`contractId`.
+  - Tarjeta "Contrato de colaboración" en `CollaboratorDetailPage.tsx`:
+    si es dependiente, nota explicando que no hace falta; si no,
+    botón "Generar contrato de colaboración" (texto por defecto en
+    `collaborationContract.ts`, con identificación de ambos despachos,
+    régimen de actuación, confidencialidad/RGPD, responsabilidad y
+    duración), y una vez generado, "Copiar enlace de firma" (reutiliza
+    la página pública `/sign/:firmId/:contractId`, ya genérica y sin
+    cambios) y "Registrar firma manual" (reutiliza `SignContractDialog`
+    tal cual).
+  - **Verificado en producción de extremo a extremo**: generado el
+    contrato CONT-0003 para "Investigaciones Costa del Sol S.L."
+    (colaborador independiente del despacho demo), firmado con
+    "Registrar firma manual", y confirmado que la ficha pasa a mostrar
+    "Firmado — Firmado por Miguel Ángel Torres el 02 de septiembre de
+    2026."
