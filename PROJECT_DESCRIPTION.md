@@ -2050,3 +2050,44 @@ asientos correctamente volcados y ajustados a varias líneas donde
 corresponde. Confirmado también que "Marcar como impreso hasta el nº
 2" persiste correctamente: al reabrir el diálogo, "Solo lo nuevo desde
 la última impresión" pasa a mostrar "Hay 0 sin imprimir."
+
+## Bug real: no había ninguna forma de guardar el domicilio de un cliente (2026-09-02)
+
+Al comprobar por qué el PDF del libro-registro salía con el domicilio
+del contratante en blanco para los dos asientos demo, la causa no era
+solo que fueran anteriores al arreglo del campo: los dos clientes del
+despacho demo no tenían ningún `address` guardado en absoluto, y
+resultó que **no existe, en toda la aplicación, ningún sitio donde
+introducir el domicilio de un cliente** — `ClientsPage.tsx` no tiene
+formulario de alta manual (los clientes solo se crean
+programáticamente al aceptar un presupuesto) y `ClientDetailPage.tsx`
+era de solo lectura, sin ningún botón "Editar". El bloque que
+intentaba mostrar la dirección hacía además un cast a
+`{ address?: string }` cuando `Client.address` es en realidad un
+objeto `ClientAddress` (calle/ciudad/provincia/CP) — nunca podía haber
+funcionado ni aunque hubiera datos.
+
+Esto no era un hueco de la demo, sino un bug real que afecta a
+cualquier despacho: sin manera de fijar el domicilio del contratante,
+el campo que se añadió ayer al libro-registro se queda vacío para
+siempre en producción, incumpliendo el Anexo VII de forma permanente.
+
+**Arreglado**: añadido formulario de edición completo en
+`ClientDetailPage.tsx` (nombre, NIF/CIF, email, teléfono y domicilio
+estructurado), con `address` añadido a `CreateClientData` en
+`services/clients.ts` y a `useClientDetail()` en `hooks/useClients.ts`.
+Verificado en producción: editados los dos clientes del despacho demo
+con un domicilio real, guardado y mostrado correctamente
+("Dirección — Calle Compañía 15, 3ºA, 29008 Málaga (Málaga)").
+
+De paso, al abrir los asientos del libro-registro en la consola de
+Firestore para completar el domicilio a mano (los asientos ya creados
+no se actualizan solos — `clientAddress` se copia una vez al abrir el
+expediente, no es una referencia viva al cliente), se encontró que
+`detectiveName` también estaba en blanco en ambos asientos — el mismo
+bug del `displayName` vacío por email/contraseña documentado ayer,
+pero en un documento distinto (`registryBooks/{entryId}`, no
+`reports/{reportId}`) que no se había tocado entonces. Corregido igual
+que los informes: "Marta Sánchez Vega" en los dos asientos. El libro-
+registro demo queda ahora con las 10 columnas completas en ambos
+asientos.
