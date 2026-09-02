@@ -1824,3 +1824,63 @@ resultados, conclusiones/observaciones y, si procede, entrega).
   "Exportar Word" de verdad desde la UI: ambos generaron su blob
   correctamente (PDF de 7.939 bytes, `.docx` de 9.729 bytes) sin ningún
   error nuevo en consola.
+
+## Bug real: email/contraseña sin nombre deja "Detectives intervinientes" en blanco (2026-09-02)
+
+Al probar la exportación de informes en producción, la sección
+"Detectives intervinientes" del informe de EXP-0002 salía vacía (un
+avatar circular sin inicial, sin nombre debajo). No era un problema de
+la exportación — el propio informe ya lo mostraba así en pantalla.
+
+**Causa raíz**: `createUserWithEmailAndPassword` (a diferencia de
+`signInWithPopup` con Google, que siempre trae un `displayName` del
+perfil de Google) no fija ningún nombre en el perfil de Auth. En
+`OnboardingPage.tsx`, al crear el despacho se copia
+`user.displayName` directamente al `Member.displayName` del titular
+sin comprobar que exista — así que cualquier despacho creado con
+email/contraseña (el método que se añadió esta misma sesión) se queda
+con `Member.displayName` vacío para siempre, salvo que alguien lo
+corrija a mano, porque no hay ningún formulario en la app para
+editarlo después. Ese hueco se arrastra a los seis sitios que leen
+`user.displayName` desde `AppUser` (`CaseReportTab.tsx` — detectives
+del informe —, `CaseActionsTab.tsx` — autor de la actuación —,
+`CaseContractTab.tsx`, `CasePortalTab.tsx`, `AppSidebar.tsx` y
+`OnboardingPage.tsx`), es decir, a todo el rastro de auditoría de un
+despacho que se dio de alta sin pasar por Google. Confirmado en la
+consola de Firestore: el `Member` del despacho demo tenía
+`displayName: null`, y `TeamTab.tsx` hace `member.displayName[0]` sin
+comprobar que exista — con un despacho real habría sido un
+**crash** en Configuración → Equipo, no solo un hueco visual.
+
+**Arreglado en el origen**: el formulario de alta con email/contraseña
+(`LoginPage.tsx` para el despacho, `PortalLoginPage.tsx` para el
+portal) ahora pide "Nombre completo" en modo registro, y
+`AuthContext.signUpWithEmail(email, password, displayName)` llama a
+`updateProfile()` justo después de crear la cuenta — así el perfil de
+Auth queda igual de completo que con Google desde el primer instante,
+sin tocar `OnboardingPage.tsx` (que ya confiaba, correctamente, en que
+`user.displayName` viniera relleno). De paso, `AppSidebar.tsx` y
+`PortalLayout.tsx` comprobaban el nombre con `??` en vez de `||` —
+`??` no cae al email de reserva cuando el nombre es `''` (cadena
+vacía, no `null`/`undefined`), así que ese resguardo tampoco
+funcionaba del todo.
+
+**Reparación de los datos ya existentes** (el despacho demo se creó
+antes de este arreglo): vía consola de Firestore se puso
+`displayName: "Marta Sánchez Vega"` en el `Member` del titular y en
+los dos informes ya creados (`detectives[0].detectiveName` +
+`detectiveTip`, antes vacíos en ambos). El perfil de Auth en sí
+también se corrigió, sin esperar a que el usuario cambie de
+contraseña ni nada parecido: una llamada a la API REST de Identity
+Toolkit (`accounts:signInWithPassword` + `accounts:update` con el
+`idToken` obtenido, usando la API key pública del proyecto) fija el
+`displayName` real de la cuenta igual que haría `updateProfile()`.
+Verificado después en producción: Dashboard saluda con "Hola, Marta",
+la barra lateral muestra "Marta Sánchez Vega", Equipo la lista sin
+error, y el informe de EXP-0002 muestra "Marta Sánchez Vega — TIP:
+D-9910" en detectives intervinientes.
+
+De paso se borraron dos cuentas de prueba (`gaepmalaga+testname01@…`,
+creadas dos veces por un reintento durante las pruebas de este mismo
+arreglo) desde Authentication → Usuarios — no forman parte del
+despacho demo, solo ruido de las pruebas.
