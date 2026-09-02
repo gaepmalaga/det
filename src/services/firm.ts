@@ -56,6 +56,8 @@ function mapFirm(id: string, data: Record<string, unknown>): Firm {
     },
     customInvestigationTypes: (data.customInvestigationTypes as string[]) ?? [],
     contractTemplate: data.contractTemplate as Firm['contractTemplate'],
+    registryLastPrintedEntry: data.registryLastPrintedEntry as number | undefined,
+    registryLastPrintedAt: toDateOrUndefined(data.registryLastPrintedAt),
     status: data.status as Firm['status'],
     planId: data.planId as string,
     createdAt: toDate(data.createdAt),

@@ -7,7 +7,12 @@ import { getFirm } from '@/services/firm'
 import { getClient } from '@/services/clients'
 import { createRegistryEntry } from '@/services/registry'
 import { updateDoc, serverTimestamp } from 'firebase/firestore'
-import type { ComplianceStatus } from '@/types'
+import type { ComplianceStatus, ClientAddress } from '@/types'
+
+function formatClientAddress(address: ClientAddress | undefined): string {
+  if (!address) return ''
+  return `${address.street}, ${address.postalCode} ${address.city} (${address.province})`
+}
 
 // Punto único donde se abre un expediente a partir de un contrato ya
 // firmado — nunca antes (ver PROJECT_DESCRIPTION.md, cambio de flujo
@@ -75,6 +80,7 @@ export async function openCaseFromContract(
     clientName: client?.legalName ?? contract.clientName,
     clientTaxId: client?.taxId ?? '',
     clientType: client?.clientType ?? 'individual',
+    clientAddress: formatClientAddress(client?.address),
     investigationObject: quote.objectScope || quote.description,
     investigatedName: quote.investigatedName,
     investigatedAddress: quote.investigatedAddress ?? '',

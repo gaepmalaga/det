@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { RegistryOffensesDialog } from './RegistryOffensesDialog'
+import { RegistryExportDialog } from './RegistryExportDialog'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RegistryEntry } from '@/types'
@@ -17,6 +18,7 @@ export function RegistryBookPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'todos' | 'abierto' | 'cerrado'>('todos')
   const [editingEntry, setEditingEntry] = useState<RegistryEntry | null>(null)
+  const [showExport, setShowExport] = useState(false)
 
   const load = useCallback(async () => {
     if (!user?.firmId) return
@@ -54,7 +56,11 @@ export function RegistryBookPage() {
         title="Libro-registro"
         description="Registro oficial de servicios de investigación privada."
         action={
-          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors">
+          <button
+            onClick={() => setShowExport(true)}
+            disabled={entries.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+          >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Exportar</span>
           </button>
@@ -134,6 +140,11 @@ export function RegistryBookPage() {
                     {entry.clientTaxId && (
                       <p className="text-xs text-muted-foreground uppercase">
                         {entry.clientTaxId}
+                      </p>
+                    )}
+                    {entry.clientAddress && (
+                      <p className="text-xs text-muted-foreground">
+                        {entry.clientAddress}
                       </p>
                     )}
                   </div>
@@ -243,6 +254,11 @@ export function RegistryBookPage() {
                           {entry.clientTaxId}
                         </p>
                       )}
+                      {entry.clientAddress && (
+                        <p className="text-xs text-muted-foreground truncate max-w-[16rem]">
+                          {entry.clientAddress}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground max-w-xs hidden lg:table-cell">
                       <p className="truncate text-xs">
@@ -315,6 +331,15 @@ export function RegistryBookPage() {
             setEditingEntry(null)
             load()
           }}
+        />
+      )}
+
+      {showExport && (
+        <RegistryExportDialog
+          open={true}
+          entries={entries}
+          onClose={() => setShowExport(false)}
+          onMarkedPrinted={() => setShowExport(false)}
         />
       )}
     </div>

@@ -49,6 +49,7 @@ function mapEntry(id: string, data: Record<string, unknown>): RegistryEntry {
     clientName: data.clientName as string,
     clientTaxId: (data.clientTaxId as string) ?? '',
     clientType: data.clientType as ContactType,
+    clientAddress: (data.clientAddress as string) ?? '',
     investigationObject: data.investigationObject as string,
     investigatedName: (data.investigatedName as string) ?? '',
     investigatedAddress: (data.investigatedAddress as string) ?? '',
@@ -73,6 +74,7 @@ export interface CreateRegistryEntryData {
   clientName: string
   clientTaxId: string
   clientType: ContactType
+  clientAddress: string
   investigationObject: string
   investigatedName: string
   investigatedAddress: string
@@ -106,6 +108,7 @@ export async function createRegistryEntry(
     clientName: data.clientName,
     clientTaxId: data.clientTaxId,
     clientType: data.clientType,
+    clientAddress: data.clientAddress,
     investigationObject: data.investigationObject,
     investigatedName: data.investigatedName,
     investigatedAddress: data.investigatedAddress,
@@ -134,6 +137,19 @@ export async function closeRegistryEntry(
   await updateDoc(ref, {
     status: 'cerrado' as RegistryEntryStatus,
     endDate: serverTimestamp(),
+  })
+}
+
+// Marca hasta qué nº de asiento se ha impreso ya en papel, para que la
+// próxima exportación "solo lo nuevo" no repita folios ya completados.
+export async function setRegistryLastPrinted(
+  firmId: string,
+  entryNumber: number
+): Promise<void> {
+  const ref = doc(db, 'firms', firmId)
+  await updateDoc(ref, {
+    registryLastPrintedEntry: entryNumber,
+    registryLastPrintedAt: serverTimestamp(),
   })
 }
 

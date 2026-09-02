@@ -55,6 +55,11 @@ export interface Firm {
   }
   customInvestigationTypes: string[]
   contractTemplate?: ContractTemplate
+  // Último nº de asiento del libro-registro ya impreso en papel — permite
+  // exportar/imprimir solo lo nuevo desde entonces sin repetir folios ya
+  // completados (ver RegistryBookPage.tsx → ExportRegistryDialog).
+  registryLastPrintedEntry?: number
+  registryLastPrintedAt?: Date
   status: FirmStatus
   planId: string
   createdAt: Date
@@ -403,6 +408,9 @@ export interface RegistryEntry {
   clientName: string
   clientTaxId: string
   clientType: ContactType
+  // Domicilio/localidad del contratante — columna obligatoria del
+  // modelo oficial de libro-registro (Anexo VII, Orden INT/318/2011).
+  clientAddress: string
   investigationObject: string
   investigatedName: string
   investigatedAddress: string
