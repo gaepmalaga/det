@@ -141,12 +141,12 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
             />
           ) : (
             <div className="w-6 h-6 rounded-full bg-sidebar-accent flex items-center justify-center text-xs text-sidebar-accent-foreground shrink-0">
-              {user?.displayName?.[0] ?? '?'}
+              {user?.displayName?.[0] || '?'}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <p className="text-xs text-sidebar-foreground/80 truncate">
-              {user?.displayName ?? user?.email ?? '—'}
+              {user?.displayName || user?.email || '—'}
             </p>
           </div>
           <button

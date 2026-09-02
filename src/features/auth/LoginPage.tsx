@@ -27,6 +27,7 @@ export function LoginPage() {
 
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -54,7 +55,7 @@ export function LoginPage() {
     setSubmitting(true)
     try {
       if (mode === 'signup') {
-        await signUpWithEmail(email, password)
+        await signUpWithEmail(email, password, name)
       } else {
         await signInWithEmail(email, password)
       }
@@ -189,6 +190,19 @@ export function LoginPage() {
 
                 {showEmailForm ? (
                   <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+                    {mode === 'signup' && (
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1.5">Nombre completo</label>
+                        <input
+                          type="text"
+                          required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          placeholder="Tu nombre y apellidos"
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className="block text-xs font-medium text-foreground mb-1.5">Email</label>
                       <input

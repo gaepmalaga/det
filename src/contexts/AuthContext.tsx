@@ -12,6 +12,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
   signOut,
   type User,
 } from 'firebase/auth'
@@ -26,7 +27,7 @@ interface AuthContextValue {
   loading: boolean
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
-  signUpWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>
   resendVerificationEmail: () => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -202,8 +203,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email.trim(), password)
   }
 
-  const signUpWithEmail = async (email: string, password: string) => {
+  const signUpWithEmail = async (email: string, password: string, displayName: string) => {
     const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+    // A diferencia de Google, email/contraseña no trae nombre — sin esto,
+    // el nombre del titular/miembro se queda en blanco en el despacho
+    // (Member.displayName lo copia de aquí en OnboardingPage) y arrastra
+    // ese hueco a cada informe, actuación y registro de auditoría que
+    // cree esa persona.
+    await updateProfile(credential.user, { displayName: displayName.trim() })
     await sendEmailVerification(credential.user)
   }
 

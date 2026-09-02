@@ -30,11 +30,11 @@ export function PortalLayout() {
               <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                {user?.displayName?.[0] ?? '?'}
+                {user?.displayName?.[0] || '?'}
               </div>
             )}
             <p className="text-sm text-foreground hidden sm:block">
-              {user?.displayName ?? user?.email}
+              {user?.displayName || user?.email}
             </p>
             <button
               onClick={handleLogout}
