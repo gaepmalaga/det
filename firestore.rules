@@ -63,6 +63,17 @@ service cloud.firestore {
       return isLinkedCollaborator(firmId, cf);
     }
 
+    // Cliente de portal con acceso activo a este expediente concreto — el
+    // ID de cada documento en portalAccess es el email normalizado del
+    // cliente, así que basta comprobar que existe uno con su propio email
+    // verificado y sigue activo. Usado tanto por cases (lectura directa)
+    // como por quotes (el presupuesto de origen de su propio expediente).
+    function isPortalClientForCase(firmId, caseId) {
+      return isAuth() && request.auth.token.email_verified == true &&
+        exists(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)) &&
+        get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)).data.isActive == true;
+    }
+
     // ─── PLATFORM ADMINS ─────────────────────────────────────────────────────
 
     match /platformAdmins/{userId} {
@@ -240,7 +251,15 @@ service cloud.firestore {
       // ── QUOTES (presupuestos) ────────────────────────────────────────────
 
       match /quotes/{quoteId} {
-        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        // Antes solo leían miembros del despacho — el portal de clientes
+        // nunca podía cargar el expediente que viniera de un presupuesto
+        // (la inmensa mayoría) porque useClientPortal() también resuelve
+        // getQuote(firmId, case.quoteId), y esa lectura fallaba con
+        // permission-denied, tirando abajo toda la pantalla del cliente.
+        allow read: if isSuperAdmin() || isActiveMember(firmId) || (
+          resource.data.caseId != null &&
+          isPortalClientForCase(firmId, resource.data.caseId)
+        );
         allow create: if isActiveMember(firmId);
         allow update: if isActiveMember(firmId);
         allow delete: if isSuperAdmin() || isOwnerOrDirector(firmId);
@@ -256,11 +275,8 @@ service cloud.firestore {
         // portalAccess activo para este expediente cuyo ID sea su propio
         // email verificado por Google (ver el bloque portalAccess más abajo,
         // donde el ID del documento pasó a ser el email en vez de aleatorio).
-        allow read: if isSuperAdmin() || isActiveMember(firmId) || (
-          isAuth() && request.auth.token.email_verified == true &&
-          exists(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)) &&
-          get(/databases/$(database)/documents/firms/$(firmId)/cases/$(caseId)/portalAccess/$(request.auth.token.email)).data.isActive == true
-        ) || (
+        allow read: if isSuperAdmin() || isActiveMember(firmId) ||
+          isPortalClientForCase(firmId, caseId) || (
           resource.data.collaboratingFirmId != null &&
           isLinkedCollaborator(firmId, resource.data.collaboratingFirmId)
         );

@@ -1644,3 +1644,50 @@ hacer — el usuario lo completó él mismo desde el móvil:
 **Pendiente**: confirmar que el próximo push despliega `storage.rules`
 sin el error `Firebase Storage has not been set up` que apareció antes
 de completar el paso a Blaze.
+
+## Bug real encontrado y arreglado: el portal de clientes nunca cargaba expedientes con presupuesto (2026-09-02)
+
+Con el login por email/contraseña ya en marcha, se pudo por fin probar
+el portal de clientes con una cuenta real de principio a fin (cosa que
+ninguna sesión anterior había podido hacer, por no tener acceso a una
+cuenta de Google real ni, hasta ahora, al método email/contraseña) —
+concediendo acceso de portal al expediente demo (EXP-0001) y entrando
+como ese cliente. Resultado: **"Error al cargar tus expedientes."**
+
+**Causa**: `useClientPortal()` (`src/hooks/usePortal.ts`) resuelve cada
+expediente del cliente con `getCase()` y, si el expediente viene de un
+presupuesto (`case.quoteId`), también con `getQuote(firmId,
+case.quoteId)` — para poder mostrar el importe presupuestado en el
+portal (§4.4). La regla de `quotes` en `firestore.rules` solo daba
+lectura a miembros del despacho, nunca al cliente del portal — así que
+esa segunda llamada fallaba con `permission-denied`, y como ambas
+llamadas están en el mismo `try/catch`, tiraba abajo toda la pantalla
+del portal. **Esto llevaba roto desde la Fase 4** (cuando se simplificó
+el portal para mostrar el importe del presupuesto) — nadie lo había
+detectado porque ninguna sesión había podido iniciar sesión de verdad
+como cliente hasta ahora.
+
+**Arreglado**: nueva función `isPortalClientForCase(firmId, caseId)` en
+`firestore.rules` (factoriza la comprobación que ya usaba `cases` —
+existe un `portalAccess/{tu-email-verificado}` activo para ese
+expediente concreto) y se añade una regla de lectura en `quotes` que la
+usa a través de `quote.caseId` (el presupuesto ya guarda el ID del
+expediente al que dio lugar, desde "Cambio de flujo: Contrato antes que
+Expediente"). `cases` se refactorizó para usar la misma función, sin
+cambiar su comportamiento.
+
+Verificado en producción real, con el expediente demo: el portal ya
+carga el expediente y el importe del presupuesto correctamente tras el
+despliegue.
+
+**Nota aparte, no relacionada con el bug**: en el navegador sandbox
+usado para esta prueba, la obtención del token de App Check falla con
+`400 (appCheck/initial-throttle)` de forma consistente — casi seguro
+porque reCAPTCHA v3 identifica ese navegador automatizado como no-humano
+y rehúsa emitir un token, no porque haya un problema real de
+configuración (el dominio sí está registrado). Como ni Firestore ni
+Storage tienen App Check en modo forzado (solo AI Logic, y ese en modo
+supervisión), esto no bloqueó nada — pero conviene tenerlo presente si
+en el futuro se activa App Check forzado para más productos: probar
+desde un navegador real, no automatizado, antes de dar por rota una
+función.
