@@ -39,6 +39,7 @@ export interface Contract {
   caseId?: string
   quoteId?: string
   clientId?: string
+  collaboratorId?: string
   clientName: string
   issuedAt: Date
   signedAt?: Date
@@ -85,6 +86,7 @@ function mapContract(id: string, data: Record<string, unknown>): Contract {
     caseId: data.caseId as string | undefined,
     quoteId: data.quoteId as string | undefined,
     clientId: data.clientId as string | undefined,
+    collaboratorId: data.collaboratorId as string | undefined,
     clientName: data.clientName as string,
     issuedAt: toDate(data.issuedAt),
     signedAt: toDateOrUndefined(data.signedAt),
@@ -118,6 +120,16 @@ export async function getContractsByCase(firmId: string, caseId: string): Promis
   return snap.docs.map((d) => mapContract(d.id, d.data() as Record<string, unknown>))
 }
 
+export async function getContractsByCollaborator(
+  firmId: string,
+  collaboratorId: string
+): Promise<Contract[]> {
+  const ref = collection(db, 'firms', firmId, 'contracts')
+  const q = query(ref, where('collaboratorId', '==', collaboratorId))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => mapContract(d.id, d.data() as Record<string, unknown>))
+}
+
 export async function getContract(firmId: string, contractId: string): Promise<Contract | null> {
   const ref = doc(db, 'firms', firmId, 'contracts', contractId)
   const snap = await getDoc(ref)
@@ -130,6 +142,7 @@ export interface CreateContractData {
   caseId?: string
   quoteId?: string
   clientId?: string
+  collaboratorId?: string
   clientName: string
   serviceDescription: string
   agreedPrice?: string
@@ -164,6 +177,7 @@ export async function createContract(
   if (data.caseId) cleanData.caseId = data.caseId
   if (data.quoteId) cleanData.quoteId = data.quoteId
   if (data.clientId) cleanData.clientId = data.clientId
+  if (data.collaboratorId) cleanData.collaboratorId = data.collaboratorId
   if (data.agreedPrice) cleanData.agreedPrice = data.agreedPrice
   if (data.specificConditions) cleanData.specificConditions = data.specificConditions
   if (data.bodyText) cleanData.bodyText = data.bodyText

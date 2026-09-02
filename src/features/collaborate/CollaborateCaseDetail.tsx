@@ -99,6 +99,22 @@ export function CollaborateCaseDetail() {
         )}
       </div>
 
+      {(caseData.investigatedName || caseData.investigatedAddress) && (
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm mb-6">
+          <h2 className="text-sm font-semibold text-foreground mb-3">Investigado</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Nombre</p>
+              <p className="text-sm text-foreground">{caseData.investigatedName || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Domicilio</p>
+              <p className="text-sm text-foreground">{caseData.investigatedAddress || '—'}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-foreground">Actuaciones</h2>

@@ -47,6 +47,12 @@ export interface Collaborator {
   // así la página pública de invitación no necesita permiso para leer
   // `firms/{firmId}` (a la que un colaborador sin cuenta aún no pertenece).
   inviterFirmName?: string
+  // Un colaborador dependiente trabaja bajo la estructura del propio
+  // despacho (como un detective más, aunque no conste en `members`) y no
+  // necesita un contrato de colaboración aparte — a diferencia de un
+  // despacho o profesional independiente subcontratado, que sí lo
+  // necesita (Ley 5/2014).
+  esDependiente: boolean
 }
 
 export interface CreateCollaboratorData {
@@ -63,6 +69,7 @@ export interface CreateCollaboratorData {
   tienePlataforma?: boolean
   invitedEmail?: string
   inviterFirmName?: string
+  esDependiente?: boolean
 }
 
 function toDate(val: unknown): Date {
@@ -96,6 +103,7 @@ function mapCollaborator(id: string, data: Record<string, unknown>): Collaborato
     linkedUserId: data.linkedUserId as string | undefined,
     linkedUserEmail: data.linkedUserEmail as string | undefined,
     inviterFirmName: data.inviterFirmName as string | undefined,
+    esDependiente: (data.esDependiente as boolean) ?? false,
   }
 }
 
@@ -148,6 +156,7 @@ export async function createCollaborator(
   } else {
     cleanData.tienePlataforma = false
   }
+  cleanData.esDependiente = data.esDependiente ?? false
 
   const docRef = await addDoc(ref, cleanData)
   return docRef.id
@@ -230,6 +239,7 @@ export async function updateCollaborator(
   if (data.address !== undefined) cleanData.address = data.address
   if (data.notes !== undefined) cleanData.notes = data.notes
   if (data.status !== undefined) cleanData.status = data.status
+  if (data.esDependiente !== undefined) cleanData.esDependiente = data.esDependiente
 
   await updateDoc(ref, cleanData)
 }

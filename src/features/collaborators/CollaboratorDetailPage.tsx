@@ -7,19 +7,26 @@ import {
   Phone,
   MapPin,
   FileText,
+  FileSignature,
   Save,
   UserCheck,
   UserX,
   Link2,
   Copy,
   Check,
+  CheckCircle,
 } from 'lucide-react'
 import { useCollaboratorDetail } from '@/hooks/useCollaborators'
 import { updateCollaborator } from '@/services/collaborators'
+import { useCollaboratorContracts } from '@/hooks/useContracts'
+import { useFirm } from '@/hooks/useFirm'
+import { buildDefaultCollaborationContractBody } from '@/services/collaborationContract'
+import { SignContractDialog } from '@/features/contracts/SignContractDialog'
 import { useAuth } from '@/contexts/AuthContext'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import type { Contract } from '@/services/contracts'
 
 export function CollaboratorDetailPage() {
   const { collaboratorId } = useParams<{ collaboratorId: string }>()
@@ -28,10 +35,50 @@ export function CollaboratorDetailPage() {
   const { collaborator, loading, error, reload } = useCollaboratorDetail(
     collaboratorId ?? ''
   )
+  const { firm } = useFirm()
+  const {
+    contracts,
+    create: createCollabContract,
+    sign: signCollabContract,
+    uploadDocument: uploadCollabContractDocument,
+  } = useCollaboratorContracts(collaboratorId ?? '')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [contractLinkCopied, setContractLinkCopied] = useState(false)
+  const [generatingContract, setGeneratingContract] = useState(false)
+  const [signingContract, setSigningContract] = useState<Contract | null>(null)
+
+  const contract = contracts[0] ?? null
+
+  const handleGenerateContract = async () => {
+    if (!firm || !collaborator) return
+    setGeneratingContract(true)
+    try {
+      await createCollabContract({
+        type: 'marco_colaboracion',
+        collaboratorId: collaborator.id,
+        clientName: collaborator.legalName,
+        serviceDescription: 'Contrato marco de colaboración entre despachos',
+        bodyText: buildDefaultCollaborationContractBody(firm, collaborator),
+      })
+    } finally {
+      setGeneratingContract(false)
+    }
+  }
+
+  const copyContractSignLink = async () => {
+    if (!user?.firmId || !contract) return
+    const url = `${window.location.origin}/sign/${user.firmId}/${contract.id}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setContractLinkCopied(true)
+      setTimeout(() => setContractLinkCopied(false), 2000)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const copyInviteLink = async () => {
     if (!user?.firmId || !collaboratorId) return
@@ -56,6 +103,7 @@ export function CollaboratorDetailPage() {
     address: '',
     notes: '',
   })
+  const [esDependienteForm, setEsDependienteForm] = useState(false)
 
   const startEditing = () => {
     if (!collaborator) return
@@ -71,6 +119,7 @@ export function CollaboratorDetailPage() {
       address: collaborator.address ?? '',
       notes: collaborator.notes ?? '',
     })
+    setEsDependienteForm(collaborator.esDependiente)
     setEditing(true)
   }
 
@@ -96,6 +145,7 @@ export function CollaboratorDetailPage() {
         tipNumber: form.tipNumber || undefined,
         address: form.address || undefined,
         notes: form.notes || undefined,
+        esDependiente: esDependienteForm,
       })
       await reload()
       setEditing(false)
@@ -325,6 +375,25 @@ export function CollaboratorDetailPage() {
                 />
               </div>
 
+              <div className="border-t border-border pt-4">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={esDependienteForm}
+                    onChange={(e) => setEsDependienteForm(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      Es un colaborador dependiente del despacho
+                    </span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">
+                      No necesita un contrato de colaboración aparte.
+                    </span>
+                  </span>
+                </label>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -370,6 +439,12 @@ export function CollaboratorDetailPage() {
                       </p>
                     </div>
                   )}
+                  <div>
+                    <p className="text-xs text-muted-foreground">Régimen</p>
+                    <p className="text-sm text-foreground">
+                      {collaborator.esDependiente ? 'Dependiente del despacho' : 'Independiente'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -424,6 +499,71 @@ export function CollaboratorDetailPage() {
 
         {/* Columna lateral */}
         <div className="space-y-4">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <FileSignature className="w-4 h-4 text-muted-foreground" />
+              Contrato de colaboración
+            </h3>
+
+            {collaborator.esDependiente ? (
+              <p className="text-xs text-muted-foreground">
+                No se requiere — es un colaborador dependiente del despacho.
+              </p>
+            ) : !contract ? (
+              <>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Ley 5/2014: al subcontratar a un despacho o profesional
+                  independiente, debe existir un contrato de colaboración
+                  entre ambas partes.
+                </p>
+                <button
+                  onClick={handleGenerateContract}
+                  disabled={generatingContract || !firm}
+                  className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  <FileSignature className="w-4 h-4" />
+                  {generatingContract ? 'Generando...' : 'Generar contrato de colaboración'}
+                </button>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                  contract.status === 'firmado'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                  {contract.status === 'firmado' ? 'Firmado' : 'Pendiente de firma'}
+                </span>
+                {contract.status === 'firmado' ? (
+                  <p className="text-xs text-muted-foreground">
+                    Firmado por {contract.signedByName}
+                    {contract.signedAt && (
+                      <> el {format(contract.signedAt, "dd 'de' MMMM 'de' yyyy", { locale: es })}</>
+                    )}
+                    .
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={copyContractSignLink}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-muted border border-border rounded-lg hover:bg-muted/70 transition-colors"
+                    >
+                      {contractLinkCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      {contractLinkCopied ? 'Enlace copiado' : 'Copiar enlace de firma'}
+                    </button>
+                    <button
+                      onClick={() => setSigningContract(contract)}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Registrar firma manual
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {collaborator.tienePlataforma && (
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -495,6 +635,16 @@ export function CollaboratorDetailPage() {
           </div>
         </div>
       </div>
+
+      {signingContract && (
+        <SignContractDialog
+          open={true}
+          contract={signingContract}
+          onClose={() => setSigningContract(null)}
+          onSign={(name) => signCollabContract(signingContract.id, name)}
+          onUploadDocument={(file) => uploadCollabContractDocument(signingContract.id, file).then(() => {})}
+        />
+      )}
     </div>
   )
 }

@@ -196,6 +196,24 @@ const handleCaseUpdated = useCallback(() => {
                     {caseData.description}
                   </p>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Investigado</p>
+                    <p className="text-sm text-foreground">
+                      {caseData.investigatedName || (
+                        <span className="text-muted-foreground italic">Sin definir</span>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Domicilio del investigado</p>
+                    <p className="text-sm text-foreground">
+                      {caseData.investigatedAddress || (
+                        <span className="text-muted-foreground italic">Sin definir</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
