@@ -604,7 +604,9 @@ export async function seedDemoData(
     }
 
     if (a.report && end) {
-      const reportRef = doc(collection(db, 'firms', firmId, 'reports'))
+      const reportRef = doc(
+        collection(db, 'firms', firmId, 'cases', caseRef.id, 'reports')
+      )
       batch.set(reportRef, {
         firmId,
         caseId: caseRef.id,
