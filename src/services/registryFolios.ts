@@ -178,3 +178,20 @@ export async function markFoliosPrinted(
     updatedAt: serverTimestamp(),
   })
 }
+
+/**
+ * Olvida qué folios estaban marcados como impresos.
+ *
+ * En una cuenta de demostración se marcan folios mientras se enseña la
+ * plataforma y luego hay que poder volver atrás. En una cuenta real esto
+ * no arregla nada: la hoja sellada sigue escrita, y lo único que se
+ * consigue es que la plataforma vuelva a ofrecer un folio que ya está en
+ * papel.
+ */
+export async function forgetPrintedFolios(firmId: string): Promise<void> {
+  await updateDoc(doc(db, 'firms', firmId), {
+    'registryBook.printedFolios': [],
+    updatedAt: serverTimestamp(),
+  })
+}
+

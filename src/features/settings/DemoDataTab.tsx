@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useFirm } from '@/hooks/useFirm'
 import { seedDemoData, type SeedResult } from '@/services/demoSeed'
 import { renumberRegistryChronologically } from '@/services/registry'
+import { forgetPrintedFolios } from '@/services/registryFolios'
 
 // Enseñar la plataforma con dos asuntos dentro no convence a nadie: un
 // despacho quiere verla con volumen, con archivo detrás y con asuntos a
@@ -30,6 +31,21 @@ export function DemoDataTab() {
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : 'No se pudieron crear los datos.')
+    } finally {
+      setWorking(null)
+    }
+  }
+
+  const handleForget = async () => {
+    if (!firm) return
+    setWorking('olvidando')
+    setError(null)
+    try {
+      await forgetPrintedFolios(firm.id)
+      setRenumbered('Los folios vuelven a estar sin imprimir.')
+    } catch (err) {
+      console.error(err)
+      setError('No se pudo hacer.')
     } finally {
       setWorking(null)
     }
@@ -130,6 +146,16 @@ export function DemoDataTab() {
           className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
         >
           {working === 'renumerando' ? 'Renumerando...' : 'Reordenar'}
+        </button>
+
+        <button
+          onClick={handleForget}
+          disabled={working !== null}
+          className="ml-2 inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-muted-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+        >
+          {working === 'olvidando'
+            ? 'Guardando...'
+            : 'Olvidar los folios impresos'}
         </button>
 
         {renumbered && (
