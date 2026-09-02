@@ -11,6 +11,7 @@ import {
   serverTimestamp,
   Timestamp,
   arrayUnion,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { nextSequenceNumber } from './counters'
@@ -191,6 +192,61 @@ export async function setRegistryLastPrinted(
     registryLastPrintedEntry: entryNumber,
     registryLastPrintedAt: serverTimestamp(),
   })
+}
+
+/**
+ * Reordena la numeración del libro por fecha de inicio, de la más antigua
+ * a la más reciente, empezando en 1.
+ *
+ * Hace falta cuando el libro ha quedado contando la historia al revés —
+ * típicamente al traerse el histórico de papel con números por encima de
+ * los que la plataforma ya había gastado—. Un libro-registro se numera por
+ * orden de encargo, y un inspector mira precisamente eso.
+ *
+ * Solo se puede hacer sobre un libro que todavía no se ha impreso: en
+ * cuanto un folio está sobre una hoja sellada, el número que lleva es el
+ * que es, y cambiarlo aquí solo conseguiría que el papel y la plataforma
+ * dejaran de coincidir.
+ */
+export async function renumberRegistryChronologically(
+  firmId: string
+): Promise<{ renumbered: number; nextNumber: number }> {
+  const firmSnap = await getDoc(doc(db, 'firms', firmId))
+  const printed =
+    ((firmSnap.data()?.registryBook as Record<string, unknown>)
+      ?.printedFolios as number[]) ?? []
+  if (printed.length > 0) {
+    throw new Error(
+      `Ya hay folios impresos (${printed.join(', ')}). Cambiar ahora la numeración dejaría el papel y la plataforma diciendo cosas distintas.`
+    )
+  }
+
+  const entries = await getRegistryEntries(firmId)
+  const ordered = [...entries].sort(
+    (a, b) => a.startDate.getTime() - b.startDate.getTime()
+  )
+
+  const batch = writeBatch(db)
+  let changed = 0
+
+  ordered.forEach((entry, i) => {
+    const number = i + 1
+    if (entry.entryNumber === number) return
+    changed += 1
+    batch.update(doc(db, 'firms', firmId, 'registryBooks', entry.id), {
+      entryNumber: number,
+    })
+    // El expediente guarda el nº de asiento para enseñarlo sin releer el
+    // libro; si no se actualiza aquí, se queda mintiendo.
+    if (entry.caseId) {
+      batch.update(doc(db, 'firms', firmId, 'cases', entry.caseId), {
+        registryEntryNumber: number,
+      })
+    }
+  })
+
+  await batch.commit()
+  return { renumbered: changed, nextNumber: ordered.length + 1 }
 }
 
 export async function amendRegistryEntry(
