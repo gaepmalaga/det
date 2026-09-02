@@ -3,6 +3,7 @@ import { ROUTES } from '@/constants/routes'
 import { RouteGuard } from '@/components/shared/RouteGuard'
 import { AppShell } from '@/components/layout/AppShell'
 import { LoginPage } from '@/features/auth/LoginPage'
+import { LandingPage } from '@/features/landing/LandingPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { SignContractPage } from '@/features/sign/SignContractPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
@@ -50,7 +51,9 @@ export function AppRouter() {
         <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
         <Route path={ROUTES.SIGN_CONTRACT} element={<SignContractPage />} />
         <Route path={ROUTES.COLLABORATOR_INVITE} element={<CollaborateInvitePage />} />
-        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+        {/* La raíz deja de ser una redirección al login: es la página
+            pública desde la que se entra a probar la plataforma. */}
+        <Route path="/" element={<LandingPage />} />
 
         <Route
           path="/app"
