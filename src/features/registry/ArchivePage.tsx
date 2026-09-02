@@ -121,7 +121,11 @@ export function ArchivePage() {
       return next
     })
 
-  if (loading) return <LoadingSpinner />
+  // Solo en la primera carga. Si se devolviera el spinner en cada recarga,
+  // se desmontaría todo lo que hay encima: al importar el libro, el
+  // diálogo desaparecía antes de poder decir cuántos asientos habían
+  // entrado.
+  if (loading && entries.length === 0) return <LoadingSpinner />
 
   return (
     <div className="pb-8">

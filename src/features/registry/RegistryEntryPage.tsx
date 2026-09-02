@@ -37,6 +37,7 @@ function Piece({
   present,
   meta,
   to,
+  absentText = 'No consta en este asiento.',
   children,
 }: {
   icon: React.ElementType
@@ -44,6 +45,7 @@ function Piece({
   present: boolean
   meta?: string
   to?: string
+  absentText?: string
   children?: React.ReactNode
 }) {
   return (
@@ -69,7 +71,7 @@ function Piece({
         {present ? (
           children
         ) : (
-          <p className="text-sm text-muted-foreground">No consta en este asiento.</p>
+          <p className="text-sm text-muted-foreground">{absentText}</p>
         )}
       </div>
     </section>
@@ -134,6 +136,12 @@ export function RegistryEntryPage() {
 
   const { entry, caseData, client, quote, contracts, report, actions } = dossier
   const gaps = dossierGaps(dossier)
+  const historic = entry.origin === 'historico'
+  const absentText = historic
+    ? entry.physicalLocation
+      ? `En la carpeta física: ${entry.physicalLocation}.`
+      : 'En la carpeta física del asunto, no en la plataforma.'
+    : undefined
   const critical = gaps.filter((g) => g.severity === 'critical')
   const signedContract = contracts.find((c) => c.status === 'firmado')
 
@@ -220,7 +228,9 @@ export function RegistryEntryPage() {
           </p>
           {gaps.length === 0 ? (
             <p className="text-xs text-green-800/80 mt-0.5">
-              Contrato firmado, informe y datos del Anexo VII, todo anotado.
+              {entry.origin === 'historico'
+                ? 'Asiento del libro de papel: el Anexo VII está completo y consta dónde está la carpeta.'
+                : 'Contrato firmado, informe y datos del Anexo VII, todo anotado.'}
             </p>
           ) : (
             <ul className="mt-2 space-y-1">
@@ -313,6 +323,7 @@ export function RegistryEntryPage() {
         <Piece
           icon={User}
           title="Cliente"
+          absentText={absentText}
           present={!!client}
           meta={client?.taxId}
           to={client ? `/app/clients/${client.id}` : undefined}
@@ -333,6 +344,7 @@ export function RegistryEntryPage() {
         <Piece
           icon={Receipt}
           title="Presupuesto"
+          absentText={absentText}
           present={!!quote}
           meta={quote?.quoteNumber}
           to="/app/quotes"
@@ -354,6 +366,7 @@ export function RegistryEntryPage() {
         <Piece
           icon={FileSignature}
           title="Contrato"
+          absentText={absentText}
           present={contracts.length > 0}
           meta={
             signedContract
@@ -393,6 +406,7 @@ export function RegistryEntryPage() {
         <Piece
           icon={FileText}
           title="Informe"
+          absentText={absentText}
           present={!!report}
           meta={report?.status}
           to={caseData ? `/app/cases/${caseData.id}` : undefined}
@@ -416,6 +430,7 @@ export function RegistryEntryPage() {
         <Piece
           icon={Footprints}
           title="Actuaciones"
+          absentText={absentText}
           present={actions.length > 0}
           meta={`${actions.length} ${actions.length === 1 ? 'anotación' : 'anotaciones'}`}
           to={caseData ? `/app/cases/${caseData.id}` : undefined}
