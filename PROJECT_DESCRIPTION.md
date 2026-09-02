@@ -1742,3 +1742,25 @@ causa real y necesaria del bug; el ajuste de refresco de token en
 fondo correcta (cubre el caso real de una pestaña ya abierta que se
 reanuda tras verificar el email en segundo plano), aunque no fuese lo
 que arregló esta sesión de prueba concreta.
+
+## Colaboradores híbridos verificado de extremo a extremo — sin bugs (2026-09-02)
+
+Aprovechando que ya se podía crear cuentas de prueba reales con
+email/contraseña, se probó por primera vez el ciclo completo de
+colaboradores con plataforma (Fase 5, §4.5), nunca verificado antes
+(igual que el portal, dependía de tener una segunda cuenta real
+distinta de la del despacho): crear un colaborador con
+`tienePlataforma: true` desde Configuración → Colaboradores, copiar el
+enlace de invitación, registrarse con una cuenta nueva, verificar el
+email, aceptar la invitación en `/collab-invite/:firmId/:collaboratorId`,
+asignar el colaborador a un expediente existente desde el despacho, y
+comprobar que aparece correctamente en `/collaborate` con sus
+actuaciones visibles. **Todo funcionó a la primera, sin ningún error** —
+a diferencia del portal de clientes y del token de sesión, esta parte
+del sistema no tenía ningún bug pendiente.
+
+**Se aprovechó, de paso, para crear un segundo expediente demo completo
+(EXP-0002, "Investigación laboral") y llevarlo hasta el cierre
+(informe generado con IA → aprobado → entregado → expediente cerrado),
+para que el despacho demo muestre el ciclo de vida completo (un
+expediente abierto y otro cerrado) en vez de solo casos activos.
