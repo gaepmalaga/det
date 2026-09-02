@@ -1950,3 +1950,103 @@ mismo bloque:
     "Registrar firma manual", y confirmado que la ficha pasa a mostrar
     "Firmado — Firmado por Miguel Ángel Torres el 02 de septiembre de
     2026."
+
+## Corrección del modelo de colaboradores, firma a mano y libro-registro completo con exportación (2026-09-02)
+
+El usuario corrigió un malentendido del turno anterior aportando el
+Anexo VII de la Orden INT/318/2011 (modelo oficial de libro-registro) y
+explicando el modelo real de despacho/detectives/colaboradores:
+
+- **Un despacho tiene siempre un titular (detective) y, opcionalmente,
+  detectives dependientes bajo el mismo RNSP** — ya modelado
+  correctamente desde antes de esta sesión vía `Member.dependencyType`
+  (`'owner' | 'dependent' | null`) en Equipo. El cliente contrata "al
+  despacho con RNSP X", no a un detective concreto: cualquier detective
+  de ese despacho, titular o dependiente, puede intervenir en el
+  expediente sin más requisito que dejar constancia de qué actuación
+  hizo cada uno (ya cubierto por `CaseAction.detectiveId` en
+  Actuaciones). Ningún contrato interno hace falta aquí.
+- **Un despacho contratado puede subcontratar a otro despacho
+  (RNSP distinto)** — eso sí exige un contrato de colaboración entre
+  ambos, sin excepción, porque por definición un `Collaborator`
+  (`collaboratingFirms`) es siempre externo. El campo `esDependiente`
+  que se había añadido a `Collaborator` en el turno anterior partía de
+  un modelo mental equivocado (confundía "colaborador dependiente" con
+  el concepto correcto de "detective dependiente del propio despacho",
+  que no tiene nada que ver con `Collaborator`) — revertido por
+  completo: quitado de `services/collaborators.ts`, de los formularios
+  de alta/edición y de la ficha ("Régimen" ya no se muestra), y la
+  tarjeta "Contrato de colaboración" pasa a mostrarse siempre, sin
+  condición.
+
+**Firma a mano (`SignaturePad.tsx`, nuevo componente reutilizable)**:
+canvas con eventos de ratón y táctiles, escalado a `devicePixelRatio`
+para verse nítido, botón "Borrar y firmar de nuevo". El garabato se
+exporta como PNG en base64 (`canvas.toDataURL()`) y se guarda
+directamente en el propio documento de Firestore del contrato
+(`Contract.signatureDataUrl`) — no en Storage, porque quien firma por
+el enlace público no está autenticado y Storage exige
+`request.auth != null` para escribir, mientras que la regla de
+Firestore para `contracts` ya tenía un camino de escritura pública
+para el resto de campos de firma (bastó con añadir
+`'signatureDataUrl'` a la lista `hasOnly(...)` de campos permitidos).
+Aplicado en los dos flujos de firma que ya existían:
+- **Firma pública por enlace** (`/sign/:firmId/:contractId`, cliente o
+  colaborador sin cuenta): ahora obligatoria antes de poder firmar.
+- **Registro de firma manual** (`SignContractDialog.tsx`, staff): la
+  firma es opcional (para cuando el firmante no está delante de la
+  pantalla), pero si el firmante SÍ está presente en el despacho, se
+  puede dibujar ahí mismo.
+La imagen guardada se muestra en todos los sitios donde ya se veía el
+nombre del firmante: `CaseContractTab.tsx`, `CollaboratorDetailPage.tsx`
+y la propia página de firma tras firmar.
+
+**Verificado en producción, extremo a extremo, con un garabato real**:
+creado un colaborador de prueba ("Detectives Prueba Firma S.L."),
+generado su contrato, abierto "Registrar firma manual", dibujado una
+firma a mano con el ratón directamente sobre el lienzo (dos trazos en
+V), y confirmado que exactamente ese trazo dibujado queda guardado y
+se muestra en la ficha del colaborador tras firmar. El colaborador de
+prueba se desactivó al terminar (no se puede borrar del todo desde la
+UI, solo desactivar).
+
+**Libro-registro — campo que faltaba**: comparando línea a línea con
+el Anexo VII, faltaba la columna "Contratante — Domicilio/localidad"
+(el resto de columnas oficiales ya existían: nº de orden, fechas de
+inicio/fin, asunto, contratante, investigado con nombre y domicilio,
+delitos perseguibles de oficio conocidos, órgano al que se
+comunicaron). Añadido `RegistryEntry.clientAddress`, relleno
+automáticamente desde `Client.address` al abrir el expediente
+(`caseOpening.ts` y el punto equivalente en `CaseContractTab.tsx`), y
+mostrado en la tabla del libro-registro.
+
+**Libro-registro — exportación (el botón no hacía nada antes)**:
+nuevo `RegistryExportDialog.tsx` con tres modos de selección — todo el
+libro, un rango de nº de asiento concreto, o solo lo nuevo desde la
+última impresión en papel — y dos formatos:
+- **PDF** (`registryExport.ts`, A4 apaisado): tabla dibujada a mano con
+  jsPDF replicando el maquetado exacto del Anexo VII (mismas 10
+  columnas, mismo orden), con ajuste de línea por celda y salto de
+  página automático cuando una fila no cabe.
+- **CSV** (con BOM UTF-8 para que Excel no rompa los acentos).
+
+Para lo de "que no vuelva a generar para impresión los folios que ya
+imprimí": se guarda `Firm.registryLastPrintedEntry` (nº de asiento) +
+`registryLastPrintedAt`, actualizable solo por el titular o un
+director (`isOwnerOrDirector`, mismo criterio que el resto de ajustes
+a nivel de despacho) con el botón "Marcar como impreso hasta el nº X"
+que aparece tras exportar. La próxima vez que alguien elija "Solo lo
+nuevo desde la última impresión", el diálogo ya solo incluye los
+asientos posteriores a ese número — así, si un folio ya tiene 5 filas
+impresas, la siguiente exportación empieza directamente en la fila 6
+sin repetir las 5 anteriores.
+
+**Verificado en producción**: exportado el PDF del libro-registro
+demo (2 asientos) y comprobado el contenido real del archivo generado
+(no solo que se descargara) extrayendo los literales de texto del PDF
+byte a byte — encabezado del despacho, rango de asientos, las 10
+cabeceras de columna exactas del Anexo VII, y los datos de ambos
+asientos correctamente volcados y ajustados a varias líneas donde
+corresponde. Confirmado también que "Marcar como impreso hasta el nº
+2" persiste correctamente: al reabrir el diálogo, "Solo lo nuevo desde
+la última impresión" pasa a mostrar "Hay 0 sin imprimir."
