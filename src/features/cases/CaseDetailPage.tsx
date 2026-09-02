@@ -107,9 +107,7 @@ const handleCaseUpdated = useCallback(() => {
                 onClick={() => handleStatusChange(s)}
                 disabled={changingStatus}
                 className={`flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50 ${
-                  s === 'rechazado'
-                    ? 'text-red-600 border-red-200 hover:bg-red-50'
-                    : s === 'cerrado'
+                  s === 'cerrado'
                     ? 'text-primary-foreground bg-primary border-primary hover:bg-primary/90'
                     : 'text-foreground border-border bg-card hover:bg-muted'
                 }`}

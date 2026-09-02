@@ -28,7 +28,7 @@ export function DashboardPage() {
   if (loading) return <LoadingSpinner />
 
   const activeCases = cases.filter((c) =>
-    ['revision', 'presupuesto', 'contrato_pendiente', 'activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
+    ['activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
   )
   const pendingQuotes = quotes.filter((q) => q.status === 'enviado')
   const redCases = cases.filter((c) => c.complianceStatus === 'red')

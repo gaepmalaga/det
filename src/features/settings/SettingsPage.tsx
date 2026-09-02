@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FirmSettingsTab } from './FirmSettingsTab'
 import { TeamTab } from './TeamTab'
@@ -19,7 +19,14 @@ const TABS = [
 ]
 
 export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('firm')
+  // En la URL, para poder enlazar directamente a una pestaña — /app/team
+  // llevaba a un aviso de "en construcción" cuando Equipo ya vivía aquí
+  // desde el rediseño de la navegación; ahora redirige a esta pestaña.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requested = searchParams.get('tab')
+  const activeTab = TABS.some((t) => t.id === requested) ? requested! : 'firm'
+  const setActiveTab = (tab: string) =>
+    setSearchParams(tab === 'firm' ? {} : { tab }, { replace: true })
 
   return (
     <div>

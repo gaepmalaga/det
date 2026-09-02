@@ -161,7 +161,12 @@ export interface Contact {
 
 // ─── QUOTE (presupuesto) ───────────────────────────────────────────────────────
 
-export type QuoteStatus = 'enviado' | 'aceptado' | 'rechazado'
+// 'borrador': el precio ya está calculado pero el despacho todavía no se
+// lo ha dado al cliente. Se separa de 'enviado' porque crear el
+// presupuesto en la plataforma no lo entrega a nadie — quien lo envía,
+// por el canal que sea, es la persona, y solo ella puede decir que ya lo
+// hizo (ver services/quotes.ts, markQuoteSent).
+export type QuoteStatus = 'borrador' | 'enviado' | 'aceptado' | 'rechazado'
 
 export interface Quote {
   id: string
@@ -206,16 +211,20 @@ export interface Quote {
 
 // ─── CASE ────────────────────────────────────────────────────────────────────
 
+// Un expediente nace ya autorizado —contrato firmado o contrato marco, ver
+// services/caseOpening.ts— así que su ciclo de vida empieza en 'activo'.
+// 'revision', 'presupuesto', 'contrato_pendiente' y 'rechazado' venían de
+// un flujo anterior en el que el expediente se creaba antes del contrato;
+// ese paso ahora lo cubre el presupuesto y el contrato por separado
+// (Oportunidades → Contratos), así que ningún expediente pasa nunca por
+// esos estados. Quitarlos evitaba pestañas y botones que siempre estaban
+// vacíos.
 export type CaseStatus =
-  | 'revision'
-  | 'presupuesto'
-  | 'contrato_pendiente'
   | 'activo'
   | 'suspendido'
   | 'trabajo_terminado'
   | 'cerrado'
   | 'archivado'
-  | 'rechazado'
 
 export type ComplianceStatus = 'green' | 'amber' | 'red'
 

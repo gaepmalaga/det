@@ -6,6 +6,7 @@ import {
   createQuote,
   rejectQuote,
   acceptQuote,
+  markQuoteSent,
   uploadQuoteDocument,
   type CreateQuoteData,
   type AcceptQuoteData,
@@ -87,7 +88,18 @@ export function useQuotes() {
     }
   }
 
-  return { quotes, loading, error, create, reject, accept, uploadDocument, reload: load }
+  const markSent = async (quoteId: string) => {
+    if (!firmId) return
+    try {
+      await markQuoteSent(firmId, quoteId)
+      await load()
+    } catch (err) {
+      console.error(err)
+      setError('Error al marcar el presupuesto como enviado.')
+    }
+  }
+
+  return { quotes, loading, error, create, reject, accept, markSent, uploadDocument, reload: load }
 }
 
 export function useContactQuotes(contactId: string) {
@@ -165,5 +177,16 @@ export function useContactQuotes(contactId: string) {
     }
   }
 
-  return { quotes, loading, error, create, reject, accept, uploadDocument, reload: load }
+  const markSent = async (quoteId: string) => {
+    if (!firmId) return
+    try {
+      await markQuoteSent(firmId, quoteId)
+      await load()
+    } catch (err) {
+      console.error(err)
+      setError('Error al marcar el presupuesto como enviado.')
+    }
+  }
+
+  return { quotes, loading, error, create, reject, accept, markSent, uploadDocument, reload: load }
 }

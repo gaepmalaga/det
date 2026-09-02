@@ -91,7 +91,10 @@ export function AppRouter() {
           <Route path="stats" element={<StatsPage />} />
           <Route path="collaborators" element={<CollaboratorsPage />} />
 <Route path="collaborators/:collaboratorId" element={<CollaboratorDetailPage />} />
-          <Route path="team" element={<Placeholder name="Equipo" />} />
+          {/* Equipo vive en Configuración desde el rediseño de la
+              navegación; esto es solo para no dejar un enlace antiguo
+              con un aviso de "en construcción". */}
+          <Route path="team" element={<Navigate to="/app/settings?tab=team" replace />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

@@ -31,14 +31,7 @@ export interface ComplianceAlert {
   retention: RetentionStatus
 }
 
-const OPEN_STATUSES = new Set([
-  'revision',
-  'presupuesto',
-  'contrato_pendiente',
-  'activo',
-  'suspendido',
-  'trabajo_terminado',
-])
+const OPEN_STATUSES = new Set(['activo', 'suspendido', 'trabajo_terminado'])
 
 function evaluate(
   caseData: Case,

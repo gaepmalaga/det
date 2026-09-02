@@ -44,6 +44,9 @@ export const ROUTES = {
   COMPLIANCE: '/app/compliance',
   STATS: '/app/stats',
   COLLABORATORS: '/app/collaborators',
+  // Equipo vive en Configuración desde el rediseño de la navegación; esta
+  // ruta se mantiene solo para que un enlace antiguo a /app/team no se
+  // encuentre con un "en construcción" — ver Router.tsx.
   TEAM: '/app/team',
   SETTINGS: '/app/settings',
 

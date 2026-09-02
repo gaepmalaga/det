@@ -9,14 +9,7 @@ import { format, subMonths, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { CaseStatus } from '@/types'
 
-const ACTIVE_STATUSES: CaseStatus[] = [
-  'revision',
-  'presupuesto',
-  'contrato_pendiente',
-  'activo',
-  'suspendido',
-  'trabajo_terminado',
-]
+const ACTIVE_STATUSES: CaseStatus[] = ['activo', 'suspendido', 'trabajo_terminado']
 
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   style: 'currency',
@@ -45,16 +38,18 @@ export function StatsPage() {
       const inMonth = quotes.filter((q) => monthKey(q.createdAt) === key)
       return {
         month,
-        enviados: inMonth.length,
+        creados: inMonth.length,
         aceptados: inMonth.filter((q) => q.status === 'aceptado').length,
         rechazados: inMonth.filter((q) => q.status === 'rechazado').length,
       }
     })
   }, [quotes, months])
 
-  const maxQuotesInMonth = Math.max(1, ...quotesByMonth.map((m) => m.enviados))
+  const maxQuotesInMonth = Math.max(1, ...quotesByMonth.map((m) => m.creados))
 
-  const totalDecided = quotes.filter((q) => q.status !== 'enviado').length
+  const totalDecided = quotes.filter(
+    (q) => q.status === 'aceptado' || q.status === 'rechazado'
+  ).length
   const totalAccepted = quotes.filter((q) => q.status === 'aceptado').length
   const conversionRate = totalDecided > 0 ? Math.round((totalAccepted / totalDecided) * 100) : 0
 
@@ -100,7 +95,7 @@ export function StatsPage() {
         <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">
-              Presupuestos enviados
+              Presupuestos creados
             </p>
             <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted shrink-0">
               <Receipt className="w-4 h-4 text-muted-foreground" />
@@ -154,16 +149,16 @@ export function StatsPage() {
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-4">Presupuestos por mes</h2>
           <div className="space-y-3">
-            {quotesByMonth.map(({ month, enviados, aceptados, rechazados }) => (
+            {quotesByMonth.map(({ month, creados, aceptados, rechazados }) => (
               <div key={monthKey(month)}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-muted-foreground capitalize">
                     {format(month, 'MMMM yyyy', { locale: es })}
                   </span>
-                  <span className="text-xs text-muted-foreground">{enviados}</span>
+                  <span className="text-xs text-muted-foreground">{creados}</span>
                 </div>
                 <div className="h-2 rounded-full bg-muted overflow-hidden flex">
-                  {enviados > 0 && (
+                  {creados > 0 && (
                     <>
                       <div
                         className="h-full bg-primary"
@@ -178,9 +173,9 @@ export function StatsPage() {
                       <div
                         className="h-full bg-border"
                         style={{
-                          width: `${((enviados - aceptados - rechazados) / maxQuotesInMonth) * 100}%`,
+                          width: `${((creados - aceptados - rechazados) / maxQuotesInMonth) * 100}%`,
                         }}
-                        title={`${enviados - aceptados - rechazados} pendientes`}
+                        title={`${creados - aceptados - rechazados} pendientes`}
                       />
                     </>
                   )}

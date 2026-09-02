@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, FileText } from 'lucide-react'
+import { CheckCircle, XCircle, FileText, Send } from 'lucide-react'
 import { QuoteStatusBadge } from '@/components/shared/StatusBadge'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -9,6 +9,7 @@ interface QuoteCardProps {
   quote: Quote
   contactName?: string
   onContactClick?: () => void
+  onSend: () => void
   onAccept: () => void
   onReject: (reason?: string) => void
 }
@@ -18,10 +19,18 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
 })
 
-export function QuoteCard({ quote, contactName, onContactClick, onAccept, onReject }: QuoteCardProps) {
+export function QuoteCard({
+  quote,
+  contactName,
+  onContactClick,
+  onSend,
+  onAccept,
+  onReject,
+}: QuoteCardProps) {
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
 
+  const isDraft = quote.status === 'borrador'
   const isPending = quote.status === 'enviado'
 
   return (
@@ -81,6 +90,22 @@ export function QuoteCard({ quote, contactName, onContactClick, onAccept, onReje
         <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
           Motivo: {quote.rejectionReason}
         </p>
+      )}
+
+      {isDraft && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Crearlo aquí no se lo entrega a nadie: márcalo cuando ya se lo
+            hayas dado, por el canal que sea.
+          </p>
+          <button
+            onClick={onSend}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <Send className="w-3.5 h-3.5" />
+            Ya se lo he dado al cliente
+          </button>
+        </div>
       )}
 
       {isPending && !showRejectForm && (

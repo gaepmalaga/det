@@ -157,8 +157,13 @@ export async function createCase(
   const count = await nextSequenceNumber(firmId, 'case')
   const caseNumber = `EXP-${String(count).padStart(4, '0')}`
 
+// El único punto por el que se crea un expediente es una vez el encargo ya
+// está autorizado —contrato firmado o contrato marco— así que arranca
+// directamente 'activo'. No existe un estado intermedio real: los dos
+// llamadores (services/caseOpening.ts) ya han hecho todo lo que hacía
+// falta antes de llamar aquí.
 const initialStatusEntry = {
-  status: 'revision' as CaseStatus,
+  status: 'activo' as CaseStatus,
   changedAt: Timestamp.now(),
   changedBy: userId,
 }
@@ -177,8 +182,11 @@ const initialStatusEntry = {
     caseNumberInt: count,
     ...cleanData,
     billingMode: data.billingMode ?? 'quote',
-    status: 'revision' as CaseStatus,
+    status: 'activo' as CaseStatus,
     statusHistory: [initialStatusEntry],
+    // El llamador lo pone a `true` en cuanto crea el expediente — aquí
+    // arranca en `false` solo por si algún día vuelve a existir un paso
+    // intermedio real de revisión.
     legitimateInterestValidated: false,
     hasActiveException: false,
     hasGraphicMaterial: false,

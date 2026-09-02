@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, FileCheck } from 'lucide-react'
-import { useCases } from '@/hooks/useCases'
+import { openFrameworkCase } from '@/services/caseOpening'
 import { useAuth } from '@/contexts/AuthContext'
 import { SYSTEM_INVESTIGATION_TYPES } from '@/types'
 import type { Client } from '@/types'
@@ -18,7 +18,6 @@ export function CreateFrameworkCaseDialog({
   onClose,
   onCreated,
 }: CreateFrameworkCaseDialogProps) {
-  const { create } = useCases()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -39,23 +38,20 @@ export function CreateFrameworkCaseDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (loading || !user) return
+    if (loading || !user?.firmId) return
     setLoading(true)
     try {
-      const caseId = await create({
+      const caseId = await openFrameworkCase(user.firmId, user.uid, {
         investigationType: form.investigationType,
         description: form.description,
         objectScope: form.objectScope,
         legitimateInterest: form.legitimateInterest,
         investigatedName: form.investigatedName,
         investigatedAddress: form.investigatedAddress,
-        assignedDetectiveId: user.uid,
-        assignedDetectiveTip: '',
         clientId: client.id,
-        billingMode: 'framework',
         agreedAmount: form.agreedAmount ? parseFloat(form.agreedAmount) : undefined,
       })
-      if (caseId) onCreated(caseId)
+      onCreated(caseId)
     } finally {
       setLoading(false)
     }

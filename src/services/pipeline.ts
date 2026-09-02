@@ -4,18 +4,20 @@ import type { Contact, Quote } from '@/types'
 // una oportunidad ya está escrito en sus presupuestos, y un campo aparte
 // se quedaría desactualizado en cuanto alguien aceptase un presupuesto sin
 // acordarse de cambiarlo. Aquí se deduce, así que no puede mentir.
-export type OpportunityStage = 'nuevo' | 'presupuestado' | 'ganado' | 'perdido'
+export type OpportunityStage = 'nuevo' | 'borrador' | 'presupuestado' | 'ganado' | 'perdido'
 
 export const STAGE_LABELS: Record<OpportunityStage, string> = {
   nuevo: 'Sin presupuestar',
+  borrador: 'Presupuesto sin enviar',
   presupuestado: 'Presupuesto enviado',
   ganado: 'Contratado',
   perdido: 'Descartado',
 }
 
 export const STAGE_HINTS: Record<OpportunityStage, string> = {
-  nuevo: 'Alguien que ha preguntado y todavía no ha recibido un precio.',
-  presupuestado: 'Ya tiene precio y está pendiente de decidir.',
+  nuevo: 'Alguien que ha preguntado y todavía no tiene ni precio calculado.',
+  borrador: 'Ya tiene un precio calculado, pero el despacho aún no se lo ha dado al cliente.',
+  presupuestado: 'Ya lo tiene el cliente y está pendiente de que decida.',
   ganado: 'Aceptó el presupuesto: a partir de aquí es cliente y tiene asunto.',
   perdido: 'Rechazó todo lo que se le ofreció.',
 }
@@ -45,20 +47,27 @@ export function buildOpportunities(contacts: Contact[], quotes: Quote[]): Opport
 
     const accepted = own.find((q) => q.status === 'aceptado')
     const pending = own.find((q) => q.status === 'enviado')
+    const draft = own.find((q) => q.status === 'borrador')
 
+    // Se comprueba en este orden porque son excluyentes por prioridad: si
+    // hay uno aceptado ya es cliente, si hay uno enviado se está esperando
+    // respuesta, si hay uno en borrador falta dárselo. Solo si no queda
+    // ninguno de los tres es que todos los que hay están rechazados.
     const stage: OpportunityStage = accepted
       ? 'ganado'
       : pending
         ? 'presupuestado'
-        : own.length > 0
-          ? 'perdido'
-          : 'nuevo'
+        : draft
+          ? 'borrador'
+          : own.length > 0
+            ? 'perdido'
+            : 'nuevo'
 
     return {
       contact,
       quotes: own,
       stage,
-      amount: (accepted ?? pending ?? own[0])?.amount,
+      amount: (accepted ?? pending ?? draft ?? own[0])?.amount,
       lastActivity: own[0]?.updatedAt ?? contact.updatedAt ?? contact.createdAt,
     }
   })
@@ -69,6 +78,7 @@ export function buildOpportunities(contacts: Contact[], quotes: Quote[]): Opport
 // que ya no requiere nada.
 export const STAGE_ORDER: OpportunityStage[] = [
   'nuevo',
+  'borrador',
   'presupuestado',
   'ganado',
   'perdido',
@@ -78,4 +88,4 @@ export const STAGE_ORDER: OpportunityStage[] = [
 // su asiento en el libro. Dejarlos aquí hacía que la pantalla mezclara a
 // quien hay que llamar mañana con quien lleva tres asuntos cerrados —que
 // era justo lo que había que arreglar.
-export const OPEN_STAGES: OpportunityStage[] = ['nuevo', 'presupuestado', 'perdido']
+export const OPEN_STAGES: OpportunityStage[] = ['nuevo', 'borrador', 'presupuestado', 'perdido']

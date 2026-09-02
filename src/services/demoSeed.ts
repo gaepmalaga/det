@@ -436,6 +436,20 @@ const CONSULTAS = [
         'Seguimiento para acreditar convivencia a efectos de extinción de pensión compensatoria.',
     },
   },
+  {
+    name: 'Fruterías El Manantial S.L.',
+    email: 'compras@fruteriaselmanantial.example.com',
+    phone: '952661188',
+    type: 'corporate' as const,
+    company: 'Fruterías El Manantial S.L.',
+    notes: 'Ya tiene precio calculado; falta dárselo por WhatsApp esta semana.',
+    quote: {
+      amount: 1050,
+      status: 'borrador' as const,
+      description:
+        'Vigilancia sobre posibles descuadres de caja en el turno de tarde de uno de los locales.',
+    },
+  },
 ]
 
 // Lo que contiene un despacho de prueba recién creado. Se calcula sobre
@@ -615,8 +629,9 @@ export async function seedDemoData(
       agreedAmount: a.amount,
       billingMode: 'quote',
       status: a.closed ? 'cerrado' : 'activo',
+      // Un expediente nace ya activo (contrato firmado o marco): no hay un
+      // paso de revisión previo que anotar aquí.
       statusHistory: [
-        { status: 'revision', changedAt: ts(start), changedBy: userId },
         { status: 'activo', changedAt: ts(start), changedBy: userId },
         ...(a.closed && end
           ? [{ status: 'cerrado', changedAt: ts(end), changedBy: userId }]

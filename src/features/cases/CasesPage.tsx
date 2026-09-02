@@ -15,22 +15,12 @@ import type { CaseStatus } from '@/types'
 const STATUS_TABS: { label: string; value: CaseStatus | 'todos' | 'activos' }[] = [
   { label: 'Todos', value: 'todos' },
   { label: 'Activos', value: 'activos' },
-  { label: 'En revisión', value: 'revision' },
-  { label: 'Presupuesto', value: 'presupuesto' },
-  { label: 'Contrato pendiente', value: 'contrato_pendiente' },
   { label: 'Suspendidos', value: 'suspendido' },
   { label: 'Trabajo terminado', value: 'trabajo_terminado' },
   { label: 'Cerrados', value: 'cerrado' },
 ]
 
-const ACTIVE_STATUSES: CaseStatus[] = [
-  'revision',
-  'presupuesto',
-  'contrato_pendiente',
-  'activo',
-  'suspendido',
-  'trabajo_terminado',
-]
+const ACTIVE_STATUSES: CaseStatus[] = ['activo', 'suspendido', 'trabajo_terminado']
 
 export function CasesPage() {
   const { cases, loading, error } = useCases()

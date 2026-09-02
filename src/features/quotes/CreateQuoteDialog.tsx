@@ -229,9 +229,14 @@ export function CreateQuoteDialog({
               disabled={loading}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {loading ? 'Enviando...' : 'Enviar presupuesto'}
+              {loading ? 'Guardando...' : 'Guardar presupuesto'}
             </button>
           </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Se guarda como borrador. Cuando se lo hayas dado al cliente —por
+            WhatsApp, email o en propia mano—, márcalo como enviado desde
+            Oportunidades.
+          </p>
         </form>
       </div>
     </div>

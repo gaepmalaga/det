@@ -98,7 +98,11 @@ export async function createQuote(
     investigationType: data.investigationType,
     description: data.description,
     amount: data.amount,
-    status: 'enviado' as QuoteStatus,
+    // Crear el presupuesto no lo pone en manos del cliente: eso lo hace la
+    // persona, por WhatsApp, email o en propia mano, y solo ella sabe
+    // cuándo ha ocurrido de verdad. Arranca en borrador; markQuoteSent lo
+    // pasa a enviado cuando el despacho confirma que ya lo ha entregado.
+    status: 'borrador' as QuoteStatus,
     createdBy: userId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -127,6 +131,17 @@ export async function uploadQuoteDocument(
   })
 
   return url
+}
+
+// El despacho confirma que ya le ha dado el presupuesto al cliente, por el
+// canal que sea. Es una constancia, no una acción de la plataforma: nadie
+// más que la persona que lo entregó puede saber que ya ha pasado.
+export async function markQuoteSent(firmId: string, quoteId: string): Promise<void> {
+  const ref = doc(db, 'firms', firmId, 'quotes', quoteId)
+  await updateDoc(ref, {
+    status: 'enviado' as QuoteStatus,
+    updatedAt: serverTimestamp(),
+  })
 }
 
 export async function rejectQuote(

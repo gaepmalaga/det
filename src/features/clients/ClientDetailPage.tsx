@@ -90,7 +90,7 @@ export function ClientDetailPage() {
 
   const clientCases = cases.filter((c) => c.clientId === client.id)
   const activeCases = clientCases.filter((c) =>
-    ['revision', 'presupuesto', 'contrato_pendiente', 'activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
+    ['activo', 'suspendido', 'trabajo_terminado'].includes(c.status)
   )
   const closedCases = clientCases.filter((c) =>
     ['cerrado', 'archivado'].includes(c.status)

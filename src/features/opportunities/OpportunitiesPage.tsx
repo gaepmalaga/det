@@ -24,6 +24,7 @@ import type { Quote } from '@/types'
 
 const STAGE_STYLES: Record<OpportunityStage, string> = {
   nuevo: 'bg-primary/10 text-primary border-primary/20',
+  borrador: 'bg-muted text-foreground border-border',
   presupuestado: 'bg-amber-50 text-amber-800 border-amber-200',
   ganado: 'bg-green-50 text-green-700 border-green-200',
   perdido: 'bg-muted text-muted-foreground border-border',
@@ -41,6 +42,7 @@ export function OpportunitiesPage() {
     loading: loadingQuotes,
     create: createQuote,
     reject: rejectQuote,
+    markSent,
     uploadDocument,
   } = useQuotes()
   const [search, setSearch] = useState('')
@@ -219,6 +221,23 @@ export function OpportunitiesPage() {
                           <span className="hidden sm:inline">
                             · {format(q.createdAt, 'dd/MM/yyyy', { locale: es })}
                           </span>
+
+                          {/* Un borrador todavía no está en manos del
+                              cliente: crearlo en la plataforma no lo
+                              entrega. Aquí se confirma que ya se le ha
+                              dado, por el canal que sea, antes de poder
+                              aceptarlo o rechazarlo. */}
+                          {q.status === 'borrador' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                markSent(q.id)
+                              }}
+                              className="ml-1 px-2 py-0.5 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded hover:bg-primary/20 transition-colors"
+                            >
+                              Ya se lo he dado → Marcar como enviado
+                            </button>
+                          )}
 
                           {/* Aceptar es el paso que convierte una consulta
                               en cliente con contrato y expediente, así que
