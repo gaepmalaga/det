@@ -2597,3 +2597,49 @@ nadie le decía por dónde empezar ni qué más había.
 Verificado en producción en viewport de móvil: entrar por «Soy un
 despacho» abre un despacho nuevo, Hoy muestra 5 asuntos abiertos y la guía
 anuncia 10 asientos, 5 informes, 30 actuaciones y 5 consultas.
+
+## Vista oficial del libro, y Hoy lleva a actuaciones (2026-09-02)
+
+**El libro se puede mirar de dos formas.** La vista por años sirve para
+trabajar —es como están sus carpetas— pero no para comprobar que el libro
+está bien. `RegistryOfficialView` añade el modelo del Anexo VII tal cual
+sale impreso: las diez columnas en su orden, la cabecera de dos niveles
+(«Número de orden» suelto, y los grupos Encargo de investigación,
+Contratante e Investigado), los asientos de más antiguo a más reciente, y
+una **línea gruesa donde acaba cada folio** — la costura por la que se
+separa una hoja sellada de la siguiente. Lo que se ve ahí es lo que va a
+salir por la impresora.
+
+Se elige con un selector y la elección se recuerda en el navegador, porque
+cada despacho tiene su costumbre. El buscador filtra en las dos vistas y
+pinchar una fila abre el asiento igual que antes.
+
+**Bug: en Hoy, pulsar un asunto llevaba al informe.** La tarjeta iba a la
+pestaña del paso pendiente, y como el paso pendiente casi siempre es
+«redactar el informe», el gesto más repetido del día acababa en la
+pantalla equivocada. Ahora la tarjeta lleva siempre a **actuaciones**, que
+es lo que se hace a diario; el distintivo del paso pendiente sigue
+llevando a lo suyo para quien vaya a eso.
+
+## Un borrador de informe a medias ya se puede guardar (2026-09-02)
+
+El informe se creaba con estado `borrador`, pero todos sus campos eran
+obligatorios en el formulario: o lo rellenabas entero o solo podías
+cancelar. Un borrador que exige estar completo no es un borrador, y un
+informe no se escribe de una sentada.
+
+Los campos dejan de ser obligatorios y el botón dice lo que hace
+(«Guardar borrador», no «Crear informe»). La exigencia se traslada a donde
+importa: **aprobar** un informe es decir que está terminado, así que ahí
+se comprueba el contenido mínimo del art. 49.1 de la Ley 5/2014
+—contratante, objeto del servicio, medios empleados, actuaciones
+practicadas y resultados— y se dice cuál falta. El borrador además lo
+anuncia por sí solo, sin esperar a que se pulse Aprobar.
+
+Verificado en producción guardando uno a medias a propósito: se guardó,
+avisó «Borrador a medias: falta el contratante, los medios empleados, los
+resultados», y al pulsar Aprobar lo rechazó con el mismo detalle.
+
+La página pública se queda además con **una sola puerta**. Colaborador y
+cliente entraban al panel del despacho, que no es lo suyo: enseñar algo
+que no es lo que dice ser es peor que no enseñarlo.
