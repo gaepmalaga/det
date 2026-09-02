@@ -2489,3 +2489,46 @@ en el 6, importó los 4 buenos, el Archivo los agrupó en 2021 (asientos
 3. Y sus piezas decían «No consta en este asiento», que hace pensar que
    falta algo. No falta: ahora dicen dónde está — «En la carpeta física:
    Archivador 2021, carpeta 3».
+
+## El folio impreso, sin ruido; y Excel de verdad en vez de CSV (2026-09-02)
+
+Dos cosas que solo se ven usando la exportación con el libro delante.
+
+**El folio llevaba encima cosas que no son el libro.** El pie decía
+«Impreso el 02/09/2026 a las 12:22» y la cabecera repetía el rango de
+asientos, que ya está en la columna «Número de orden». Lo que sale de
+ahí es una hoja del libro y se imprime sobre una hoja numerada y
+sellada: en ella no va nada que no sea el libro. Cuándo se imprimió cada
+folio queda registrado en la plataforma (`printedFolios`), que es donde
+hace falta saberlo. Quedan la razón social, el RNSP, la referencia al
+Anexo VII, el nº de folio, la cara y la diligencia de habilitación.
+
+**El CSV era ilegible.** Iba en UTF-8 con BOM —verificado en el fichero
+descargado: empieza por `EF BB BF`— y aun así Excel destrozaba los
+acentos según con qué locale se abriera; y cuando no, salían diez
+columnas del mismo ancho con el texto cortado y una raya larga en cada
+encabezado.
+
+Sustituido por un **.xlsx de verdad** (`services/registryXlsx.ts`): por
+dentro es XML dentro de un zip, siempre UTF-8, así que la codificación
+deja de ser una cuestión. Y trae lo que hace que una hoja se pueda leer:
+anchos de columna por contenido, encabezado fijo al hacer scroll
+(`<pane state="frozen">`), texto ajustado pegado arriba, filtros, y dos
+columnas que el CSV no daba — detective actuante y TIP.
+
+Se escribe a mano sobre **JSZip**, que ya estaba instalado como
+dependencia transitiva de `docx` y ahora se declara directa, en vez de
+traer una librería de hojas de cálculo entera para generar una tabla de
+trece columnas. Usa cadenas en línea (`t="inlineStr"`) en vez de la
+tabla de cadenas compartidas, que es la parte del formato donde es más
+fácil generar un fichero corrupto, y filtra los caracteres de control,
+que Excel rechaza y que pueden venir de un Excel ajeno importado.
+
+Verificado en producción descomprimiendo la hoja generada dentro del
+propio navegador: el zip trae las seis partes que Excel espera y los
+textos salen íntegros — «Número de orden», «Órgano al que se
+comunicaron», «María Fernández Ruiz», «Calle Compañía 15, 3ºA, 29008
+Málaga (Málaga)», «Andalucía». Y en el PDF, confirmado que ya no
+aparecen ni «Impreso el» ni el rango de asientos.
+
+Se borra `registryExport.ts`, que solo contenía ya el CSV.
