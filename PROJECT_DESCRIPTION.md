@@ -2572,3 +2572,28 @@ desactivado (`ADMIN_ONLY_OPERATION`). Habilitándolo —un interruptor en
 Authentication → Sign-in method— la demostración dejaría de crear cuentas
 de correo ficticias y usaría sesiones anónimas, que es más limpio. El
 cambio en el código es de una línea.
+
+## La demostración dice qué tiene dentro y por dónde empezar (2026-09-02)
+
+Quien entraba a probar aterrizaba en Hoy con dos asuntos abiertos y se iba
+pensando que la plataforma estaba vacía — justo lo contrario de lo que
+promete la página pública, que habla de «un año de archivo dentro». Y
+nadie le decía por dónde empezar ni qué más había.
+
+- **Tres asuntos abiertos más** en los datos de prueba, con estados
+  distintos (uno recién empezado sin actuaciones, uno con una sola, uno con
+  cuatro), para que Hoy enseñe el día a día real de un despacho y no dos
+  tarjetas sueltas. Ahora abre con 5 asuntos abiertos.
+- **`features/demo/DemoGuide`**: guía fija abajo, solo visible cuando
+  `firm.isDemo`. Dice qué hay dentro y propone cuatro pasos en el orden en
+  que tienen sentido — abre el libro, entra en un asiento, anota una
+  actuación, imprime un folio. Se marcan solos según se recorre la
+  plataforma (ajuste de estado durante el render al cambiar de ruta, no en
+  un efecto, para no encadenar renders). Se pliega y se puede ocultar; en
+  el móvil arranca plegada porque desplegada tapaba la pantalla entera.
+- Las cifras de la guía salen de **`DEMO_TOTALS`**, calculado sobre los
+  propios datos de siembra: no puede anunciar trece asientos y haber diez.
+
+Verificado en producción en viewport de móvil: entrar por «Soy un
+despacho» abre un despacho nuevo, Hoy muestra 5 asuntos abiertos y la guía
+anuncia 10 asientos, 5 informes, 30 actuaciones y 5 consultas.
