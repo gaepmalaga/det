@@ -80,6 +80,11 @@ function mapCase(id: string, data: Record<string, unknown>): Case {
     destructionRequestedAt: toDateOrUndefined(data.destructionRequestedAt),
     destructionCompletedAt: toDateOrUndefined(data.destructionCompletedAt),
     hasActiveException: data.hasActiveException as boolean ?? false,
+    exceptionReason: data.exceptionReason as string | undefined,
+    hasGraphicMaterial: data.hasGraphicMaterial as boolean | undefined,
+    graphicMaterialLocation: data.graphicMaterialLocation as string | undefined,
+    graphicMaterialDestroyedAt: toDateOrUndefined(data.graphicMaterialDestroyedAt),
+    graphicMaterialDestroyedBy: data.graphicMaterialDestroyedBy as string | undefined,
     registryEntryId: data.registryEntryId as string | undefined,
     registryEntryNumber: data.registryEntryNumber as number | undefined,
     complianceStatus: (data.complianceStatus as ComplianceStatus) ?? 'amber',
@@ -152,10 +157,6 @@ export async function createCase(
   const count = await nextSequenceNumber(firmId, 'case')
   const caseNumber = `EXP-${String(count).padStart(4, '0')}`
 
-  const now = new Date()
-  const conservationDeadline = new Date(now)
-  conservationDeadline.setFullYear(conservationDeadline.getFullYear() + 3)
-
 const initialStatusEntry = {
   status: 'revision' as CaseStatus,
   changedAt: Timestamp.now(),
@@ -180,9 +181,13 @@ const initialStatusEntry = {
     statusHistory: [initialStatusEntry],
     legitimateInterestValidated: false,
     hasActiveException: false,
+    hasGraphicMaterial: false,
     complianceStatus: 'amber' as ComplianceStatus,
-    complianceIssues: ['Interés legítimo pendiente de validar'],
-    conservationDeadline: Timestamp.fromDate(conservationDeadline),
+    complianceIssues: [],
+    // El plazo de conservación NO se fija aquí. El art. 49.4 cuenta los
+    // tres años desde la finalización de la investigación, no desde su
+    // apertura, así que hasta que el asunto no se cierra no hay fecha —
+    // la calcula services/retention.ts sobre closedAt.
     createdBy: userId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

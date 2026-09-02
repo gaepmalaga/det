@@ -283,11 +283,27 @@ export interface Case {
   closedAt?: Date
   closedBy?: string
 
-  // Conservación
+  // Conservación (art. 49.4 de la Ley 5/2014)
+  //
+  // Los informes se conservan «al menos» tres años: es un mínimo, no un
+  // deber de destruir. Las imágenes y sonidos grabados, en cambio, «se
+  // destruirán tres años después de su finalización», salvo que estén
+  // relacionados con un procedimiento judicial, una investigación policial
+  // o un procedimiento sancionador. Son dos reglas distintas y solo la
+  // segunda obliga a destruir.
   conservationDeadline?: Date
   destructionRequestedAt?: Date
   destructionCompletedAt?: Date
+  /** Procedimiento judicial, policial o sancionador que impide destruir. */
   hasActiveException: boolean
+  exceptionReason?: string
+
+  /** Si la investigación grabó imágenes o sonidos, que sí hay que destruir. */
+  hasGraphicMaterial?: boolean
+  /** Dónde está ese material: disco, tarjeta, carpeta en la nube... */
+  graphicMaterialLocation?: string
+  graphicMaterialDestroyedAt?: Date
+  graphicMaterialDestroyedBy?: string
 
   // Libro-registro
   registryEntryId?: string

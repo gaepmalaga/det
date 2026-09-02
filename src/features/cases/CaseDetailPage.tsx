@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ShieldCheck, Handshake } from 'lucide-react'
+import { ArrowLeft, Handshake } from 'lucide-react'
 import { useCaseDetail, useCases } from '@/hooks/useCases'
 import { useCollaborators } from '@/hooks/useCollaborators'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
@@ -10,8 +10,10 @@ import { CaseActionsTab } from './tabs/CaseActionsTab'
 import { CaseReportTab } from './tabs/CaseReportTab'
 import { CaseAuditTab } from './tabs/CaseAuditTab'
 import { CasePortalTab } from './tabs/CasePortalTab'
+import { GraphicMaterialCard } from './GraphicMaterialCard'
+import { destructionDueDate } from '@/services/retention'
 import { ROUTES } from '@/constants/routes'
-import { CASE_STATUS_LABELS, CASE_STATUS_FLOW, COMPLIANCE_LABELS } from '@/constants/cases'
+import { CASE_STATUS_LABELS, CASE_STATUS_FLOW } from '@/constants/cases'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { CaseStatus } from '@/types'
@@ -84,18 +86,6 @@ const handleCaseUpdated = useCallback(() => {
                 {caseData.caseNumber}
               </span>
               <CaseStatusBadge status={caseData.status} />
-              <span
-                className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border ${
-                  caseData.complianceStatus === 'green'
-                    ? 'bg-green-50 text-green-700 border-green-200'
-                    : caseData.complianceStatus === 'amber'
-                    ? 'bg-amber-50 text-amber-700 border-amber-200'
-                    : 'bg-red-50 text-red-700 border-red-200'
-                }`}
-              >
-                <ShieldCheck className="w-3 h-3" />
-                {COMPLIANCE_LABELS[caseData.complianceStatus]}
-              </span>
             </div>
             <h1 className="text-xl font-semibold text-foreground">
               {caseData.investigationType}
@@ -154,24 +144,6 @@ const handleCaseUpdated = useCallback(() => {
 
           {/* Columna principal — 2 cols en desktop */}
           <div className="lg:col-span-2 space-y-4">
-
-            {caseData.complianceIssues.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4" />
-                  Alertas de cumplimiento
-                </h3>
-                <ul className="space-y-1.5">
-                  {caseData.complianceIssues.map((issue, i) => (
-                    <li key={i} className="text-sm text-amber-800 flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-                      {issue}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-4">Encargo</h3>
               <div className="space-y-4">
@@ -223,6 +195,8 @@ const handleCaseUpdated = useCallback(() => {
               </div>
             </div>
 
+            <GraphicMaterialCard caseData={caseData} onSaved={handleCaseUpdated} />
+
             <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Historial de estados
@@ -265,15 +239,15 @@ const handleCaseUpdated = useCallback(() => {
                     })}
                   </p>
                 </div>
-                {caseData.conservationDeadline && (
+                {destructionDueDate(caseData) && caseData.hasGraphicMaterial && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Conservación hasta</p>
+                    <p className="text-xs text-muted-foreground">
+                      Destrucción del material
+                    </p>
                     <p className="text-sm text-foreground">
-                      {format(
-                        caseData.conservationDeadline,
-                        "dd 'de' MMMM 'de' yyyy",
-                        { locale: es }
-                      )}
+                      {format(destructionDueDate(caseData)!, "dd 'de' MMMM 'de' yyyy", {
+                        locale: es,
+                      })}
                     </p>
                   </div>
                 )}

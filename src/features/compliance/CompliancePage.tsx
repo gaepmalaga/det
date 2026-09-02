@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getFirmComplianceAlerts, type ComplianceAlert } from '@/services/compliance'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { RetentionQueue } from './RetentionQueue'
 
 const STATUS_CONFIG = {
   red: {
@@ -55,7 +56,7 @@ export function CompliancePage() {
     <div>
       <PageHeader
         title="Cumplimiento"
-        description="Estado de cumplimiento normativo de los expedientes activos."
+        description="Lo que un inspector encontraría mal, calculado sobre los datos de cada asunto."
       />
 
       {/* Métricas — 1 col móvil, 3 col desktop */}
@@ -160,6 +161,11 @@ export function CompliancePage() {
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {alert.entryNumber !== undefined && (
+                          <span className="font-mono text-xs font-semibold text-foreground bg-background/70 border border-border px-1.5 py-0.5 rounded">
+                            Asiento {alert.entryNumber}
+                          </span>
+                        )}
                         <span className="font-mono text-xs text-muted-foreground">
                           {alert.caseNumber}
                         </span>
@@ -171,13 +177,15 @@ export function CompliancePage() {
                         {alert.investigationType}
                       </p>
                       {alert.issues.length > 0 && (
-                        <ul className="mt-2 space-y-1">
+                        <ul className="mt-2 space-y-1.5">
                           {alert.issues.map((issue, i) => (
-                            <li
-                              key={i}
-                              className={`text-xs ${config.text}`}
-                            >
-                              · {issue}
+                            <li key={i} className="text-xs">
+                              <span className={`font-medium ${config.text}`}>
+                                {issue.label}.
+                              </span>{' '}
+                              <span className="text-muted-foreground">
+                                {issue.detail}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -191,6 +199,8 @@ export function CompliancePage() {
           })}
         </div>
       )}
+
+      <RetentionQueue />
     </div>
   )
 }
