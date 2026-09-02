@@ -140,9 +140,13 @@ export function OpportunitiesPage() {
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground mb-4">
-        {[...active].map((s) => STAGE_HINTS[s]).join(' ')}
-      </p>
+      {/* La explicación solo aclara cuando se está mirando un estado
+          concreto; encadenar las tres es ruido. */}
+      {active.size === 1 && (
+        <p className="text-xs text-muted-foreground mb-4">
+          {STAGE_HINTS[[...active][0]]}
+        </p>
+      )}
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
