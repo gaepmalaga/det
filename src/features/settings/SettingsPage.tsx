@@ -5,6 +5,7 @@ import { TeamTab } from './TeamTab'
 import { TariffsTab } from './TariffsTab'
 import { InvestigationTypesTab } from './InvestigationTypesTab'
 import { ContractTemplateTab } from './ContractTemplateTab'
+import { RegistryBookTab } from './RegistryBookTab'
 
 const TABS = [
   { id: 'firm', label: 'Despacho' },
@@ -12,6 +13,7 @@ const TABS = [
   { id: 'tariffs', label: 'Tarifas' },
   { id: 'types', label: 'Tipos de investigación' },
   { id: 'contract', label: 'Plantilla de contrato' },
+  { id: 'registry', label: 'Libro-registro' },
 ]
 
 export function SettingsPage() {
@@ -46,6 +48,7 @@ export function SettingsPage() {
       {activeTab === 'tariffs' && <TariffsTab />}
       {activeTab === 'types' && <InvestigationTypesTab />}
       {activeTab === 'contract' && <ContractTemplateTab />}
+      {activeTab === 'registry' && <RegistryBookTab />}
     </div>
   )
 }

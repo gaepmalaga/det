@@ -389,6 +389,14 @@ export interface FrameworkContract {
 
 export type RegistryEntryStatus = 'abierto' | 'cerrado'
 
+// Un asiento 'historico' es anterior a la plataforma: se importó del libro
+// de papel (o del duplicado en Excel que casi todos los despachos llevan)
+// para que el libro digital esté completo desde el asiento 1. No tiene
+// contrato ni informe dentro, y eso es correcto — la documentación sigue
+// en el archivador. Cumplimiento no debe tratarlo como incompleto, o el
+// primer día que alguien importe 200 asuntos vería 200 falsas alarmas.
+export type RegistryEntryOrigin = 'plataforma' | 'historico'
+
 export interface RegistryAmendment {
   amendedAt: Date
   amendedBy: string
@@ -405,6 +413,13 @@ export interface RegistryEntry {
   entryDate: Date
   firmRnsp: string
   branchId?: string
+  // 'plataforma' (nacido aquí, con su expediente y documentos dentro) o
+  // 'historico' (importado del libro de papel). Ver RegistryEntryOrigin.
+  origin: RegistryEntryOrigin
+  // Dónde está la carpeta de papel de este asunto: «Archivador 3, balda B».
+  // El puente entre lo digital y el archivador mientras convivan los dos,
+  // imprescindible para los asientos históricos.
+  physicalLocation?: string
   clientName: string
   clientTaxId: string
   clientType: ContactType

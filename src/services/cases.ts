@@ -13,6 +13,7 @@ import {
   arrayUnion,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { nextSequenceNumber } from './counters'
 import type { Case, CaseStatus, ComplianceStatus } from '@/types'
 
 function toDate(val: unknown): Date {
@@ -148,8 +149,7 @@ export async function createCase(
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'cases')
 
-  const countSnap = await getDocs(ref)
-  const count = countSnap.size + 1
+  const count = await nextSequenceNumber(firmId, 'case')
   const caseNumber = `EXP-${String(count).padStart(4, '0')}`
 
   const now = new Date()

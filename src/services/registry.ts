@@ -11,7 +11,13 @@ import {
   arrayUnion,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import type { RegistryEntry, RegistryEntryStatus, ContactType } from '@/types'
+import { nextSequenceNumber } from './counters'
+import type {
+  RegistryEntry,
+  RegistryEntryStatus,
+  RegistryEntryOrigin,
+  ContactType,
+} from '@/types'
 
 function toDate(val: unknown): Date {
   if (!val) return new Date()
@@ -46,6 +52,10 @@ function mapEntry(id: string, data: Record<string, unknown>): RegistryEntry {
     entryDate: toDate(data.entryDate),
     firmRnsp: data.firmRnsp as string,
     branchId: data.branchId as string | undefined,
+    // Los asientos creados antes de existir este campo son todos de la
+    // plataforma: los históricos solo pueden entrar por importación.
+    origin: (data.origin as RegistryEntryOrigin) ?? 'plataforma',
+    physicalLocation: data.physicalLocation as string | undefined,
     clientName: data.clientName as string,
     clientTaxId: (data.clientTaxId as string) ?? '',
     clientType: data.clientType as ContactType,
@@ -94,15 +104,20 @@ export async function getRegistryEntries(firmId: string): Promise<RegistryEntry[
 export async function createRegistryEntry(
   firmId: string,
   userId: string,
-  data: CreateRegistryEntryData
+  data: CreateRegistryEntryData,
+  // Número por el que arranca el libro si es el primer asiento del
+  // despacho (Firm.registryStartNumber). Solo cuenta la primera vez.
+  registryStartNumber = 1
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'registryBooks')
-  const countSnap = await getDocs(ref)
-  const count = countSnap.size + 1
+  // Número correlativo atómico: no se repite aunque dos personas creen a
+  // la vez, y no retrocede aunque se borre un asiento (ver counters.ts).
+  const count = await nextSequenceNumber(firmId, 'registry', registryStartNumber)
 
   const cleanData: Record<string, unknown> = {
     firmId,
     entryNumber: count,
+    origin: 'plataforma' as RegistryEntryOrigin,
     entryDate: serverTimestamp(),
     firmRnsp: data.firmRnsp,
     clientName: data.clientName,

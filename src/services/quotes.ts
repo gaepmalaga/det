@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '@/lib/firebase'
+import { nextSequenceNumber } from './counters'
 import type { Quote, QuoteStatus } from '@/types'
 
 function toDate(val: unknown): Date {
@@ -87,8 +88,7 @@ export async function createQuote(
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'quotes')
 
-  const countSnap = await getDocs(ref)
-  const count = countSnap.size + 1
+  const count = await nextSequenceNumber(firmId, 'quote')
   const quoteNumber = `PRE-${String(count).padStart(4, '0')}`
 
   const cleanData: Record<string, unknown> = {

@@ -17,6 +17,7 @@ import {
   getDownloadURL,
 } from 'firebase/storage'
 import { db, storage } from '@/lib/firebase'
+import { nextSequenceNumber } from './counters'
 
 export type ContractType =
   | 'servicio_cliente'
@@ -164,8 +165,7 @@ export async function createContract(
   data: CreateContractData
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'contracts')
-  const countSnap = await getDocs(ref)
-  const count = countSnap.size + 1
+  const count = await nextSequenceNumber(firmId, 'contract')
   const contractNumber = `CONT-${String(count).padStart(4, '0')}`
 
   const cleanData: Record<string, unknown> = {

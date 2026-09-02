@@ -11,6 +11,7 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { nextSequenceNumber } from './counters'
 import type { Contact } from '@/types'
 
 function toDate(val: unknown): Date {
@@ -69,8 +70,7 @@ export async function createContact(
 ): Promise<string> {
   const ref = collection(db, 'firms', firmId, 'contacts')
 
-  const countSnap = await getDocs(ref)
-  const count = countSnap.size + 1
+  const count = await nextSequenceNumber(firmId, 'contact')
   const referenceNumber = `CON-${String(count).padStart(4, '0')}`
 
   // Firestore no acepta undefined — construimos el objeto limpio

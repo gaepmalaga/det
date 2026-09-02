@@ -190,6 +190,19 @@ service cloud.firestore {
       allow update: if isSuperAdmin() || isOwnerOrDirector(firmId);
       allow delete: if isSuperAdmin();
 
+      // ── CONTADORES DE SECUENCIA ──────────────────────────────────────────
+      // Un documento por secuencia (registry, case, contract, quote,
+      // contact) con el último número entregado. Cualquier miembro activo
+      // necesita poder incrementarlos porque crear un expediente, un
+      // contrato o un asiento consume número — ver services/counters.ts.
+      // Nunca se borran: perder el contador haría que la numeración
+      // volviese a empezar y se repitiesen asientos ya usados.
+      match /counters/{sequence} {
+        allow read: if isSuperAdmin() || isActiveMember(firmId);
+        allow create, update: if isActiveMember(firmId);
+        allow delete: if false;
+      }
+
       // ── MEMBERS ──────────────────────────────────────────────────────────
 
       match /members/{memberId} {
