@@ -1728,7 +1728,17 @@ memoria, no cuesta red) y, si no coinciden, se fuerza la renovación con
 `fbUser.getIdToken(true)`. Así solo se paga la llamada de red extra
 cuando de verdad hay un desajuste, no en cada carga de página.
 
-Verificado en producción con la cuenta demo de portal
-(`gaepmalaga+mariaportal@gmail.com`): tras este segundo fix, el portal
-carga el expediente y el importe del presupuesto correctamente en la
-misma sesión que antes fallaba dos veces seguidas.
+**Confirmación final**: la sesión concreta usada para las pruebas
+anteriores (crear cuenta → comprobar → verificar en otra pestaña →
+seguir probando sin cerrar sesión, varias veces seguidas en la misma
+pestaña) seguía fallando incluso con este segundo fix — probablemente
+un estado de `IndexedDB` ya inconsistente por la propia secuencia de
+pruebas automatizadas, no representativo de un usuario real. Cerrando
+sesión e iniciando sesión de nuevo desde cero (el flujo real: verificar
+el email y luego entrar), el portal cargó correctamente el expediente y
+el importe del presupuesto a la primera. La regla de `quotes` era la
+causa real y necesaria del bug; el ajuste de refresco de token en
+`AuthContext.tsx` se deja de todos modos por ser una corrección de
+fondo correcta (cubre el caso real de una pestaña ya abierta que se
+reanuda tras verificar el email en segundo plano), aunque no fuese lo
+que arregló esta sesión de prueba concreta.
