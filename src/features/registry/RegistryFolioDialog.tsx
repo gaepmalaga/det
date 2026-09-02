@@ -103,7 +103,8 @@ export function RegistryFolioDialog({ open, entries, onClose, onPrinted }: Props
               Imprimir el libro
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Folio a folio, sobre las hojas numeradas y selladas.
+              Folio a folio, sobre las hojas numeradas y selladas. Cada folio
+              son dos caras apaisadas que van una al lado de la otra.
             </p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
@@ -209,8 +210,8 @@ export function RegistryFolioDialog({ open, entries, onClose, onPrinted }: Props
                 >
                   <FileDown className="w-4 h-4" />
                   {chosen.length === 1
-                    ? 'Imprimir 1 folio'
-                    : `Imprimir ${chosen.length} folios`}
+                    ? 'Imprimir 1 folio (2 caras)'
+                    : `Imprimir ${chosen.length} folios (${chosen.length * 2} caras)`}
                 </button>
               </div>
             ) : (
