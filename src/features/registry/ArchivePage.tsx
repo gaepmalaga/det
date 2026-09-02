@@ -4,6 +4,7 @@ import {
   Archive,
   Search,
   Download,
+  Upload,
   ChevronRight,
   AlertTriangle,
   FolderOpen,
@@ -14,6 +15,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { RegistryFolioDialog } from './RegistryFolioDialog'
+import { ImportBookDialog } from './ImportBookDialog'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { RegistryEntry } from '@/types'
@@ -63,6 +65,7 @@ export function ArchivePage() {
   const [search, setSearch] = useState('')
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
   const [showExport, setShowExport] = useState(false)
+  const [showImport, setShowImport] = useState(false)
 
   const load = useCallback(async () => {
     if (!user?.firmId) return
@@ -126,14 +129,23 @@ export function ArchivePage() {
         title="Archivo"
         description="Todos los asuntos del despacho, por año y número de asiento."
         action={
-          <button
-            onClick={() => setShowExport(true)}
-            disabled={entries.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Exportar el libro</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Traer el libro de papel</span>
+            </button>
+            <button
+              onClick={() => setShowExport(true)}
+              disabled={entries.length === 0}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Imprimir</span>
+            </button>
+          </div>
         }
       />
 
@@ -152,7 +164,7 @@ export function ArchivePage() {
         <EmptyState
           icon={Archive}
           title="El archivo está vacío"
-          description="Cada asunto entra en el archivo al firmarse su contrato, cuando se anota en el libro-registro."
+          description="Cada asunto entra aquí al firmarse su contrato. Si ya llevas un libro en papel, tráetelo entero con «Traer el libro de papel»."
         />
       ) : groups.length === 0 ? (
         <EmptyState
@@ -258,6 +270,18 @@ export function ArchivePage() {
             )
           })}
         </div>
+      )}
+
+      {showImport && (
+        <ImportBookDialog
+          open={true}
+          existing={entries}
+          onClose={() => {
+            setShowImport(false)
+            load()
+          }}
+          onImported={load}
+        />
       )}
 
       {showExport && (
