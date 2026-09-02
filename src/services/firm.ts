@@ -60,6 +60,7 @@ function mapFirm(id: string, data: Record<string, unknown>): Firm {
     registryLastPrintedAt: toDateOrUndefined(data.registryLastPrintedAt),
     status: data.status as Firm['status'],
     planId: data.planId as string,
+    isDemo: data.isDemo as boolean | undefined,
     createdAt: toDate(data.createdAt),
     updatedAt: toDate(data.updatedAt),
   }

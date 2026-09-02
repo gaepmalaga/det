@@ -62,6 +62,8 @@ export interface Firm {
   registryLastPrintedAt?: Date
   status: FirmStatus
   planId: string
+  /** Despacho de prueba creado desde la página pública. */
+  isDemo?: boolean
   createdAt: Date
   updatedAt: Date
 }

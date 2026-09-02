@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { AppSidebar } from './AppSidebar'
 import { Menu } from 'lucide-react'
+import { DemoGuide } from '@/features/demo/DemoGuide'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -36,10 +37,12 @@ export function AppShell() {
           <div className="w-9" />
         </header>
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 pb-32 lg:pb-32">
           <Outlet />
         </main>
       </div>
+
+      <DemoGuide />
     </div>
   )
 }

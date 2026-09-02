@@ -296,6 +296,80 @@ const ASUNTOS: DemoAsunto[] = [
       { date: '2026-08-31', text: 'Se obtiene indicio de un nuevo domicilio en la barriada de El Palo, pendiente de confirmación.' },
     ],
   },
+  {
+    start: '2026-08-10',
+    clientName: 'Grupo Hotelero Marbella S.L.',
+    clientTaxId: 'B29334455',
+    clientType: 'corporate',
+    street: 'Avenida Ricardo Soriano 40',
+    city: 'Marbella',
+    province: 'Málaga',
+    postalCode: '29601',
+    email: 'direccion@grupohotelmarbella.example.com',
+    phone: '952770044',
+    investigationType: 'Laboral',
+    objectScope:
+      'Comprobar sustracciones reiteradas de género en el almacén de uno de los establecimientos, con sospecha de participación de personal propio.',
+    legitimateInterest:
+      'La empresa sufre las sustracciones en sus propias instalaciones y necesita acreditarlas antes de adoptar medidas.',
+    investigatedName: 'Personal del turno de noche',
+    investigatedAddress: 'Avenida Ricardo Soriano 40, 29601 Marbella',
+    amount: 2650,
+    closed: false,
+    actions: [
+      { date: '2026-08-12', text: 'Reconocimiento de las instalaciones y de los accesos al almacén. Se identifican dos puntos ciegos sin cobertura.' },
+      { date: '2026-08-20', text: 'Primera noche de vigilancia. Se documenta la salida de dos cajas por la puerta de proveedores fuera del horario de reparto.' },
+      { date: '2026-08-29', text: 'Segunda noche. Se repite la salida de género por el mismo acceso, a la misma hora.' },
+      { date: '2026-09-01', text: 'Se amplía la vigilancia al muelle de carga a petición del cliente.' },
+    ],
+  },
+  {
+    start: '2026-08-28',
+    clientName: 'Inmaculada Ferrer Ripoll',
+    clientTaxId: '44778899P',
+    clientType: 'individual',
+    street: 'Calle Alcazabilla 3, 1º B',
+    city: 'Málaga',
+    province: 'Málaga',
+    postalCode: '29015',
+    email: 'inmaculada.ferrer.demo@example.com',
+    phone: '699334422',
+    investigationType: 'Familia',
+    objectScope:
+      'Comprobar el cumplimiento del régimen de visitas acordado en sentencia durante cuatro fines de semana alternos.',
+    legitimateInterest:
+      'La clienta es la progenitora custodia y el incumplimiento reiterado del régimen de visitas afecta a la ejecución de la sentencia.',
+    investigatedName: 'Óscar Benítez Lara',
+    investigatedAddress: 'Calle Cristo de la Epidemia 55, 29013 Málaga',
+    amount: 1150,
+    closed: false,
+    graphicMaterial: 'Tarjeta SD nº 7, caja fuerte del despacho',
+    actions: [
+      { date: '2026-08-29', text: 'Primer fin de semana. El investigado no acude al punto de encuentro en el horario acordado.' },
+    ],
+  },
+  {
+    start: '2026-09-01',
+    clientName: 'Construcciones Vega del Sur S.A.',
+    clientTaxId: 'A29556644',
+    clientType: 'corporate',
+    street: 'Camino de los Prados 22',
+    city: 'Málaga',
+    province: 'Málaga',
+    postalCode: '29003',
+    email: 'gerencia@vegadelsur.example.com',
+    phone: '952110066',
+    investigationType: 'Investigación mercantil y financiera',
+    objectScope:
+      'Determinar la solvencia y la existencia de bienes de una sociedad deudora con una sentencia firme pendiente de ejecución.',
+    legitimateInterest:
+      'La empresa es acreedora con título ejecutivo y necesita localizar bienes para instar la ejecución.',
+    investigatedName: 'Reformas Integrales Sur S.L.',
+    investigatedAddress: 'Calle Mendivil 8, 29007 Málaga',
+    amount: 1400,
+    closed: false,
+    actions: [],
+  },
 ]
 
 // Consultas que todavía no han contratado, que es lo que da vida a
@@ -363,6 +437,21 @@ const CONSULTAS = [
     },
   },
 ]
+
+// Lo que contiene un despacho de prueba recién creado. Se calcula sobre
+// los propios datos para que la guía no pueda decir una cifra distinta de
+// la que hay dentro.
+export const DEMO_TOTALS = {
+  asuntos: ASUNTOS.length,
+  asientos: ASUNTOS.length,
+  informes: ASUNTOS.filter((a) => a.report && a.end).length,
+  actuaciones: ASUNTOS.reduce((n, a) => n + a.actions.length, 0),
+  consultas: CONSULTAS.length,
+  desde: ASUNTOS.reduce(
+    (min, a) => (a.start < min ? a.start : min),
+    ASUNTOS[0].start
+  ).slice(0, 4),
+}
 
 export interface SeedResult {
   asuntos: number
