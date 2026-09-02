@@ -70,7 +70,12 @@ export function DemoGuide() {
   const { firm } = useFirm()
   const location = useLocation()
   const [state, setState] = useState(readState)
-  const [open, setOpen] = useState(true)
+  // En el móvil la guía desplegada tapa la pantalla entera, y lo primero
+  // que tiene que ver alguien es la plataforma, no la guía. Empieza
+  // plegada: se ve la barra, que invita a abrirla, y no estorba.
+  const [open, setOpen] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth >= 640
+  )
 
   // Los pasos se marcan solos según se recorre la plataforma: pedirle a
   // alguien que vaya tachando una lista es pedirle trabajo. Se ajusta
@@ -119,7 +124,9 @@ export function DemoGuide() {
               <p className="text-xs text-muted-foreground">
                 {hechos === PASOS.length
                   ? 'Ya lo has visto todo. Sigue trasteando lo que quieras.'
-                  : `Recorrido sugerido · ${hechos} de ${PASOS.length}`}
+                  : open
+                    ? `Recorrido sugerido · ${hechos} de ${PASOS.length}`
+                    : `Toca para ver qué probar · ${hechos} de ${PASOS.length}`}
               </p>
             </button>
             <ChevronDown
@@ -150,7 +157,7 @@ export function DemoGuide() {
                 cambiar y borrar lo que quieras sin afectar a nadie.
               </p>
 
-              <ol className="divide-y divide-border max-h-[42vh] overflow-y-auto">
+              <ol className="divide-y divide-border max-h-[38vh] overflow-y-auto">
                 {PASOS.map((paso, i) => {
                   const hecho = state.done.includes(paso.id)
                   return (
