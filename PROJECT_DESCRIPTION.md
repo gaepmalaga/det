@@ -2643,3 +2643,114 @@ resultados», y al pulsar Aprobar lo rechazó con el mismo detalle.
 La página pública se queda además con **una sola puerta**. Colaborador y
 cliente entraban al panel del despacho, que no es lo suyo: enseñar algo
 que no es lo que dice ser es peor que no enseñarlo.
+
+## Presupuestos que no mienten (2026-09-02)
+
+Crear un presupuesto lo marcaba como `enviado` en el mismo instante, aunque
+nadie lo hubiera enseñado todavía a nadie. La plataforma no manda emails ni
+WhatsApps: ese estado era una promesa de algo que no había pasado.
+
+Se añade un estado real, `borrador`, que es el que se pone al crearlo. Solo
+pasa a `enviado` cuando el detective confirma explícitamente que se lo ha
+dado al cliente —por WhatsApp, email o en propia mano—, con un botón
+("Ya se lo he dado al cliente") tanto en la ficha del contacto como en
+Oportunidades, donde además hay una nueva columna `borrador` en el pipeline
+para que no desaparezca de la vista mientras tanto.
+
+Arreglar esto destapó dos sitios donde `enviado` se usaba como si fuera
+"todo lo que no está decidido", una suposición que dejó de ser cierta en
+cuanto existió un tercer estado: en Estadísticas, la tasa de conversión
+contaba los borradores como "decididos" (infl aba el denominador y hundía
+la tasa mostrada), y la etiqueta de la tarjeta decía "Presupuestos
+enviados" contando en realidad todos los creados. Las dos se corrigen para
+que el número y la etiqueta digan lo mismo.
+
+Verificado en producción: presupuesto nuevo → "Presupuesto sin enviar 1" →
+botón "Ya se lo he dado" → "Presupuesto sin enviar 0" / "Presupuesto
+enviado 3" con Aceptar/Rechazar ya disponibles.
+
+## Expedientes fantasma: estados que nunca se alcanzaban, y uno que no llegaba a ningún sitio (2026-09-02)
+
+`CaseStatus` tenía nueve valores, pero un expediente solo se crea **ya
+autorizado** —contrato firmado o contrato marco activo—, así que cuatro de
+esos nueve (`revision`, `presupuesto`, `contrato_pendiente`, `rechazado`)
+describían una fase previa que ya no existe en el flujo actual: nunca se
+alcanzaban, y los botones de cambio de estado los seguían ofreciendo como
+si fueran un paso siguiente real.
+
+Tirando de ese hilo apareció algo más serio que un tipo sobrante: un
+expediente nacido de un **contrato marco** llamaba a la creación genérica
+de expediente, que nunca invoca `createRegistryEntry` — solo lo hace el
+camino de presupuesto+contrato. El resultado real en producción: un
+expediente de contrato marco **no aparecía nunca en el libro-registro** y
+se quedaba parado en `revision` para siempre, un incumplimiento silencioso
+que ningún aviso en pantalla señalaba. Se corrige escribiendo
+`openFrameworkCase()`, que sigue exactamente el mismo camino que ya se
+había probado para presupuestos: crea el expediente ya `activo`, con el
+TIP real del detective asignado y su propio asiento en el libro-registro.
+
+Ese mismo repaso encontró un tercer campo roto: `legitimateInterestValidated`
+no lo ponía a `true` ningún camino real de la aplicación —solo lo fingían
+los datos de demostración—, así que todo expediente de verdad mostraba
+para siempre un aviso ámbar de "interés legítimo sin validar" que no había
+manera de resolver. En este producto no existe un revisor aparte: quien
+redacta el interés legítimo lo hace una vez, en el momento de abrir el
+expediente, así que ambos caminos de creación lo marcan validado ahí
+mismo.
+
+Con eso resuelto, los cuatro estados sobrantes de `CaseStatus` quedaban ya
+genuinamente muertos y se retiran del tipo, junto con cada pestaña, filtro
+y color que los mencionaba. Un repaso manual —el compilador no lo detecta,
+porque es un payload de Firestore sin tipar— encontró además un
+`statusHistory` de los datos de demostración que todavía escribía
+`revision` como si fuera un estado válido; se limpia también.
+
+Verificado en producción: un expediente abierto ofrece ahora solo
+"Suspendido" y "Trabajo terminado" como paso siguiente, y el interés
+legítimo aparece como "Validado". El camino de contrato marco
+(`openFrameworkCase`) queda revisado línea a línea contra el ya probado,
+pero **no se ha podido verificar en vivo**: exige subir un PDF de contrato
+marco real y no hay forma de simular esa subida de fichero en el entorno
+de pruebas usado para esta verificación.
+
+## Equipo deja de ser una promesa vacía (2026-09-02)
+
+`/app/team` llevaba a un "en construcción" desde el rediseño de la
+navegación, aunque la gestión de equipo llevaba tiempo viviendo de verdad
+dentro de Configuración. Cualquier enlace antiguo a esa ruta —favoritos,
+historial del navegador— llegaba a un callejón sin salida.
+
+La ruta pasa a redirigir a `/app/settings?tab=team`, y Configuración gana
+estado de pestaña en la URL (antes vivía solo en memoria) para que ese
+destino exista de verdad y se pueda enlazar directamente.
+
+Verificado en producción: `/app/team` redirige y abre la pestaña Equipo.
+
+## Purgar los despachos de demostración (2026-09-02)
+
+Cada visita a la página pública que abre un despacho de prueba crea uno
+nuevo de verdad en Firestore. Útil para que nadie pise los datos de otro,
+pero sin límite se acumulan para siempre y no había ninguna manera de
+borrarlos.
+
+Antes de escribir nada se leyeron las reglas de Firestore colección por
+colección: dos son indestructibles aunque quien borre sea superadmin —
+`counters` y `cases/{caseId}/auditLogs` tienen `allow delete: if false`
+sin excepción, por diseño, porque son inmutables. La purga borra todo lo
+demás con escritura por lotes (expediente por expediente, y dentro de cada
+uno sus actuaciones, informes, investigados, órdenes de asignación y
+accesos de portal) y acepta como compromiso documentado que esos dos tipos
+de documento queden huérfanos bajo un `firmId` que ya no existe:
+invisibles, no listables, un puñado de KB que no justifica un backend solo
+para esto.
+
+La acción vive en Superadmin → Despachos → pestaña "Demostración", con
+botón por despacho y uno para purgar todos de golpe, ambos detrás de un
+`window.confirm` explícito sobre que no se puede deshacer. El botón de
+borrar solo existe para un despacho marcado `isDemo`; el código lo
+comprueba antes de nada, no solo la pestaña que lo enseña.
+
+**No se ha podido verificar en vivo**: exige una cuenta de superadmin que
+no está disponible en el entorno donde se ha hecho esta verificación. El
+código y las reglas de Firestore están revisados, pero falta la prueba
+real de un borrado.
