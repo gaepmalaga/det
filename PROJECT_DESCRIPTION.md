@@ -2369,3 +2369,64 @@ la dejaría congelada en la versión vieja para siempre. Así que
 control en cuatro segundos, se borra junto con sus cachés y se recarga en
 frío. Cuesta una recarga lenta y solo ocurre una vez, al salir de esa
 situación.
+
+## Cumplimiento calculado y conservación real del material grabado (2026-09-02)
+
+**Cumplimiento leía un campo obsoleto.** `getFirmComplianceAlerts` sacaba
+`complianceIssues` del expediente, un campo que se escribía una sola vez
+al crearlo y no se volvía a tocar: seguía diciendo «Interés legítimo
+pendiente de validar» mucho después de haberse rellenado. Ahora las
+reglas se evalúan sobre los datos de verdad —mismo criterio que
+`dossierGaps` en el asiento y `buildOpportunities` en las oportunidades—
+y cada aviso lleva qué falla y por qué importa, con la norma detrás:
+interés legítimo (art. 48.2 Ley 5/2014), identidad del investigado y TIP
+del actuante (Anexo VII), contrato firmado, presencia en el libro
+(art. 108 del Reglamento) y datos del contratante en el asiento. Cada
+alerta se identifica por **nº de asiento**, que es como la busca quien
+inspecciona. `complianceIssues` deja de escribirse y el expediente deja
+de enseñar su distintivo de cumplimiento: un estado caducado es peor que
+ninguno.
+
+**Bug real de plazos.** `conservationDeadline` se calculaba como fecha de
+apertura + 3 años, pero el art. 49.4 de la Ley 5/2014 cuenta los tres
+años «después de su finalización». Un asunto que dura año y medio
+conserva su material hasta cuatro y medio después de abrirse: la
+plataforma habría avisado de destruirlo año y medio antes de tiempo, y
+destruir antes de plazo no se puede deshacer. El plazo se calcula ahora
+sobre `closedAt` (`services/retention.ts`, `destructionDueDate`) y deja
+de guardarse en el documento.
+
+**Las dos reglas del art. 49.4**, que se confunden porque van en la misma
+frase: los informes «deberán conservarse archivados, **al menos**, durante
+tres años» —un mínimo, no un deber de destruir— y las imágenes y sonidos
+«**se destruirán** tres años después de su finalización, salvo que estén
+relacionadas con un procedimiento judicial, una investigación policial o
+un procedimiento sancionador». Solo la segunda obliga, y es la única que
+la plataforma recuerda.
+
+Para poder cumplirla hacía falta saber que ese material existe: cada
+expediente tiene ahora **Material grabado** (`GraphicMaterialCard`) —si
+se grabó, dónde está guardado y si hay un procedimiento que impida
+destruirlo, con cuál— y Cumplimiento lista la **cola de conservación**
+(`RetentionQueue`) ordenada por lo ya vencido. La plataforma no guarda
+las grabaciones —viven en el disco o la tarjeta del detective—, así que
+no borra nada: avisa y deja constancia de quién destruyó y cuándo, que
+es lo que hay que poder enseñar.
+
+Estados: `sin_material`, `en_curso` (el asunto sigue abierto, el plazo no
+ha empezado), `conservando`, `proximo` (menos de 90 días), `vencido`,
+`retenido` (procedimiento judicial/policial/sancionador) y `destruido`.
+
+Verificado en producción: Cumplimiento detectó fallos reales en los dos
+asuntos demo (interés legítimo sin validar, sin TIP del actuante, asiento
+sin NIF del contratante) y no marcó falsos positivos de contrato, que sí
+están firmados. Marcado material grabado en EXP-0002 (cerrado el
+02/09/2026): la tarjeta calculó «Destrucción el 2 de septiembre de 2029»
+y la cola lo recogió como «En conservación · quedan 1096 días · Guardado
+en: Disco externo del despacho».
+
+**Bug encontrado al verificar**: la tarjeta calculaba el estado sobre el
+expediente guardado y no sobre el formulario, así que al marcar la
+casilla no salía ni la fecha ni el aviso — había que guardar a ciegas
+para descubrir qué implicaba lo marcado. Corregido proyectando el estado
+del formulario antes de calcular.
