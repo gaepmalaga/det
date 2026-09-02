@@ -1603,3 +1603,44 @@ que el usuario pruebe el ciclo completo (invitar un miembro desde
 Configuración → Equipo, iniciar sesión con ese email por primera vez —
 Google o email/contraseña — y confirmar que aterriza en el Dashboard del
 despacho correcto, no en Onboarding).
+
+## Firebase Storage: paso a Blaze y activación (2026-09-01/02, sesión local)
+
+Al retomar el CI de `storage.rules` (ver arriba, "Añadido storage al
+--only") se descubrió que Storage nunca había llegado a activarse de
+verdad en este proyecto — no era un tema de permisos IAM sino que
+**Firebase exige el plan Blaze (pago por uso) para poder usar Storage**,
+y el proyecto seguía en el plan gratuito Spark. Esto requiere una
+tarjeta de pago, así que quedó fuera de lo que este asistente puede
+hacer — el usuario lo completó él mismo desde el móvil:
+
+1. **Cuenta de facturación**: la cuenta "Pago de Firebase" que Firebase
+   ofrece por defecto ya tenía 5 proyectos enganchados (el máximo de ese
+   tipo de cuenta ligera) — haría falta una cuenta de facturación nueva
+   y separada si se quisiera usar esa vía. En su lugar, el usuario
+   completó el asistente de "Actualizar proyecto" de Firebase
+   directamente, que resolvió el enganche de facturación sin más
+   fricción.
+2. **Bucket**: creado en `US-EAST1` (el asistente ofrecía Europa como
+   alternativa "de pago estándar" en vez de "sin costo garantizado" —
+   se sugirió por prudencia de RGPD dado que Storage guardará datos
+   personales de clientes/investigados españoles, pero el usuario
+   decidió seguir con US-EAST1; sin archivos subidos todavía, así que
+   sigue siendo reversible si más adelante se prefiere recrear el bucket
+   en una región europea). Nombre real del bucket:
+   `detectivesprivadosesp.firebasestorage.app`.
+3. **Bug encontrado de paso**: tanto `.env.local` de este PC como el
+   secreto de GitHub Actions `VITE_FIREBASE_STORAGE_BUCKET` tenían un
+   valor obsoleto, `despachosdetectives.firebasestorage.app` (nombre
+   previo al renombrado del proyecto) — con ese valor, cualquier subida
+   de archivo habría apuntado a un bucket que no existe. Corregido en
+   ambos sitios a `detectivesprivadosesp.firebasestorage.app` (el
+   secreto de GitHub se actualizó por CLI con permiso explícito del
+   usuario).
+4. Con Storage ya activo, se volvió a añadir `,storage` al `--only` del
+   paso de despliegue de reglas en `firebase-hosting-merge.yml` (se
+   había revertido temporalmente mientras se resolvía el plan Blaze).
+
+**Pendiente**: confirmar que el próximo push despliega `storage.rules`
+sin el error `Firebase Storage has not been set up` que apareció antes
+de completar el paso a Blaze.

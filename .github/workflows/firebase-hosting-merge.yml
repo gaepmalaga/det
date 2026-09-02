@@ -29,8 +29,8 @@ jobs:
           projectId: detectivesprivadosesp
       - name: Deploy Firestore rules, indexes and Storage rules
         # continue-on-error stays as a safety net (see PROJECT_DESCRIPTION.md
-        # for the IAM incident this step went through) — the "Administrador
-        # de Firebase" role granted then already covers Storage too.
+        # for the IAM incident this step went through, and the later Blaze
+        # upgrade needed before Storage itself could be provisioned).
         continue-on-error: true
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-service-account.json
