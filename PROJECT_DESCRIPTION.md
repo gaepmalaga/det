@@ -2788,3 +2788,94 @@ distintas sin avisar de nada, así que la cuenta seguía sin reconocerse
 como superadmin pese a tener el UID correcto. Queda anotado aquí porque
 es un error fácil de repetir si se vuelve a dar de alta un superadmin a
 mano.
+
+## Incidente: `.env.local` apuntaba a otro proyecto de Firebase y rompió el login en producción (2026-09-03)
+
+Auditando la fluidez de la app (ver más abajo) se encontraron y arreglaron
+tres fricciones menores — enlace roto a `/pricing`, el mapa de "Nueva
+actuación" secuestrando el scroll de la página, y el informe de
+investigación sin autorrellenar el contratante aunque el expediente ya
+conoce al cliente (`Case.clientId`) — commit `5af539e`. Nada de esto es
+grave por sí solo. Verificarlo en producción sí lo destapó.
+
+**El síntoma**: tras desplegar, `auth/api-key-not-valid` en consola —
+ni el login ni "Abrir un despacho de prueba" funcionaban en absoluto.
+
+**La causa real, nada que ver con el commit anterior**: `.env.local`
+(no versionado, `.gitignore`) tenía la configuración de un proyecto de
+Firebase distinto y antiguo — `projectId: despachosdetectives` en vez
+de `detectivesprivadosesp`, con API key, App ID y Sender ID que no
+correspondían a nada del proyecto actual. Solo `storageBucket` estaba
+bien, a mano, sueltamente. La fecha del archivo (2 de septiembre) dice
+que este desajuste ya estaba ahí antes de esta sesión — probablemente
+desde la migración de proyecto documentada en "Estado técnico" más
+arriba (PR #1, `despachosdetectives` → `detectivesprivadosesp`), donde
+se actualizó el `.env` que sí se trackeaba pero no la copia local.
+
+**Por qué no se había notado hasta ahora**: el service worker de la
+PWA cachea el bundle anterior de forma agresiva y lo sigue sirviendo a
+pestañas nuevas hasta que se activa una versión nueva. La build de
+producción que estaba realmente *en uso* en el navegador durante gran
+parte de esta sesión era una anterior a esta, con la configuración
+correcta — el `.env.local` roto solo se manifestó cuando esta sesión
+reconstruyó (`npm run build`) y desplegó dos veces seguidas (el cambio
+de nombre a "detectiveos" y luego los tres arreglos de fluidez),
+haciendo que el service worker acabara sirviendo por fin un bundle
+construido con el `.env.local` malo.
+
+**Arreglado**: `.env.local` corregido con los valores reales del
+proyecto, obtenidos con `firebase apps:sdkconfig WEB
+1:492059095168:web:5b4fd3d3050d6ad6bb3665 --project
+detectivesprivadosesp` (comando de solo lectura, no hace falta tocar
+la consola de Firebase para esto). Reconstruido y redesplegado.
+Verificado en un Chrome real forzando la actualización del service
+worker (`navigator.serviceWorker.getRegistrations()` +
+`unregister()` + recarga, para no esperar a que se active solo): login,
+creación de despacho de prueba y los tres arreglos de fluidez, todos
+confirmados sobre el bundle nuevo de verdad (`index-B_d-KWw5.js`, no
+el `index-DL-O6XF7.js` cacheado).
+
+**Pendiente real**: como `.env.local` no está en git, no hay ninguna
+copia de respaldo de estos valores fuera de este documento. Si el
+archivo se pierde o alguien clona el repo desde cero, hay que
+reponerlo a mano — con el mismo comando `firebase apps:sdkconfig` de
+arriba, o copiando estos valores (la API key web de Firebase no es
+secreta, viaja en el bundle público a propósito):
+
+```
+VITE_FIREBASE_API_KEY=AIzaSyDY46vCFEVxSNRKTzaUtPorZIYwR3XwuUM
+VITE_FIREBASE_AUTH_DOMAIN=detectivesprivadosesp.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=detectivesprivadosesp
+VITE_FIREBASE_STORAGE_BUCKET=detectivesprivadosesp.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=492059095168
+VITE_FIREBASE_APP_ID=1:492059095168:web:5b4fd3d3050d6ad6bb3665
+```
+
+## Repaso de fluidez de flujo (2026-09-03)
+
+A petición del usuario, recorrido completo de la plataforma como
+usuaria real (alta de despacho de prueba → Hoy → actuación → informe
+con IA → oportunidades → colaboradores → configuración → cumplimiento,
+escritorio y móvil) más un inventario estructural del código. Hallazgos
+que no se arreglaron en esta sesión, para retomar:
+
+- **Cambio de sección en el sidebar dispara una pantalla completa de
+  "Cargando..."** en vez de una transición instantánea — cada página
+  monta sus propios listeners de Firestore desde cero. Se nota más a
+  "recarga" que a app fluida para algo de uso diario.
+- `src/features/contracts/CaseContractTab.tsx` está vacío (0 bytes),
+  huérfano junto al real en `cases/tabs/CaseContractTab.tsx`.
+- Nomenclatura confusa: `collaborate/` (portal externo del colaborador)
+  vs `collaborators/` (gestión interna) — casi idénticos, conceptos
+  distintos.
+- Componentes grandes, candidatos a dividir: `CaseReportTab` (777
+  líneas), `CollaboratorDetailPage` (624), `CollaboratorsPage` (521).
+- El patrón `EmptyState` solo se usa en 10 de 63 páginas — el resto
+  probablemente maneja "sin datos" de forma manual y no siempre igual.
+- `/superadmin/plans` y `/superadmin/audit` siguen siendo un
+  placeholder "en construcción".
+- Se observó (sin confirmar con certeza — pudo ser un fallo de
+  coordenadas de clic durante la propia auditoría, no reproducido de
+  forma fiable) que las pestañas del expediente no responden mientras
+  el formulario de "Nuevo informe" está abierto. Revisar si se repite
+  antes de darlo por bug real.
