@@ -1680,17 +1680,38 @@ Verificado en producción real, con el expediente demo: el portal ya
 carga el expediente y el importe del presupuesto correctamente tras el
 despliegue.
 
-**Nota aparte, no relacionada con el bug**: en el navegador sandbox
-usado para esta prueba, la obtención del token de App Check falla con
-`400 (appCheck/initial-throttle)` de forma consistente — casi seguro
-porque reCAPTCHA v3 identifica ese navegador automatizado como no-humano
-y rehúsa emitir un token, no porque haya un problema real de
-configuración (el dominio sí está registrado). Como ni Firestore ni
-Storage tienen App Check en modo forzado (solo AI Logic, y ese en modo
-supervisión), esto no bloqueó nada — pero conviene tenerlo presente si
-en el futuro se activa App Check forzado para más productos: probar
-desde un navegador real, no automatizado, antes de dar por rota una
-función.
+**Nota aparte, no relacionada con el bug**: la obtención del token de
+App Check falla con `400 (appCheck/initial-throttle)` de forma
+consistente. Se sospechó primero que era cosa de un navegador
+automatizado (reCAPTCHA v3 identificándolo como no-humano), pero se
+descartó al reproducir el mismo 400, con el mismo motivo, en un Chrome
+real de usuario (2026-09-03). Interceptando la respuesta real de
+`exchangeRecaptchaV3Token` (parcheando `window.fetch` en consola) se
+vio el cuerpo del error:
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "App not registered: 1:492059095168:web:5b4fd3d3050d6ad6bb3665.",
+    "status": "FAILED_PRECONDITION"
+  }
+}
+```
+
+Causa real: la clave de reCAPTCHA v3 está bien creada en
+`google.com/recaptcha/admin` para el dominio, pero eso solo cubre la
+mitad del proceso — en Firebase Console, dentro de **App Check → Apps**,
+la app web (`1:492059095168:web:5b4fd3d3050d6ad6bb3665`) nunca se
+registró formalmente con ese proveedor. Son dos pasos independientes:
+crear la clave de reCAPTCHA (hecho) y registrar la app en App Check con
+esa clave (pendiente). Como ni Firestore ni Storage tienen App Check en
+modo forzado (solo AI Logic, y ese en modo supervisión), esto no
+bloqueó nada de lo probado hasta ahora — pero hay que registrar la app
+en Firebase Console → App Check → Apps antes de que AI Logic pase a
+aplicación forzosa obligatoria (2 de noviembre de 2026, ver más
+arriba), o el botón "Generar borrador con IA" dejará de funcionar en
+producción.
 
 **Segunda causa del mismo síntoma, más de fondo**: tras desplegar la
 regla de `quotes` de arriba, el portal seguía dando
