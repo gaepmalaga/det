@@ -74,7 +74,7 @@ export function LocationPicker({ onChange }: LocationPickerProps) {
   // Mapa: se crea al montar, se destruye al desmontar.
   useEffect(() => {
     if (!containerRef.current) return
-    const map = L.map(containerRef.current, { zoomControl: false }).setView(
+    const map = L.map(containerRef.current, { zoomControl: false, scrollWheelZoom: false }).setView(
       DEFAULT_CENTER,
       DEFAULT_ZOOM
     )

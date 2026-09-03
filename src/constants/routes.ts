@@ -2,7 +2,6 @@ export const ROUTES = {
   // Public
   HOME: '/',
   LOGIN: '/login',
-  PRICING: '/pricing',
 
   // Onboarding
   ONBOARDING: '/onboarding',

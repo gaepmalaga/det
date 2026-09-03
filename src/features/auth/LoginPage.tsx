@@ -309,8 +309,8 @@ export function LoginPage() {
 
           <p className="text-center text-xs text-muted-foreground mt-7">
             ¿Nuevo despacho?{' '}
-            <a href={ROUTES.PRICING} className="text-foreground hover:underline underline-offset-4">
-              Ver planes
+            <a href={ROUTES.HOME} className="text-foreground hover:underline underline-offset-4">
+              Pruébalo gratis
             </a>
           </p>
         </div>

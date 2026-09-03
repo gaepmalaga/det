@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Plus, CheckCircle, Send, AlertTriangle, Sparkles, Loader2, Download, FileDown } from 'lucide-react'
 import { useCaseReport } from '@/hooks/useReports'
 import { useCaseActions } from '@/hooks/useActions'
+import { useClientDetail } from '@/hooks/useClients'
 import { useFirm } from '@/hooks/useFirm'
 import { useAuth } from '@/contexts/AuthContext'
 import { createAuditLog } from '@/services/auditLog'
@@ -56,6 +57,7 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
   const { firm } = useFirm()
   const { report, loading, create, update, approve, deliver } = useCaseReport(caseData.id)
   const { actions: caseActions } = useCaseActions(caseData.id)
+  const { client } = useClientDetail(caseData.clientId || '')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -78,6 +80,18 @@ export function CaseReportTab({ caseData, onCaseUpdated }: CaseReportTabProps) {
     conclusions: '',
     observations: '',
   })
+
+  // El expediente ya sabe quién es el cliente (Case.clientId) — evita que
+  // el detective tenga que volver a teclear un nombre y NIF que la
+  // plataforma ya tiene, tanto al redactar a mano como en el borrador de IA.
+  useEffect(() => {
+    if (report || !client) return
+    setForm((prev) => ({
+      ...prev,
+      clientName: prev.clientName || client.legalName,
+      clientTaxId: prev.clientTaxId || client.taxId,
+    }))
+  }, [client, report])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
