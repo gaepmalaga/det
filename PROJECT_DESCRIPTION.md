@@ -2856,15 +2856,34 @@ VITE_FIREBASE_APP_ID=1:492059095168:web:5b4fd3d3050d6ad6bb3665
 A petición del usuario, recorrido completo de la plataforma como
 usuaria real (alta de despacho de prueba → Hoy → actuación → informe
 con IA → oportunidades → colaboradores → configuración → cumplimiento,
-escritorio y móvil) más un inventario estructural del código. Hallazgos
-que no se arreglaron en esta sesión, para retomar:
+escritorio y móvil) más un inventario estructural del código.
 
-- **Cambio de sección en el sidebar dispara una pantalla completa de
-  "Cargando..."** en vez de una transición instantánea — cada página
-  monta sus propios listeners de Firestore desde cero. Se nota más a
-  "recarga" que a app fluida para algo de uso diario.
-- `src/features/contracts/CaseContractTab.tsx` está vacío (0 bytes),
-  huérfano junto al real en `cases/tabs/CaseContractTab.tsx`.
+**Dos de los hallazgos iniciales resultaron ser falsos positivos de la
+herramienta de automatización del navegador, no bugs reales** —
+verificado después con clics de verdad dentro de la SPA ya cargada, en
+vez de navegación por URL directa (que fuerza una recarga completa de
+página, indistinguible a simple vista de un bug real):
+- Lo que parecía "pantalla completa de Cargando... al cambiar de
+  sección" era en realidad el efecto de usar la herramienta de
+  navegación por URL para simular cada clic del sidebar durante la
+  auditoría — un clic real sobre un `NavLink` no recarga nada, el
+  sidebar permanece.
+- Lo que parecía "las pestañas del expediente no responden con el
+  formulario de informe abierto" tampoco reprodujo: cambiar a
+  "Resumen" con "Nuevo informe" abierto cambia de pestaña sin
+  problema.
+
+Queda como aviso para el propio proceso de auditoría, no para el
+producto: al probar una SPA con estas herramientas, navegar por URL
+(`navigate`) no es intercambiable con un clic real sobre un enlace
+interno — solo el segundo prueba de verdad el routing del lado del
+cliente.
+
+Hallazgos que sí son reales y siguen sin arreglar, para retomar:
+
+- `src/features/contracts/CaseContractTab.tsx` estaba vacío (0 bytes),
+  huérfano junto al real en `cases/tabs/CaseContractTab.tsx` —
+  **eliminado** (commit posterior a esta entrada).
 - Nomenclatura confusa: `collaborate/` (portal externo del colaborador)
   vs `collaborators/` (gestión interna) — casi idénticos, conceptos
   distintos.
@@ -2874,8 +2893,3 @@ que no se arreglaron en esta sesión, para retomar:
   probablemente maneja "sin datos" de forma manual y no siempre igual.
 - `/superadmin/plans` y `/superadmin/audit` siguen siendo un
   placeholder "en construcción".
-- Se observó (sin confirmar con certeza — pudo ser un fallo de
-  coordenadas de clic durante la propia auditoría, no reproducido de
-  forma fiable) que las pestañas del expediente no responden mientras
-  el formulario de "Nuevo informe" está abierto. Revisar si se repite
-  antes de darlo por bug real.
