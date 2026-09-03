@@ -2708,10 +2708,11 @@ porque es un payload de Firestore sin tipar— encontró además un
 Verificado en producción: un expediente abierto ofrece ahora solo
 "Suspendido" y "Trabajo terminado" como paso siguiente, y el interés
 legítimo aparece como "Validado". El camino de contrato marco
-(`openFrameworkCase`) queda revisado línea a línea contra el ya probado,
-pero **no se ha podido verificar en vivo**: exige subir un PDF de contrato
-marco real y no hay forma de simular esa subida de fichero en el entorno
-de pruebas usado para esta verificación.
+(`openFrameworkCase`) también se verificó de punta a punta: contrato
+marco subido a un cliente, expediente creado desde él (EXP-0011,
+`Activo`, interés legítimo `Validado`) y, lo que de verdad importaba,
+**su asiento apareció en el libro-registro** con la numeración
+correlativa correcta — la prueba directa de que el bug ya no reproduce.
 
 ## Equipo deja de ser una promesa vacía (2026-09-02)
 
@@ -2750,7 +2751,19 @@ botón por despacho y uno para purgar todos de golpe, ambos detrás de un
 borrar solo existe para un despacho marcado `isDemo`; el código lo
 comprueba antes de nada, no solo la pestaña que lo enseña.
 
-**No se ha podido verificar en vivo**: exige una cuenta de superadmin que
-no está disponible en el entorno donde se ha hecho esta verificación. El
-código y las reglas de Firestore están revisados, pero falta la prueba
-real de un borrado.
+Verificado en producción, borrado individual y masivo: 8 despachos de
+demostración acumulados, uno se borró suelto (8→7), los 7 restantes con
+"Borrar los 7 de demostración" de una vez — los dos confirmados
+persistentes tras recargar la página, sin errores. La plataforma quedó
+con solo los despachos reales.
+
+Esta verificación exigió dar de alta un superadmin de verdad, y de paso
+salió a la luz un despiste de bootstrap que merece quedar anotado: el
+primer intento de crear el documento de superadmin en Firestore se hizo
+en una colección llamada `plataformAdmins` —con la "a" de "plataforma",
+el nombre natural en español— cuando el código y las reglas usan
+`platformAdmins`, en inglés. Firestore las trata como dos colecciones
+distintas sin avisar de nada, así que la cuenta seguía sin reconocerse
+como superadmin pese a tener el UID correcto. Queda anotado aquí porque
+es un error fácil de repetir si se vuelve a dar de alta un superadmin a
+mano.
