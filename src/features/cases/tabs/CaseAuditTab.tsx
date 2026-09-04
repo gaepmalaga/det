@@ -8,6 +8,7 @@ import {
   type AuditEventType,
 } from '@/services/auditLog'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { CASE_STATUS_LABELS } from '@/constants/cases'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -227,13 +228,15 @@ export function CaseAuditTab({ caseData }: CaseAuditTabProps) {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="px-4 py-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {logs.length === 0
+          <EmptyState
+            icon={ScrollText}
+            title={logs.length === 0 ? 'Sin eventos todavía' : 'Sin eventos con este filtro'}
+            description={
+              logs.length === 0
                 ? 'Los eventos se registrarán aquí a medida que se realicen operaciones.'
-                : 'No hay eventos con el filtro seleccionado.'}
-            </p>
-          </div>
+                : 'No hay eventos con el filtro seleccionado.'
+            }
+          />
         ) : (
           <div className="relative">
             {/* Línea de timeline */}

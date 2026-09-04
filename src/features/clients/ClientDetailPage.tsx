@@ -15,6 +15,7 @@ import {
 import { useClientDetail } from '@/hooks/useClients'
 import { useCases } from '@/hooks/useCases'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { CaseStatusBadge } from '@/components/shared/StatusBadge'
 import { FrameworkContractSection } from './FrameworkContractSection'
 import { format } from 'date-fns'
@@ -173,11 +174,11 @@ export function ClientDetailPage() {
               )}
             </h2>
             {clientCases.length === 0 ? (
-              <div className="py-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No hay expedientes vinculados a este cliente.
-                </p>
-              </div>
+              <EmptyState
+                icon={FolderOpen}
+                title="Sin expedientes"
+                description="Todavía no hay expedientes vinculados a este cliente."
+              />
             ) : (
               <div className="space-y-2">
                 {clientCases.map((c) => (
