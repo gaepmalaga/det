@@ -2887,8 +2887,14 @@ Hallazgos que sí son reales y siguen sin arreglar, para retomar:
 - Nomenclatura confusa: `collaborate/` (portal externo del colaborador)
   vs `collaborators/` (gestión interna) — casi idénticos, conceptos
   distintos.
-- Componentes grandes, candidatos a dividir: `CaseReportTab` (777
-  líneas), `CollaboratorDetailPage` (624), `CollaboratorsPage` (521).
+- ~~Componentes grandes, candidatos a dividir: `CaseReportTab` (777
+  líneas)~~ — **dividido** (2026-09-04) en `features/cases/tabs/report/`
+  (`utils.ts`, `ReportEmptyState.tsx`, `ReportForm.tsx`,
+  `ReportView.tsx`); el orquestador queda en 332 líneas. Verificado en
+  producción de punta a punta (crear → aprobar → entregar → cierre
+  automático del expediente), sin cambios de comportamiento. Quedan
+  `CollaboratorDetailPage` (624) y `CollaboratorsPage` (521) como
+  candidatos si se retoma esto.
 - El patrón `EmptyState` solo se usa en 10 de 63 páginas — el resto
   probablemente maneja "sin datos" de forma manual y no siempre igual.
 - `/superadmin/plans` y `/superadmin/audit` siguen siendo un
