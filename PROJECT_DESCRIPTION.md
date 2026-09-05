@@ -2895,7 +2895,58 @@ Hallazgos que sí son reales y siguen sin arreglar, para retomar:
   automático del expediente), sin cambios de comportamiento. Quedan
   `CollaboratorDetailPage` (624) y `CollaboratorsPage` (521) como
   candidatos si se retoma esto.
-- El patrón `EmptyState` solo se usa en 10 de 63 páginas — el resto
-  probablemente maneja "sin datos" de forma manual y no siempre igual.
+- El patrón `EmptyState` solo se usa en 10 de 63 páginas. **Dos casos
+  reales arreglados** (2026-09-04, commit `3571329`): `ClientDetailPage`
+  ("No hay expedientes vinculados...", texto suelto sin icono ni
+  tarjeta) y `CaseAuditTab` ("Los eventos se registrarán aquí...",
+  igual) — ahora ambos usan `EmptyState` como el resto de la app.
+  Verificado visualmente en producción sobre datos reales. Otros casos
+  encontrados (`CompliancePage`, `CaseActionsTab`,
+  `CollaborateCaseDetail`) **no se tocaron a propósito**: ya
+  reproducían el mismo aspecto visual a mano (icono + tarjeta), solo
+  sin reutilizar el componente — es deuda de código, no un problema
+  que vea el usuario, así que no valía el riesgo de tocarlos sin
+  necesidad. Quedan sin revisar el resto de las 63 páginas.
 - `/superadmin/plans` y `/superadmin/audit` siguen siendo un
   placeholder "en construcción".
+- Nomenclatura confusa `collaborate/` vs `collaborators/` (arriba):
+  evaluado y descartado a propósito por ahora — puramente cosmético,
+  toca imports en varios archivos, cero beneficio funcional. Retomar
+  solo si de verdad molesta al trabajar en el código.
+
+## Estado al cierre de la sesión (2026-09-04)
+
+Local, git remoto (`origin/main`) y producción
+(`https://detectivesprivadosesp.web.app`) están sincronizados en el
+commit `76c423d` — verificado con `git fetch` + comparación de hash de
+bundle (`index-DGqdNOmZ.js` tanto en `dist/` local como servido en
+producción vía `curl`, sin pasar por caché de service worker).
+
+**Repaso rápido de lo que se tocó en esta sesión completa** (de más a
+menos importante):
+1. Incidente de producción: `.env.local` con el proyecto de Firebase
+   equivocado rompía el login — arreglado, ver más arriba. **El único
+   cabo suelto real**: esos valores correctos no están en ningún sitio
+   más que en este documento y en la memoria de quien los puso, porque
+   `.env.local` no se versiona. Si se pierde el archivo, están aquí
+   arriba, o se recuperan con `firebase apps:sdkconfig`.
+2. App Check de Firebase AI Logic sin registrar del todo (ver
+   "Incidente al probarlo — App Check bloqueaba las llamadas" y su
+   actualización más abajo) — **sigue pendiente**, bloqueado porque el
+   campo de clave secreta no respondía en la consola de Firebase desde
+   móvil. No es urgente: no bloquea nada hoy, solo hay que resolverlo
+   antes del 2 de noviembre de 2026 (fecha en que Google hace
+   obligatoria la aplicación forzosa para AI Logic).
+3. Rediseño visual, fluidez de flujo, varios bugs reales de negocio
+   (libro-registro, presupuestos, cumplimiento, PWA) — todo lo de
+   arriba, cerrado y verificado en producción real salvo lo señalado
+   explícitamente como pendiente.
+4. **Pendiente de seguridad, muy anterior a esta sesión** (ver "Estado
+   técnico", más arriba en este documento): rotar las credenciales de
+   Firebase que quedaron expuestas en el historial de git. Nunca
+   confirmado si se hizo.
+
+**Para la próxima sesión**: no hay ningún trabajo a medias ni rama sin
+fusionar — todo commiteado y desplegado. Se puede empezar de cero
+leyendo este documento de arriba abajo, o ir directo a "Estado técnico"
+(§8) y esta última sección para lo más reciente.
